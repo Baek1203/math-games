@@ -6,7 +6,7 @@
 <title>최대공약수 숫자야구</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Sunflower:wght@300;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DotGothic16&family=Jua&display=swap">
 <style>
 :root {
   box-sizing: border-box;
@@ -517,6 +517,96 @@ a.btn { display: inline-block; text-decoration: none; }
 .closed-board .hero-ball { display: block; width: 4.2rem; margin: 0 auto .8rem; }
 .closed-board .board-sub { max-width: 32rem; }
 .closed-board .btn { margin-top: 1.3rem; }
+
+/* ===================================================================
+   게임 목록과 같은 모양 (야구장 테마)
+   전광판, 야구공, 입장권은 그대로 두고 글꼴, 테두리, 단추를 게임 목록에 맞춘다
+   =================================================================== */
+:root {
+  --ink: #2b2140; --ink-soft: #62597a; --edge: #2b2140; --line: #dcd7ea; --input-edge: #2b2140;
+  --chalk: #ffffff; --chalk-2: #f3f1fa; --navy-soft: rgba(43, 33, 64, .07);
+  --red: #d8344c; --red-soft: rgba(216, 52, 76, .12); --green: #1f8a4c;
+  --gold-a: #ffd966; --gold-b: #ffc02e;
+  --font: 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  --display: 'Black Han Sans', 'Jua', 'Malgun Gothic', sans-serif;
+  --sky-a: #6fc0ff; --sky-b: #b3e1ff; --wall: #2f6b3a; --grass-a: #a6db7f; --grass-b: #99d170;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #f1edfb; --ink-soft: #b8afcf; --edge: #0d0a16; --line: #3d3558; --input-edge: #0d0a16;
+    --chalk: #231d33; --chalk-2: #2d2641; --navy-soft: rgba(255, 255, 255, .06);
+    --red: #ff6b7d; --green: #5fd08f;
+    --sky-a: #121634; --sky-b: #2b2f63; --wall: #173a22; --grass-a: #2c5a3a; --grass-b: #285236;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #f1edfb; --ink-soft: #b8afcf; --edge: #0d0a16; --line: #3d3558; --input-edge: #0d0a16;
+  --chalk: #231d33; --chalk-2: #2d2641; --navy-soft: rgba(255, 255, 255, .06);
+  --red: #ff6b7d; --green: #5fd08f;
+  --sky-a: #121634; --sky-b: #2b2f63; --wall: #173a22; --grass-a: #2c5a3a; --grass-b: #285236;
+}
+body {
+  font-weight: 400;
+  background:
+    radial-gradient(34rem 8rem at 16% 4rem, rgba(255, 255, 255, .55), transparent 70%),
+    radial-gradient(28rem 7rem at 82% 9rem, rgba(255, 255, 255, .45), transparent 70%),
+    linear-gradient(180deg, var(--sky-a) 0, var(--sky-b) 26rem, var(--wall) 26rem, var(--wall) 26.8rem, transparent 26.8rem),
+    repeating-linear-gradient(90deg, var(--grass-a) 0 5.5rem, var(--grass-b) 5.5rem 11rem);
+  background-color: var(--grass-a);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  min-height: 100vh;
+}
+html { background: var(--grass-a); }
+.guess-box { background: var(--chalk); border: 3px solid var(--edge); border-radius: 20px; box-shadow: 0 6px 0 var(--edge); padding: 1rem 1.1rem 1.1rem; margin-top: 1rem; }
+h1, h2, h3, .page-title, .rec-title, .t-title, .code-title { font-family: var(--display); font-weight: 400; letter-spacing: 0; }
+:focus-visible { outline-color: #2c6bed; }
+
+/* 카드와 전광판 */
+.panel, .player, .resume, .table-panel, .t-board, .closed-board ~ .panel { background: var(--chalk); border: 3px solid var(--edge); border-radius: 20px; box-shadow: 0 6px 0 var(--edge); }
+.board { border: 4px solid #2b2140; border-radius: 22px; box-shadow: 0 8px 0 #2b2140; }
+.hero-title { font-family: var(--display); font-weight: 400; color: #ffd23f; letter-spacing: .01em;
+  text-shadow: 3px 0 0 #2b2140, -3px 0 0 #2b2140, 0 3px 0 #2b2140, 0 -3px 0 #2b2140, 2px 2px 0 #2b2140, -2px 2px 0 #2b2140, 2px -2px 0 #2b2140, -2px -2px 0 #2b2140; }
+.hero-sub, .board-sub { font-family: var(--font); }
+.ls-wrap, .ls { border-radius: 14px; }
+
+/* 단추 */
+.btn { border: 3px solid var(--edge); border-radius: 14px; background: var(--chalk); color: var(--ink); box-shadow: 0 4px 0 var(--edge); font-weight: 400; }
+.btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge); }
+.btn.primary { background: linear-gradient(var(--gold-a), var(--gold-b)); color: #2b2140; }
+.btn.danger { background: var(--red); color: #fff; }
+.pill { border: 2px solid var(--edge); border-radius: 999px; background: var(--chalk); color: var(--ink); box-shadow: 0 3px 0 var(--edge); font-weight: 400; }
+.pill[aria-pressed="true"] { background: #fff4c7; color: #2b2140; }
+.text-btn { font-weight: 400; }
+.me-chip { font-weight: 400; }
+.me-chip .no { background: #2b2140; color: #ffd23f; border-radius: 999px; padding: .05rem .55rem; }
+
+/* 입력과 선택 */
+.field input, .code-in, .guess-in { border: 3px solid var(--edge); border-radius: 14px; background: var(--chalk-2); font-weight: 400; }
+.field input:focus, .code-in:focus, .guess-in:focus { outline: 3px solid #2c6bed; outline-offset: 1px; border-color: var(--edge); }
+.seg { border: 3px solid var(--edge); border-radius: 16px; background: var(--chalk-2); }
+.seg button { font-weight: 400; color: var(--ink-soft); }
+.seg button[aria-checked="true"], .seg button[aria-selected="true"] { background: #2b2140; color: #ffd23f; }
+.lvl-chip { border: 2px solid var(--edge); font-weight: 400; }
+.code-chip b { font-family: var(--display); font-weight: 400; }
+
+/* 후보 메모판 */
+.num { border: 2px solid var(--edge); border-radius: 12px; background: var(--chalk); box-shadow: 0 3px 0 var(--edge); font-family: var(--display); font-weight: 400; color: var(--ink); }
+.num:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge); }
+.num.x, .num.auto, .num.called { box-shadow: none; border-style: dashed; border-color: var(--line); background: var(--chalk-2); }
+.num.revived { border-color: var(--green); }
+
+/* 입장권: 빨간 표 모양 그대로, 테두리만 게임 목록처럼 */
+.ticket { border: 3px solid var(--edge); border-radius: 20px; box-shadow: 0 6px 0 var(--edge); overflow: hidden; }
+.ticket-stub { font-family: var(--display); font-weight: 400; }
+
+/* 목록과 기록 */
+.steps li::marker { color: var(--red); font-family: var(--display); }
+.player-name, .player-stats b, .count, .plates .val:not(.led) { font-family: var(--display); font-weight: 400; }
+.badge { border: 2px solid var(--line); border-radius: 16px; }
+.badge.on { border-color: var(--edge); box-shadow: 0 3px 0 var(--edge); }
+.plays li, .recent li, .code-list li, .live-list li { border-radius: 14px; }
+.t-table, .rec-table { border-radius: 14px; }
+.t-tabs .seg, .t-tabs { font-weight: 400; }
 </style>
 </head>
 <body>
