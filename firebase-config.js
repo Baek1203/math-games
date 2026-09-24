@@ -15,7 +15,13 @@
    이 값들은 공개 저장소에 올라가도 괜찮습니다. 기록은 Firebase 규칙이 지킵니다.
    null로 두면 각 게임이 노트북마다 따로 기록을 저장합니다.
    ============================================================ */
-window.CLASS_FIREBASE_CONFIG = null;
-
+window.CLASS_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDiZcz7eqZ8uwfzW80UkQ0G-hvFyKjLT1I",
+  authDomain: "math-games-260924.firebaseapp.com",
+  projectId: "math-games-260924",
+  storageBucket: "math-games-260924.firebasestorage.app",
+  messagingSenderId: "413496858814",
+  appId: "1:413496858814:web:5c317fcc2ad8a5a6cfa6ef"
+};
 /* 게임 화면 아래쪽에 '게임 목록' 링크를 보여 줍니다. */
 window.CLASS_GAMES_HUB = true;
