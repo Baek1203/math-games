@@ -213,6 +213,49 @@ a.card:hover .art { transform: scale(1.03); }
 .dlg-actions { display: flex; gap: .6rem; }
 .dlg-actions .btn.primary { flex: 1; font-size: 1.25rem; }
 .dlg-out { justify-self: center; font-size: .92rem; }
+
+/* ===== 학교 방 ===== */
+.who-room { display: inline-flex; align-items: center; gap: .3rem; padding: .05rem .6rem .05rem .35rem; border-radius: 999px; background: #fff4c7; color: #2b2140; border: 2px solid var(--edge); font-size: .9rem; }
+.who-room svg, .room-opt svg, .room-chosen svg, .room-pill svg, .room-top h3 svg { width: 1.15rem; height: 1.15rem; flex: none; color: #2b2140; }
+.fld-room { display: grid; gap: .4rem; }
+.fld-lbl { font-size: 1.05rem; }
+.room-search { font: inherit; font-size: 1.1rem; padding: .5rem .8rem; border: 3px solid var(--edge); border-radius: 14px; background: var(--card-2); color: var(--text); width: 100%; }
+.room-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; max-height: 13rem; overflow-y: auto; }
+.room-opt, .room-chosen { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .45rem .7rem; border-radius: 12px; border: 2px solid var(--line); background: var(--card-2); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.room-opt:hover { border-color: var(--edge); background: #fff4c7; color: #2b2140; }
+.room-opt span, .room-chosen span { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; flex: 1; }
+.room-opt small, .room-chosen small { color: var(--text-soft); font-size: .82rem; }
+.room-chosen { cursor: default; border-color: var(--edge); background: #fff4c7; color: #2b2140; margin: 0; }
+.room-chosen small { color: #62597a; }
+.room-chosen .link { font-size: .88rem; white-space: nowrap; }
+.t-form { display: grid; gap: .7rem; max-width: 32rem; }
+.t-form .btn { justify-self: start; }
+.t-dl { display: grid; gap: .35rem; margin: .6rem 0 0; }
+.t-dl div { display: flex; gap: .8rem; }
+.t-dl dt { min-width: 3.5rem; color: var(--text-soft); }
+.t-dl dd { margin: 0; }
+.t-people li { align-items: flex-start; }
+.t-who { display: grid; gap: .1rem; flex: 1; min-width: 12rem; }
+.t-who small { color: var(--text-soft); }
+.t-memo { font-style: normal; }
+.t-btns { display: flex; flex-wrap: wrap; gap: .4rem; }
+.t-btns .btn { padding: .4rem .9rem; font-size: 1rem; }
+.room-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0 1rem; }
+.room-pill { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .9rem; border-radius: 999px; border: 3px solid var(--edge); background: var(--card); color: var(--text); font: inherit; cursor: pointer; box-shadow: 0 3px 0 var(--edge); }
+.room-pill[aria-selected="true"] { background: #2b2140; color: #ffd23f; }
+.room-pill[aria-selected="true"] svg { color: #ffd23f; }
+.room-pill.add { border-style: dashed; box-shadow: none; background: var(--card-2); }
+.room-card { padding: 1rem 1.1rem; border-radius: 16px; background: var(--card-2); border: 2px solid var(--line); }
+.room-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+.room-top h3 { display: flex; align-items: center; gap: .4rem; margin: 0; }
+.room-code { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .8rem 0 .3rem; font-size: 1.1rem; }
+.room-code b { font-family: var(--display); font-weight: 400; font-size: 1.6rem; letter-spacing: .08em; padding: .1rem .7rem; border-radius: 12px; background: #2b2140; color: #ffd23f; }
+.btn.danger-soft { background: var(--card); color: var(--danger); font-size: .95rem; padding: .45rem .9rem; }
+.acct .role { padding: .05rem .55rem; border-radius: 999px; background: #d8344c; color: #fff; font-size: .82rem; }
+.ok-note { border-left-color: #1f8a4c; }
+.room-form h3 { margin: 0; }
+.btn.danger-soft.armed { background: #d8344c; color: #fff; }
+.room-card .code-form { margin: .8rem 0 1rem; }
 </style>
 </head>
 <body>
@@ -241,16 +284,6 @@ const GAMES = [
   { id: 'math-liar', name: '수학 라이어 게임', desc: '모둠 안에서 제시어를 모르는 라이어를 찾아요.', art: 'liar', color: '#a13d2d', mark: '?', tags: ['모둠', '추론'], ready: false },
   { id: 'data-coach', name: '데이터 감독 게임', desc: '기록의 분포를 보고 이어달리기 팀을 꾸려요.', art: 'coach', color: '#2e6b52', mark: '▂▅▇▃', tags: ['자료 정리', '분포'], ready: false },
 ];
-const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
-
-/* ===== 상태 ===== */
-const H = { mode: 'pending', FB: null, auth: null, db: null, state: null, loaded: false, user: null, err: '', busy: false, shown: null, check: null };
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const safeColor = c => (/^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#2d5bd1');
-const isTeacherView = () => location.hash === '#teacher';
-const ready = GAMES.filter(g => g.ready);
-const gameURL = (g, suffix) => (g.href ? g.href : encodeURI(g.id) + '/' + (suffix || ''));
 
 const SPR = {"t2":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3CclipPath%20id%3D%27h%27%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2762%27%20rx%3D%2731%27%20ry%3D%2727%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%0A%3Cg%20transform%3D%27rotate(-14%2036%2040)%27%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2726%27%20rx%3D%2710%27%20ry%3D%2724%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2729%27%20rx%3D%274.6%27%20ry%3D%2715%27%20fill%3D%27%23ffb3c8%27%2F%3E%3C%2Fg%3E%0A%3Cg%20transform%3D%27rotate(12%2064%2040)%27%3E%3Cellipse%20cx%3D%2764%27%20cy%3D%2726%27%20rx%3D%2710%27%20ry%3D%2724%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cellipse%20cx%3D%2764%27%20cy%3D%2729%27%20rx%3D%274.6%27%20ry%3D%2715%27%20fill%3D%27%23ffb3c8%27%2F%3E%3C%2Fg%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2762%27%20rx%3D%2731%27%20ry%3D%2727%27%20fill%3D%27%23dfe4f2%27%2F%3E%0A%3Cellipse%20cx%3D%2747%27%20cy%3D%2758%27%20rx%3D%2730%27%20ry%3D%2725%27%20fill%3D%27%23fff%27%20clip-path%3D%27url(%23h)%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2762%27%20rx%3D%2731%27%20ry%3D%2727%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2739%27%20cy%3D%2760%27%20rx%3D%274.4%27%20ry%3D%275.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2740.6%27%20cy%3D%2757.8%27%20r%3D%271.7%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2761%27%20cy%3D%2760%27%20rx%3D%274.4%27%20ry%3D%275.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2762.6%27%20cy%3D%2757.8%27%20r%3D%271.7%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2730%27%20cy%3D%2769%27%20rx%3D%275.6%27%20ry%3D%273.3%27%20fill%3D%27%23ffb3c8%27%2F%3E%3Cellipse%20cx%3D%2770%27%20cy%3D%2769%27%20rx%3D%275.6%27%20ry%3D%273.3%27%20fill%3D%27%23ffb3c8%27%2F%3E%0A%3Cpath%20d%3D%27M47%2066%20h6%20l-3%203.4%20z%27%20fill%3D%27%23ff7f9f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.6%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M44.4%2071%20q2.8%203.2%205.6%200%20q2.8%203.2%205.6%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Crect%20x%3D%2747.6%27%20y%3D%2771.6%27%20width%3D%274.8%27%20height%3D%274.4%27%20rx%3D%271%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.4%27%2F%3E%0A%3Cpath%20d%3D%27M21%2085%20Q50%2096%2079%2085%20L81%2093%20Q50%20105%2019%2093%20Z%27%20fill%3D%27%233d7bf2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M64%2092%20l9%209%20l8%20-5%20l-5%20-9%20z%27%20fill%3D%27%232c62d6%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","t3":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3CclipPath%20id%3D%27h%27%3E%3Cpath%20d%3D%27M50%2030%20C71%2030%2084%2042%2084%2056%20C84%2070%2070%2080%2050%2090%20C30%2080%2016%2070%2016%2056%20C16%2042%2029%2030%2050%2030%20Z%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M19%2047%20L26%209%20L48%2033%20Z%27%20fill%3D%27%23f28a3a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cpath%20d%3D%27M26%2039%20L29%2020%20L40%2032%20Z%27%20fill%3D%27%235a2c1e%27%2F%3E%0A%3Cpath%20d%3D%27M81%2047%20L74%209%20L52%2033%20Z%27%20fill%3D%27%23f28a3a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cpath%20d%3D%27M74%2039%20L71%2020%20L60%2032%20Z%27%20fill%3D%27%235a2c1e%27%2F%3E%0A%3Cpath%20d%3D%27M34%2086%20Q50%20104%2066%2086%20L68%20100%20L32%20100%20Z%27%20fill%3D%27%23fff4e8%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M50%2030%20C71%2030%2084%2042%2084%2056%20C84%2070%2070%2080%2050%2090%20C30%2080%2016%2070%2016%2056%20C16%2042%2029%2030%2050%2030%20Z%27%20fill%3D%27%23d9682a%27%2F%3E%0A%3Cpath%20d%3D%27M47%2027%20C68%2027%2080%2040%2080%2053%20C80%2066%2066%2076%2046%2085%20C28%2076%2014%2066%2014%2053%20C14%2040%2026%2027%2047%2027%20Z%27%20fill%3D%27%23f28a3a%27%20clip-path%3D%27url(%23h)%27%2F%3E%0A%3Cpath%20d%3D%27M16%2058%20C28%2062%2040%2061%2050%2068%20C60%2061%2072%2062%2084%2058%20C82%2072%2068%2081%2050%2090%20C32%2081%2018%2072%2016%2058%20Z%27%20fill%3D%27%23fff4e8%27%20clip-path%3D%27url(%23h)%27%2F%3E%0A%3Cpath%20d%3D%27M50%2030%20C71%2030%2084%2042%2084%2056%20C84%2070%2070%2080%2050%2090%20C30%2080%2016%2070%2016%2056%20C16%2042%2029%2030%2050%2030%20Z%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2737.5%27%20cy%3D%2753%27%20rx%3D%274.2%27%20ry%3D%275.4%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2739%27%20cy%3D%2751%27%20r%3D%271.6%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2762.5%27%20cy%3D%2753%27%20rx%3D%274.2%27%20ry%3D%275.4%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2764%27%20cy%3D%2751%27%20r%3D%271.6%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2775%27%20rx%3D%274.6%27%20ry%3D%273.3%27%20fill%3D%27%232b2140%27%2F%3E%0A%3Cpath%20d%3D%27M45.6%2080%20q2.2%202.6%204.4%200%20q2.2%202.6%204.4%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2727%27%20cy%3D%2764%27%20rx%3D%274.6%27%20ry%3D%272.8%27%20fill%3D%27%23ff9d8a%27%20opacity%3D%27.8%27%2F%3E%3Cellipse%20cx%3D%2773%27%20cy%3D%2764%27%20rx%3D%274.6%27%20ry%3D%272.8%27%20fill%3D%27%23ff9d8a%27%20opacity%3D%27.8%27%2F%3E%3C%2Fsvg%3E","t5":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3CclipPath%20id%3D%27h%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2758%27%20r%3D%2722%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%0A%3Ccircle%20cx%3D%2779.0%27%20cy%3D%2756.0%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2776.1%27%20cy%3D%2768.6%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2768.1%27%20cy%3D%2778.7%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2756.5%27%20cy%3D%2784.3%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2743.5%27%20cy%3D%2784.3%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2731.9%27%20cy%3D%2778.7%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2723.9%27%20cy%3D%2768.6%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2721.0%27%20cy%3D%2756.0%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2723.9%27%20cy%3D%2743.4%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2731.9%27%20cy%3D%2733.3%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2743.5%27%20cy%3D%2727.7%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2756.5%27%20cy%3D%2727.7%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2768.1%27%20cy%3D%2733.3%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2776.1%27%20cy%3D%2743.4%27%20r%3D%2712%27%20fill%3D%27%23cf7420%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Ccircle%20cx%3D%2779.0%27%20cy%3D%2756.0%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2776.1%27%20cy%3D%2768.6%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2768.1%27%20cy%3D%2778.7%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2756.5%27%20cy%3D%2784.3%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2743.5%27%20cy%3D%2784.3%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2731.9%27%20cy%3D%2778.7%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2723.9%27%20cy%3D%2768.6%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2721.0%27%20cy%3D%2756.0%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2723.9%27%20cy%3D%2743.4%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2731.9%27%20cy%3D%2733.3%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2743.5%27%20cy%3D%2727.7%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2756.5%27%20cy%3D%2727.7%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2768.1%27%20cy%3D%2733.3%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%3Ccircle%20cx%3D%2776.1%27%20cy%3D%2743.4%27%20r%3D%279.4%27%20fill%3D%27%23cf7420%27%2F%3E%0A%3Ccircle%20cx%3D%2750%27%20cy%3D%2756%27%20r%3D%2731%27%20fill%3D%27%23cf7420%27%2F%3E%0A%3Cpath%20d%3D%27M40%2026%20q10%20-9%2020%200%20q-10%20-3%20-20%200z%27%20fill%3D%27%23b35f14%27%2F%3E%0A%3Ccircle%20cx%3D%2731%27%20cy%3D%2740%27%20r%3D%277.5%27%20fill%3D%27%23f7cf55%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2731%27%20cy%3D%2740%27%20r%3D%273.6%27%20fill%3D%27%23e59a3a%27%2F%3E%0A%3Ccircle%20cx%3D%2769%27%20cy%3D%2740%27%20r%3D%277.5%27%20fill%3D%27%23f7cf55%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2769%27%20cy%3D%2740%27%20r%3D%273.6%27%20fill%3D%27%23e59a3a%27%2F%3E%0A%3Ccircle%20cx%3D%2750%27%20cy%3D%2758%27%20r%3D%2722%27%20fill%3D%27%23e9b33c%27%2F%3E%0A%3Ccircle%20cx%3D%2747%27%20cy%3D%2755%27%20r%3D%2721%27%20fill%3D%27%23f7cf55%27%20clip-path%3D%27url(%23h)%27%2F%3E%0A%3Ccircle%20cx%3D%2750%27%20cy%3D%2758%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M35.6%2047%20q5.4%20-4%2010.4%20-.4%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M64.4%2047%20q-5.4%20-4%20-10.4%20-.4%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2741%27%20cy%3D%2755%27%20rx%3D%274%27%20ry%3D%275%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2742.5%27%20cy%3D%2753%27%20r%3D%271.5%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2759%27%20cy%3D%2755%27%20rx%3D%274%27%20ry%3D%275%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2760.5%27%20cy%3D%2753%27%20r%3D%271.5%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2744%27%20cy%3D%2768%27%20rx%3D%277%27%20ry%3D%275.6%27%20fill%3D%27%23fff3d6%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%2F%3E%0A%3Cellipse%20cx%3D%2756%27%20cy%3D%2768%27%20rx%3D%277%27%20ry%3D%275.6%27%20fill%3D%27%23fff3d6%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%2F%3E%0A%3Cpath%20d%3D%27M45%2060.6%20h10%20q0%205%20-5%207%20q-5%20-2%20-5%20-7z%27%20fill%3D%27%237a3e22%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M34%2088%20Q50%20100%2066%2088%20L68%20100%20L32%20100%20Z%27%20fill%3D%27%23f7cf55%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","t7":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3CclipPath%20id%3D%27h%27%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2757%27%20rx%3D%2725%27%20ry%3D%2723%27%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M30%2062%20C16%2056%206%2042%204%2022%20C12%2029%2017%2030%2022%2027%20C22%2036%2025%2041%2030%2042%20C30%2049%2033%2054%2037%2056%20Z%27%20fill%3D%27%236a3fc0%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M70%2062%20C84%2056%2094%2042%2096%2022%20C88%2029%2083%2030%2078%2027%20C78%2036%2075%2041%2070%2042%20C70%2049%2067%2054%2063%2056%20Z%27%20fill%3D%27%236a3fc0%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M12%2030%20L27%2048%20M20%2029%20L30%2046%27%20stroke%3D%27%234b2a91%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M88%2030%20L73%2048%20M80%2029%20L70%2046%27%20stroke%3D%27%234b2a91%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M38%2040%20C36%2027%2032%2018%2024%2010%20C34%2014%2042%2024%2045%2037%20Z%27%20fill%3D%27%23ffcf4d%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M62%2040%20C64%2027%2068%2018%2076%2010%20C66%2014%2058%2024%2055%2037%20Z%27%20fill%3D%27%23ffcf4d%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M44.5%2036%20l3%20-8%20l3%207.6%20z%20M51%2035.6%20l3%20-8.6%20l3%208.4%20z%27%20fill%3D%27%23ff8a3d%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M26%2052%20L14%2046%20L24%2060%20Z%20M74%2052%20L86%2046%20L76%2060%20Z%27%20fill%3D%27%236a3fc0%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M36%2085%20Q50%2097%2064%2085%20L66%20100%20L34%20100%20Z%27%20fill%3D%27%23f2d58a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M40%2092%20h20%20M42%2097%20h16%27%20stroke%3D%27%23c9a24e%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2757%27%20rx%3D%2725%27%20ry%3D%2723%27%20fill%3D%27%237040c9%27%2F%3E%0A%3Cellipse%20cx%3D%2747%27%20cy%3D%2754%27%20rx%3D%2724%27%20ry%3D%2722%27%20fill%3D%27%238a55e0%27%20clip-path%3D%27url(%23h)%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2757%27%20rx%3D%2725%27%20ry%3D%2723%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M36%2070%20C36%2063%2042%2061%2050%2061%20C58%2061%2064%2063%2064%2070%20C64%2078%2058%2081%2050%2081%20C42%2081%2036%2078%2036%2070%20Z%27%20fill%3D%27%23a57cf2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2745%27%20cy%3D%2768%27%20rx%3D%271.7%27%20ry%3D%271.3%27%20fill%3D%27%232b2140%27%2F%3E%3Cellipse%20cx%3D%2755%27%20cy%3D%2768%27%20rx%3D%271.7%27%20ry%3D%271.3%27%20fill%3D%27%232b2140%27%2F%3E%0A%3Cpath%20d%3D%27M43%2074.5%20q7%204%2014%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M44.5%2075.6%20l1.6%203%20l1.6%20-2.4%20z%20M55.5%2075.6%20l-1.6%203%20l-1.6%20-2.4%20z%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.2%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2739%27%20cy%3D%2752%27%20rx%3D%275.4%27%20ry%3D%276.8%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2741%27%20cy%3D%2749.4%27%20r%3D%272.1%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2737.6%27%20cy%3D%2755%27%20r%3D%271%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2761%27%20cy%3D%2752%27%20rx%3D%275.4%27%20ry%3D%276.8%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2763%27%20cy%3D%2749.4%27%20r%3D%272.1%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2759.6%27%20cy%3D%2755%27%20r%3D%271%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2731%27%20cy%3D%2764%27%20rx%3D%274%27%20ry%3D%272.4%27%20fill%3D%27%23ff9ecf%27%20opacity%3D%27.75%27%2F%3E%3Cellipse%20cx%3D%2769%27%20cy%3D%2764%27%20rx%3D%274%27%20ry%3D%272.4%27%20fill%3D%27%23ff9ecf%27%20opacity%3D%27.75%27%2F%3E%3C%2Fsvg%3E","p2":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2060%27%3E%0A%3Cpath%20d%3D%27M8%2020%20V38%20C8%2047%2027%2055%2050%2055%20C73%2055%2092%2047%2092%2038%20V20%27%20fill%3D%27%232c59ae%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M30%2032%20v19%20M70%2032%20v19%20M50%2035%20v19%27%20stroke%3D%27%23224485%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2720%27%20rx%3D%2742%27%20ry%3D%2714%27%20fill%3D%27%233d7bf2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2742%27%20cy%3D%2716.5%27%20rx%3D%2721%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20opacity%3D%27.35%27%2F%3E%3C%2Fsvg%3E","p3":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2060%27%3E%0A%3Cpath%20d%3D%27M8%2020%20V38%20C8%2047%2027%2055%2050%2055%20C73%2055%2092%2047%2092%2038%20V20%27%20fill%3D%27%23ad591e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M30%2032%20v19%20M70%2032%20v19%20M50%2035%20v19%27%20stroke%3D%27%23844417%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2720%27%20rx%3D%2742%27%20ry%3D%2714%27%20fill%3D%27%23f07b2a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2742%27%20cy%3D%2716.5%27%20rx%3D%2721%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20opacity%3D%27.35%27%2F%3E%3C%2Fsvg%3E","p5":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2060%27%3E%0A%3Cpath%20d%3D%27M8%2020%20V38%20C8%2047%2027%2055%2050%2055%20C73%2055%2092%2047%2092%2038%20V20%27%20fill%3D%27%23a17900%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M30%2032%20v19%20M70%2032%20v19%20M50%2035%20v19%27%20stroke%3D%27%237b5c00%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2720%27%20rx%3D%2742%27%20ry%3D%2714%27%20fill%3D%27%23e0a800%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2742%27%20cy%3D%2716.5%27%20rx%3D%2721%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20opacity%3D%27.35%27%2F%3E%3C%2Fsvg%3E","p7":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2060%27%3E%0A%3Cpath%20d%3D%27M8%2020%20V38%20C8%2047%2027%2055%2050%2055%20C73%2055%2092%2047%2092%2038%20V20%27%20fill%3D%27%23633da1%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M30%2032%20v19%20M70%2032%20v19%20M50%2035%20v19%27%20stroke%3D%27%234c2f7b%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2720%27%20rx%3D%2742%27%20ry%3D%2714%27%20fill%3D%27%238a55e0%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2742%27%20cy%3D%2716.5%27%20rx%3D%2721%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20opacity%3D%27.35%27%2F%3E%3C%2Fsvg%3E","slime_meadow":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23c8b0ff%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%238b5cf0%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.6%27%2F%3E%0A%3Cellipse%20cx%3D%2738%27%20cy%3D%2747%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2739.8%27%20cy%3D%2744.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2762%27%20cy%3D%2747%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2763.8%27%20cy%3D%2744.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cpath%20d%3D%27M45%2056%20q5%204.4%2010%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","slime_canyon":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%238ae6da%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%231f9e92%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.6%27%2F%3E%0A%3Cellipse%20cx%3D%2738%27%20cy%3D%2747%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2739.8%27%20cy%3D%2744.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cellipse%20cx%3D%2762%27%20cy%3D%2747%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2763.8%27%20cy%3D%2744.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cpath%20d%3D%27M45%2056%20q5%204.4%2010%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","slime_regen":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cpath%20d%3D%27M50%2020%20C48%2012%2050%206%2052%202%27%20fill%3D%27none%27%20stroke%3D%27%232f7d33%27%20stroke-width%3D%273.4%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M51%208%20C60%20-2%2076%202%2078%2010%20C68%2014%2058%2014%2051%208%20Z%27%20fill%3D%27%236fd060%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.6%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M50%2012%20C42%202%2026%204%2024%2012%20C34%2017%2044%2017%2050%2012%20Z%27%20fill%3D%27%238fe07f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.6%27%20stroke-linejoin%3D%27round%27%2F%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23b8f28f%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%2348b83c%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.55%27%2F%3E%3Cellipse%20cx%3D%2738%27%20cy%3D%2750%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2739.8%27%20cy%3D%2747.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%3Cellipse%20cx%3D%2762%27%20cy%3D%2750%27%20rx%3D%275.2%27%20ry%3D%276.6%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2763.8%27%20cy%3D%2747.6%27%20r%3D%271.9%27%20fill%3D%27%23fff%27%2F%3E%3Cpath%20d%3D%27M45%2060%20q5%204.4%2010%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2728%27%20cy%3D%2760%27%20rx%3D%275%27%20ry%3D%273%27%20fill%3D%27%23ff9ecf%27%20opacity%3D%27.7%27%2F%3E%3Cellipse%20cx%3D%2772%27%20cy%3D%2760%27%20rx%3D%275%27%20ry%3D%273%27%20fill%3D%27%23ff9ecf%27%20opacity%3D%27.7%27%2F%3E%3C%2Fsvg%3E","slime_mask":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23d7b3ff%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%239b5cf0%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.55%27%2F%3E%0A%3Cpath%20d%3D%27M18%2044%20C24%2036%2040%2036%2050%2042%20C60%2036%2076%2036%2082%2044%20C80%2056%2066%2060%2058%2054%20C54%2052%2046%2052%2042%2054%20C34%2060%2020%2056%2018%2044%20Z%27%20fill%3D%27%232b2140%27%20stroke%3D%27%23ffd23f%27%20stroke-width%3D%272.6%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2736%27%20cy%3D%2747%27%20rx%3D%276%27%20ry%3D%274.4%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2737%27%20cy%3D%2747%27%20r%3D%272.4%27%20fill%3D%27%232b2140%27%2F%3E%3Cellipse%20cx%3D%2764%27%20cy%3D%2747%27%20rx%3D%276%27%20ry%3D%274.4%27%20fill%3D%27%23fff%27%2F%3E%3Ccircle%20cx%3D%2765%27%20cy%3D%2747%27%20r%3D%272.4%27%20fill%3D%27%232b2140%27%2F%3E%0A%3Cpath%20d%3D%27M82%2044%20l8%20-6%20M18%2044%20l-8%20-6%27%20stroke%3D%27%23ffd23f%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","slime_armor":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23c9d2e3%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%238792ab%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M14%2058%20C14%2030%2030%2014%2050%2013%20C70%2014%2086%2030%2086%2058%20Z%27%20fill%3D%27%23a7b3c9%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M14%2058%20H86%20V66%20H14%20Z%27%20fill%3D%27%237c88a3%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M50%2013%20V56%27%20stroke%3D%27%237c88a3%27%20stroke-width%3D%275%27%2F%3E%3Cpath%20d%3D%27M50%2013%20V56%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.6%27%20opacity%3D%27.5%27%2F%3E%0A%3Ccircle%20cx%3D%2724%27%20cy%3D%2762%27%20r%3D%272.2%27%20fill%3D%27%23e8ecf4%27%2F%3E%3Ccircle%20cx%3D%2776%27%20cy%3D%2762%27%20r%3D%272.2%27%20fill%3D%27%23e8ecf4%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2762%27%20r%3D%272.2%27%20fill%3D%27%23e8ecf4%27%2F%3E%0A%3Cellipse%20cx%3D%2734%27%20cy%3D%2730%27%20rx%3D%277%27%20ry%3D%274%27%20transform%3D%27rotate(-30%2034%2030)%27%20fill%3D%27%23fff%27%20opacity%3D%27.7%27%2F%3E%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.55%27%2F%3E%3Crect%20x%3D%2728%27%20y%3D%2767%27%20width%3D%2744%27%20height%3D%279%27%20rx%3D%274%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2771.5%27%20r%3D%272.4%27%20fill%3D%27%23ffd23f%27%2F%3E%3Ccircle%20cx%3D%2760%27%20cy%3D%2771.5%27%20r%3D%272.4%27%20fill%3D%27%23ffd23f%27%2F%3E%3C%2Fsvg%3E","slime_fast":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23fff08a%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23f2b400%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M10%2080%20C8%2052%2026%2022%2050%2017%20C74%2022%2092%2052%2090%2080%20C90%2092%2070%2095%2050%2095%20C30%2095%2010%2092%2010%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M22%2036%20Q50%2026%2078%2036%20L78%2044%20Q50%2034%2022%2044%20Z%27%20fill%3D%27%23ff5a5f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.6%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M22%2038%20L6%2030%20L10%2040%20L2%2044%20L20%2044%20Z%27%20fill%3D%27%23ff5a5f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linejoin%3D%27round%27%2F%3E%3Cellipse%20cx%3D%2732%27%20cy%3D%2740%27%20rx%3D%279%27%20ry%3D%275.6%27%20transform%3D%27rotate(-32%2032%2040)%27%20fill%3D%27%23fff%27%20opacity%3D%27.55%27%2F%3E%3Cpath%20d%3D%27M31%2050%20l12%20-3%20M69%2050%20l-12%20-3%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2738%27%20cy%3D%2754%27%20rx%3D%274.4%27%20ry%3D%275.2%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2739.6%27%20cy%3D%2752.4%27%20r%3D%271.6%27%20fill%3D%27%23fff%27%2F%3E%3Cellipse%20cx%3D%2762%27%20cy%3D%2754%27%20rx%3D%274.4%27%20ry%3D%275.2%27%20fill%3D%27%232b2140%27%2F%3E%3Ccircle%20cx%3D%2763.6%27%20cy%3D%2752.4%27%20r%3D%271.6%27%20fill%3D%27%23fff%27%2F%3E%0A%3Cpath%20d%3D%27M45%2062%20q5%203.4%2010%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","boss":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23ff7d8f%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23c9304a%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%0A%3Cpath%20d%3D%27M26%2036%20C14%2028%2011%2016%2015%205%20C20%2016%2029%2021%2036%2027%20Z%27%20fill%3D%27%23fff1c9%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M74%2036%20C86%2028%2089%2016%2085%205%20C80%2016%2071%2021%2064%2027%20Z%27%20fill%3D%27%23fff1c9%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M9%2080%20C7%2050%2025%2022%2050%2018%20C75%2022%2093%2050%2091%2080%20C91%2093%2071%2096%2050%2096%20C29%2096%209%2093%209%2080%20Z%27%20fill%3D%27url(%23g)%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2731%27%20cy%3D%2742%27%20rx%3D%278%27%20ry%3D%275%27%20transform%3D%27rotate(-32%2031%2042)%27%20fill%3D%27%23fff%27%20opacity%3D%27.55%27%2F%3E%0A%3Cpath%20d%3D%27M28%2040%20l15%206%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%274%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M72%2040%20l-15%206%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%274%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cellipse%20cx%3D%2738%27%20cy%3D%2750%27%20rx%3D%276%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%2F%3E%3Ccircle%20cx%3D%2739.5%27%20cy%3D%2751%27%20r%3D%272.7%27%20fill%3D%27%232b2140%27%2F%3E%0A%3Cellipse%20cx%3D%2762%27%20cy%3D%2750%27%20rx%3D%276%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%2F%3E%3Ccircle%20cx%3D%2760.5%27%20cy%3D%2751%27%20r%3D%272.7%27%20fill%3D%27%232b2140%27%2F%3E%0A%3Cpath%20d%3D%27M39%2059%20h22%20l-3%205%20l-3%20-3.4%20l-2.5%203.4%20l-2.5%20-3.4%20l-2.5%203.4%20l-2.5%20-3.4%20l-3%203.4%20z%27%20fill%3D%27%23fff%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M36%2017%20L38%205%20L44%2011%20L50%202%20L56%2011%20L62%205%20L64%2017%20Z%27%20fill%3D%27%23ffd23f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.6%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Ccircle%20cx%3D%2750%27%20cy%3D%2712%27%20r%3D%272.4%27%20fill%3D%27%23e8475f%27%2F%3E%3C%2Fsvg%3E","castle_meadow":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20120%20120%27%3E%0A%3Cellipse%20cx%3D%2760%27%20cy%3D%27112%27%20rx%3D%2754%27%20ry%3D%277%27%20fill%3D%27%23000%27%20opacity%3D%27.2%27%2F%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2754%27%20width%3D%2776%27%20height%3D%2756%27%20fill%3D%27%23cfd5e2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M22%2054%20v-8%20h10%20v8%20h9%20v-8%20h10%20v8%20h9%20v-8%20h10%20v8%20h9%20v-8%20h9%20v8%27%20fill%3D%27%23cfd5e2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Crect%20x%3D%276%27%20y%3D%2740%27%20width%3D%2726%27%20height%3D%2770%27%20fill%3D%27%23dde2ec%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Crect%20x%3D%2788%27%20y%3D%2740%27%20width%3D%2726%27%20height%3D%2770%27%20fill%3D%27%23dde2ec%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M2%2042%20L19%2012%20L36%2042%20Z%27%20fill%3D%27%233d7bf2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M84%2042%20L101%2012%20L118%2042%20Z%27%20fill%3D%27%233d7bf2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M44%20110%20V86%20a16%2016%200%200%201%2032%200%20V110%20Z%27%20fill%3D%27%234a3f5c%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M52%2088%20V110%20M60%2084%20V110%20M68%2088%20V110%27%20stroke%3D%27%236b5d80%27%20stroke-width%3D%272.4%27%2F%3E%0A%3Crect%20x%3D%2714%27%20y%3D%2756%27%20width%3D%2710%27%20height%3D%2714%27%20rx%3D%275%27%20fill%3D%27%234a3f5c%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%2F%3E%0A%3Crect%20x%3D%2796%27%20y%3D%2756%27%20width%3D%2710%27%20height%3D%2714%27%20rx%3D%275%27%20fill%3D%27%234a3f5c%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%2F%3E%0A%3Cpath%20d%3D%27M30%2072%20h18%20M72%2072%20h18%20M30%2096%20h10%20M80%2096%20h10%27%20stroke%3D%27%23aab2c5%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Cpath%20d%3D%27M19%2012%20V2%20M101%2012%20V2%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E","tree":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20110%27%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%27101%27%20rx%3D%2730%27%20ry%3D%277%27%20fill%3D%27%23000%27%20opacity%3D%27.18%27%2F%3E%0A%3Cpath%20d%3D%27M43%2066%20h14%20v30%20q-7%204%20-14%200%20z%27%20fill%3D%27%238a5a36%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Ccircle%20cx%3D%2733%27%20cy%3D%2758%27%20r%3D%2721%27%20fill%3D%27%2357b84e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2767%27%20cy%3D%2758%27%20r%3D%2721%27%20fill%3D%27%2357b84e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2736%27%20r%3D%2725%27%20fill%3D%27%2357b84e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2733%27%20cy%3D%2758%27%20r%3D%2718.4%27%20fill%3D%27%2357b84e%27%2F%3E%3Ccircle%20cx%3D%2767%27%20cy%3D%2758%27%20r%3D%2718.4%27%20fill%3D%27%2357b84e%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2736%27%20r%3D%2722.4%27%20fill%3D%27%2357b84e%27%2F%3E%3Cpath%20d%3D%27M16%2060%20C22%2076%2078%2076%2084%2060%20C80%2072%2062%2078%2050%2078%20C38%2078%2020%2072%2016%2060%20Z%27%20fill%3D%27%232f7d33%27%20opacity%3D%27.55%27%2F%3E%3Cellipse%20cx%3D%2741%27%20cy%3D%2727%27%20rx%3D%279.5%27%20ry%3D%276%27%20fill%3D%27%239be58f%27%20opacity%3D%27.85%27%2F%3E%3Cellipse%20cx%3D%2726%27%20cy%3D%2752%27%20rx%3D%275%27%20ry%3D%273.4%27%20fill%3D%27%239be58f%27%20opacity%3D%27.7%27%2F%3E%3C%2Fsvg%3E","bush":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2080%27%3E%0A%3Cellipse%20cx%3D%2750%27%20cy%3D%2772%27%20rx%3D%2736%27%20ry%3D%276%27%20fill%3D%27%23000%27%20opacity%3D%27.16%27%2F%3E%0A%3Ccircle%20cx%3D%2730%27%20cy%3D%2750%27%20r%3D%2718%27%20fill%3D%27%234fa84a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2770%27%20cy%3D%2750%27%20r%3D%2718%27%20fill%3D%27%234fa84a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2738%27%20r%3D%2721%27%20fill%3D%27%234fa84a%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Ccircle%20cx%3D%2730%27%20cy%3D%2750%27%20r%3D%2715.4%27%20fill%3D%27%234fa84a%27%2F%3E%3Ccircle%20cx%3D%2770%27%20cy%3D%2750%27%20r%3D%2715.4%27%20fill%3D%27%234fa84a%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2738%27%20r%3D%2718.4%27%20fill%3D%27%234fa84a%27%2F%3E%0A%3Crect%20x%3D%2714%27%20y%3D%2748%27%20width%3D%2772%27%20height%3D%2720%27%20rx%3D%279%27%20fill%3D%27%234fa84a%27%2F%3E%0A%3Cpath%20d%3D%27M13%2056%20q0%2012%2014%2012%20h46%20q14%200%2014%20-12%27%20fill%3D%27none%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%273.2%27%20stroke-linejoin%3D%27round%27%20stroke-linecap%3D%27round%27%2F%3E%0A%3Ccircle%20cx%3D%2736%27%20cy%3D%2740%27%20r%3D%273.6%27%20fill%3D%27%23ff5a6e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.6%27%2F%3E%3Ccircle%20cx%3D%2758%27%20cy%3D%2732%27%20r%3D%273.6%27%20fill%3D%27%23ff5a6e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.6%27%2F%3E%3Ccircle%20cx%3D%2766%27%20cy%3D%2752%27%20r%3D%273.6%27%20fill%3D%27%23ff5a6e%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%271.6%27%2F%3E%3C%2Fsvg%3E","crown":"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2040%2028%27%3E%0A%3Cpath%20d%3D%27M3%2024%20L5%207%20L13%2015%20L20%203%20L27%2015%20L35%207%20L37%2024%20Z%27%20fill%3D%27%23ffd23f%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.4%27%20stroke-linejoin%3D%27round%27%2F%3E%0A%3Crect%20x%3D%273%27%20y%3D%2720%27%20width%3D%2734%27%20height%3D%275%27%20rx%3D%271.5%27%20fill%3D%27%23f5b700%27%20stroke%3D%27%232b2140%27%20stroke-width%3D%272.2%27%2F%3E%0A%3Ccircle%20cx%3D%2720%27%20cy%3D%2713%27%20r%3D%272.4%27%20fill%3D%27%23e8475f%27%2F%3E%3Ccircle%20cx%3D%2711%27%20cy%3D%2718%27%20r%3D%271.7%27%20fill%3D%27%233d7bf2%27%2F%3E%3Ccircle%20cx%3D%2729%27%20cy%3D%2718%27%20r%3D%271.7%27%20fill%3D%27%233d7bf2%27%2F%3E%3C%2Fsvg%3E"};
 /* ===== 카드 그림: 게임 속 캐릭터와 장면으로 그린다 ===== */
@@ -530,30 +563,60 @@ ${img('t2', 54, 62, 70, 70)}${img('t3', 116, 58, 72, 72)}${img('slime_meadow', 1
   return { cover: g => (BY_KEY[g.art] ? BY_KEY[g.art]() : plain(g)), hero, waiting };
 })();
 
+const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+/* ===== 상태 ===== */
+const H = {
+  mode: 'pending', FB: null, auth: null, db: null,
+  /* 학생: 고른 학교 방과 그 방의 게임 설정 */
+  room: null, view: null, loaded: false, viewOff: null, dir: null,
+  /* 선생님 */
+  user: null, prof: undefined, isAdmin: false, teachers: null, teachersOff: null,
+  myRooms: null, cur: null, tview: null, tloaded: false, tviewOff: null, form: null, armed: null,
+  err: '', note: '', busy: false, shown: null, check: null,
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeColor = c => (/^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#2d5bd1');
+const isTeacherView = () => location.hash === '#teacher';
+const ready = GAMES.filter(g => g.ready);
+const gameURL = (g, suffix) => (g.href ? g.href + (H.room && !suffix ? '#mgroom=' + H.room.key : '') : encodeURI(g.id) + '/' + (suffix || ''));
+const TS = () => H.FB.database.ServerValue.TIMESTAMP;
+const clip = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+const roomName = r => (r ? (r.school || '') + (r.label ? ' ' + r.label : '') : '');
+
 function student() {
   try {
     const s = JSON.parse(localStorage.getItem('mathgames.student'));
     return s && typeof s.sid === 'string' && typeof s.name === 'string' ? s : null;
   } catch (e) { return null; }
 }
+function readRoom() {
+  try {
+    const r = JSON.parse(localStorage.getItem('mathgames.room'));
+    return r && typeof r.key === 'string' && /^[A-Za-z0-9]{20,40}$/.test(r.key) ? r : null;
+  } catch (e) { return null; }
+}
+H.room = readRoom();
+/* 학급 서버를 쓰면 학생은 학교 방을 골라야 게임 기록이 남는다 */
+const needRoom = () => H.mode === 'firebase';
+const registered = () => !!student() && (!needRoom() || !!H.room);
 
-/* 학생 화면에 지금 보여 줄 게임. selected: 선생님이 고른 게임만 보이는 중인지 */
-/* 선생님이 정한 순서 (hub/order). 순서에 없는 게임은 원래 목록 순서대로 뒤에 붙는다 */
-function orderedGames() {
-  const st = H.mode === 'firebase' ? H.state : null;
-  const o = st && st.order;
+/* 선생님이 정한 순서. 순서에 없는 게임은 원래 목록 순서대로 뒤에 붙는다 */
+function orderedGames(view) {
+  const o = view && view.order;
   const raw = Array.isArray(o) ? o : o && typeof o === 'object' ? Object.keys(o).sort((a, b) => a - b).map(k => o[k]) : [];
   const pos = id => { const i = raw.indexOf(id); return i < 0 ? 1000 + GAMES.findIndex(g => g.id === id) : i; };
   return GAMES.slice().sort((a, b) => pos(a.id) - pos(b.id));
 }
+/* 학생 화면에 지금 보여 줄 게임. selected: 선생님이 고른 게임만 보이는 중인지 */
 function visible() {
-  const st = H.mode === 'firebase' ? H.state : null;
-  const list = orderedGames();
+  const st = H.mode === 'firebase' ? H.view : null;
+  const list = orderedGames(st);
   if (st && st.mode === 'selected') return { selected: true, list: list.filter(g => g.ready && st.open && st.open[g.id]) };
   return { selected: false, list };
 }
 
-/* ===== 학급 서버 ===== */
 function loadScript(src, ms) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -568,7 +631,7 @@ function loadScript(src, ms) {
 async function boot() {
   render();
   const cfg = window.CLASS_FIREBASE_CONFIG;
-  if (!cfg || !cfg.databaseURL) { H.mode = 'local'; render(); return; }
+  if (!cfg || !cfg.databaseURL) { H.mode = 'local'; H.loaded = true; render(); return; }
   try {
     for (const f of ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-database-compat.js']) {
       await loadScript(FIREBASE_SDK_BASE + f, 12000);
@@ -579,23 +642,182 @@ async function boot() {
     H.auth = FB.auth();
     H.db = FB.database();
     H.mode = 'firebase';
-    H.auth.onAuthStateChanged(u => { H.user = u && !u.isAnonymous ? u : null; if (isTeacherView()) render(); });
-    H.db.ref('hub').on('value', snap => { H.state = snap.val(); H.loaded = true; render(); },
-      () => { H.state = null; H.loaded = true; render(); });
+    H.auth.onAuthStateChanged(u => {
+      const was = H.user && H.user.uid;
+      H.user = u && !u.isAnonymous ? u : null;
+      if ((H.user && H.user.uid) !== was) { resetTeacher(); if (H.user) loadTeacher(); }
+      render();
+    });
+    watchStudentRoom();
   } catch (e) {
     H.mode = 'local';
+    H.loaded = true;
   }
   render();
 }
-async function writeHub(fn) {
+
+/* ----- 학생: 고른 방의 게임 설정을 지켜본다 ----- */
+function watchStudentRoom() {
+  if (H.viewOff) { H.viewOff(); H.viewOff = null; }
+  H.view = null;
+  if (H.mode !== 'firebase' || !H.room) { H.loaded = true; render(); return; }
+  H.loaded = false;
+  const ref = H.db.ref('views/' + H.room.key);
+  const h = ref.on('value', snap => { H.view = snap.val(); H.loaded = true; render(); }, () => { H.view = null; H.loaded = true; render(); });
+  H.viewOff = () => ref.off('value', h);
+}
+async function loadDirectory() {
+  try {
+    const snap = await withTimeout(H.db.ref('rooms').once('value'), 10000);
+    const v = snap.val() || {};
+    H.dir = Object.keys(v).map(id => Object.assign({ id }, v[id])).filter(r => r && r.school)
+      .sort((a, b) => roomName(a).localeCompare(roomName(b), 'ko'));
+  } catch (e) { H.dir = []; }
+}
+async function checkDoor(roomId, code) {
+  const snap = await withTimeout(H.db.ref('doors/' + roomId + '/' + code).once('value'), 10000);
+  const v = snap.val();
+  return v && typeof v.key === 'string' ? v.key : null;
+}
+
+/* ----- 선생님 ----- */
+function resetTeacher() {
+  if (H.teachersOff) { H.teachersOff(); H.teachersOff = null; }
+  if (H.tviewOff) { H.tviewOff(); H.tviewOff = null; }
+  Object.assign(H, { prof: undefined, isAdmin: false, teachers: null, myRooms: null, cur: null, tview: null, tloaded: false, form: null, armed: null, err: '', note: '' });
+}
+async function loadTeacher() {
+  const u = H.user;
+  if (!u) return;
+  const ref = H.db.ref('teachers');
+  await new Promise(done => {
+    const h = ref.on('value', snap => { H.isAdmin = true; H.teachers = snap.val() || {}; render(); done(); }, () => { H.isAdmin = false; done(); });
+    H.teachersOff = () => ref.off('value', h);
+  });
+  if (H.user !== u) return;
+  try { const s = await withTimeout(H.db.ref('teachers/' + u.uid).once('value'), 10000); H.prof = s.val(); } catch (e) { H.prof = null; }
+  if (H.isAdmin || (H.prof && H.prof.status === 'approved')) await loadMyRooms();
+  render();
+}
+const canManage = () => H.isAdmin || (H.prof && H.prof.status === 'approved');
+async function loadMyRooms(pick) {
+  const u = H.user;
+  try {
+    const s = await withTimeout(H.db.ref('teacherRooms/' + u.uid).once('value'), 10000);
+    const v = s.val() || {};
+    H.myRooms = Object.keys(v).map(id => Object.assign({ id }, v[id])).filter(r => r && typeof r.key === 'string')
+      .sort((a, b) => roomName(a).localeCompare(roomName(b), 'ko'));
+  } catch (e) { H.myRooms = []; H.err = '내 학교 방을 불러오지 못했어요.'; }
+  let want = pick;
+  if (!want) { try { want = localStorage.getItem('mathgames.teacherRoom'); } catch (e) { want = null; } }
+  selectRoom((H.myRooms.find(r => r.id === want) || H.myRooms[0] || {}).id || null);
+}
+const curRoom = () => (H.myRooms || []).find(r => r.id === H.cur) || null;
+function selectRoom(id) {
+  if (H.tviewOff) { H.tviewOff(); H.tviewOff = null; }
+  H.cur = id; H.tview = null; H.tloaded = false; H.armed = null;
+  const r = curRoom();
+  if (!r) { render(); return; }
+  try { localStorage.setItem('mathgames.teacherRoom', id); } catch (e) { /* 무시 */ }
+  const ref = H.db.ref('views/' + r.key);
+  const h = ref.on('value', snap => { H.tview = snap.val(); H.tloaded = true; render(); }, () => { H.tloaded = true; render(); });
+  H.tviewOff = () => ref.off('value', h);
+}
+async function act(fn, fail) {
+  H.err = ''; H.note = ''; H.busy = true; render();
+  try { await fn(); }
+  catch (e) { H.err = fail || '저장하지 못했어요. 잠시 뒤 다시 해 보세요.'; }
+  H.busy = false; render(true);
+}
+function submitSignup(f) {
+  const name = clip(f.name.value, 30), school = clip(f.school.value, 40), region = clip(f.region.value, 20), memo = clip(f.memo.value, 200);
+  if (!name || !school) { H.err = '이름과 학교 이름을 적어 주세요.'; render(); return; }
+  act(async () => {
+    const rec = { name, school, region, memo, email: H.user.email, status: 'pending', t: TS() };
+    await H.db.ref('teachers/' + H.user.uid).set(rec);
+    H.prof = rec;
+    H.note = '가입 신청을 보냈어요. 관리자가 승인하면 학교 방을 만들 수 있어요.';
+  }, '가입 신청을 보내지 못했어요. 이메일 인증이 된 Google 계정인지 확인해 주세요.');
+}
+function decide(uid, status) {
+  act(async () => { await H.db.ref('teachers/' + uid).update({ status, decided: TS() }); }, '바꾸지 못했어요. 관리자 계정으로 로그인했는지 확인하세요.');
+}
+function randomKey(n) {
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const b = new Uint32Array(n);
+  crypto.getRandomValues(b);
+  return Array.from(b, x => A[x % A.length]).join('');
+}
+const normCode = s => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+const validCode = c => /^[0-9A-Z]{4,12}$/.test(c);
+function createRoom(f) {
+  const school = clip(f.school.value, 40), label = clip(f.label.value, 20), code = normCode(f.code.value);
+  if (!school) { H.err = '학교 이름을 적어 주세요.'; render(); return; }
+  if (!validCode(code)) { H.err = '입장 코드는 영어 대문자와 숫자로 4~12자리예요. 예: MATH2026'; render(); return; }
+  act(async () => {
+    const uid = H.user.uid, id = H.db.ref('rooms').push().key, key = randomKey(28);
+    const teacher = clip((H.prof && H.prof.name) || H.user.displayName || '', 30);
+    await H.db.ref('rooms/' + id).set({ school, label, teacher, owner: uid, t: TS() });
+    await H.db.ref('keys/' + key).set({ room: id, owner: uid });
+    await H.db.ref('doors/' + id + '/' + code).set({ key });
+    await H.db.ref('views/' + key).set({ mode: 'all', t: TS() });
+    await H.db.ref('teacherRooms/' + uid + '/' + id).set({ key, school, label, code });
+    H.form = null;
+    await loadMyRooms(id);
+    H.note = `${roomName({ school, label })} 방을 만들었어요. 학생들에게 입장 코드 ${code}를 알려 주세요.`;
+  }, '방을 만들지 못했어요. 승인된 선생님 계정인지 확인해 주세요.');
+}
+function changeCode(f) {
+  const r = curRoom(), code = normCode(f.code.value);
+  if (!r) return;
+  if (!validCode(code)) { H.err = '입장 코드는 영어 대문자와 숫자로 4~12자리예요.'; render(); return; }
+  if (code === r.code) { H.form = null; render(); return; }
+  act(async () => {
+    const uid = H.user.uid;
+    await H.db.ref('doors/' + r.id + '/' + code).set({ key: r.key });
+    if (r.code) await H.db.ref('doors/' + r.id + '/' + r.code).remove();
+    await H.db.ref('teacherRooms/' + uid + '/' + r.id + '/code').set(code);
+    r.code = code;
+    H.form = null;
+    H.note = `입장 코드를 ${code}(으)로 바꿨어요. 이미 들어온 학생은 그대로 이어서 할 수 있어요.`;
+  });
+}
+function deleteRoom() {
+  const r = curRoom();
+  if (!r) return;
+  if (H.armed !== 'del') { H.armed = 'del'; render(); setTimeout(() => { if (H.armed === 'del') { H.armed = null; render(); } }, 4000); return; }
+  H.armed = null;
+  act(async () => {
+    const uid = H.user.uid;
+    await H.db.ref('r/' + r.key).remove();
+    await H.db.ref('views/' + r.key).remove();
+    if (r.code) await H.db.ref('doors/' + r.id + '/' + r.code).remove();
+    await H.db.ref('keys/' + r.key).remove();
+    await H.db.ref('rooms/' + r.id).remove();
+    await H.db.ref('teacherRooms/' + uid + '/' + r.id).remove();
+    H.note = `${roomName(r)} 방과 그 방의 기록을 지웠어요.`;
+    await loadMyRooms();
+  });
+}
+async function writeView(fn) {
+  const r = curRoom();
+  if (!r) return;
   H.err = '';
   try {
-    await fn();
-    await H.db.ref('hub').update({ t: H.FB.database.ServerValue.TIMESTAMP });
+    await fn('views/' + r.key);
+    await H.db.ref('views/' + r.key).update({ t: TS() });
   } catch (e) {
-    H.err = '바꾸지 못했어요. 규칙에 적어 둔 선생님 계정으로 로그인했는지 확인하세요.';
+    H.err = '바꾸지 못했어요. 승인된 선생님 계정으로 로그인했는지 확인하세요.';
     render();
   }
+}
+function moveGame(id, dir) {
+  if (!H.db || !H.user || !curRoom()) return;
+  const ids = orderedGames(H.tview).map(g => g.id);
+  const i = ids.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  writeView(p => H.db.ref(p + '/order').set(ids));
 }
 async function signIn() {
   H.busy = true;
@@ -614,21 +836,183 @@ async function signIn() {
   H.busy = false;
   render();
 }
+function withTimeout(promise, ms) {
+  return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'timeout' })), ms))]);
+}
 
-/* ===== 화면 ===== */
+function statusText(mode, open) {
+  if (mode !== 'selected') return '지금 학생 화면: 모든 게임이 보여요.';
+  const names = ready.filter(g => open[g.id]).map(g => g.name);
+  return names.length ? `지금 학생 화면: ${names.join(', ')}` : '지금 학생 화면: 기다리는 화면 (열린 게임이 없어요)';
+}
+
+/* ===== 학급 서버 점검: 학생 노트북과 똑같은 방법으로 하나씩 해 본다 ===== */
+async function runCheck() {
+  if (H.check && H.check.running) return;
+  H.check = { running: true, items: [] };
+  render();
+  const add = (state, title, detail) => { H.check.items.push({ state, title, detail }); render(); };
+  const cfg = window.CLASS_FIREBASE_CONFIG;
+  try {
+    if (!cfg || !cfg.databaseURL) {
+      add('bad', '설정 파일', 'firebase-config.js를 찾지 못했거나 설정값이 비어 있어요. 게임 목록 index.html과 같은 폴더에 있는지 확인하고, 고친 뒤 1~2분 기다렸다가 Ctrl+Shift+R로 새로 고침해 주세요.');
+      return;
+    }
+    add('ok', '설정 파일', `프로젝트 ${cfg.projectId || ''}에 연결하도록 적혀 있어요.`);
+    const base = String(cfg.databaseURL).replace(/\/+$/, '');
+    try {
+      const res = await withTimeout(fetch(base + '/rooms.json?shallow=true', { cache: 'no-store' }), 10000);
+      if (res.ok) add('ok', '보안 규칙', '학교 방을 쓰는 새 규칙이 게시되어 있어요.');
+      else if (res.status === 401 || res.status === 403) add('bad', '보안 규칙', '규칙이 예전 버전이거나 처음의 잠금 모드예요. 새 firebase-rules.json 내용을 Realtime Database의 규칙 탭에 붙여 넣고 게시해 주세요.');
+      else if (res.status === 404) add('bad', '데이터베이스 주소', 'databaseURL이 가리키는 데이터베이스가 없어요. Realtime Database 데이터 탭 맨 위의 주소를 그대로 복사해 주세요.');
+      else add('bad', '보안 규칙', `학급 서버가 ${res.status} 응답을 보냈어요. databaseURL을 다시 확인해 주세요.`);
+    } catch (e) {
+      add('bad', '데이터베이스 주소', '학급 서버 주소에 닿지 않아요. databaseURL을 확인하고, 학교 인터넷에서 firebasedatabase.app 주소가 막혀 있지 않은지 확인해 주세요.');
+    }
+    if (!H.FB) { add('bad', '학생 로그인', 'Firebase 프로그램을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.'); return; }
+    const r = H.user ? curRoom() : null;
+    let app2 = null;
+    try {
+      app2 = H.FB.initializeApp(cfg, 'check-' + Date.now());
+      let user = null;
+      try {
+        const cred = await withTimeout(app2.auth().signInAnonymously(), 12000);
+        user = cred.user;
+        add('ok', '학생 로그인(익명)', '학생 노트북이 이름 없이 학급 서버에 들어갈 수 있어요.');
+      } catch (e) {
+        const c = (e && e.code) || '';
+        add('bad', '학생 로그인(익명)', c === 'auth/operation-not-allowed' || c === 'auth/admin-restricted-operation'
+          ? '익명 로그인이 꺼져 있어요. 학생 기록이 안 들어오는 까닭이 바로 이거예요. Authentication의 로그인 방법 탭에서 익명을 사용 설정해 주세요.'
+          : c === 'auth/network-request-failed' || c === 'timeout' ? '로그인 서버에 닿지 않아요. 학교 인터넷에서 Google 로그인 서버가 막혀 있는지 확인해 주세요.'
+          : c.indexOf('api-key') >= 0 ? 'apiKey가 맞지 않아요. 프로젝트 설정에서 웹 앱 설정값을 다시 복사해 firebase-config.js에 넣어 주세요.'
+          : `학생 로그인에 실패했어요. (${c || e.message})`);
+      }
+      const denied = e => /permission/i.test(String((e && (e.code || e.message)) || ''));
+      if (user && r) {
+        try {
+          await withTimeout(app2.database().ref('r/' + r.key + '/apps/_check/live/probe').set({ online: false, t: Date.now() }), 12000);
+          add('ok', '학생 기록 저장', `${roomName(r)} 방에 학생 기록을 저장할 수 있어요.`);
+        } catch (e) {
+          add('bad', '학생 기록 저장', denied(e) ? '규칙 때문에 저장이 막혔어요. 새 firebase-rules.json을 그대로 붙여 넣고 게시했는지 확인해 주세요.' : `저장하지 못했어요. (${(e && (e.code || e.message)) || ''})`);
+        }
+        try {
+          await withTimeout(app2.database().ref('r/' + r.key + '/apps/_check/board/all/all/probe').set({ sid: '0000', name: '점검', score: 0 }), 12000);
+          add('ok', '랭킹 저장', '제로섬 스페이스 미션, 파리 잡기 좌표게임의 랭킹을 저장할 수 있어요.');
+        } catch (e) {
+          add('bad', '랭킹 저장', '랭킹을 저장하지 못했어요. 새 firebase-rules.json을 게시했는지 확인해 주세요.');
+        }
+      } else if (user) {
+        add('info', '학생 기록 저장', '선생님 계정으로 로그인해 학교 방을 만들면, 그 방에 학생 기록이 저장되는지도 확인해요.');
+      }
+    } finally {
+      if (app2) app2.delete().catch(() => {});
+    }
+    if (H.user) {
+      const role = H.isAdmin ? '관리자' : H.prof && H.prof.status === 'approved' ? '승인된 선생님' : H.prof && H.prof.status === 'pending' ? '승인을 기다리는 중' : H.prof ? '승인 거절' : '가입 신청 전';
+      if (r) {
+        try {
+          const snap = await withTimeout(H.db.ref('r/' + r.key + '/apps').once('value'), 12000);
+          const apps = snap.val() || {};
+          const n = id => Object.keys((apps[id] && apps[id].players) || {}).length;
+          add('ok', '선생님 계정', `${H.user.email}(${role}) 계정으로 ${roomName(r)} 방의 기록을 볼 수 있어요. 지금 숫자야구 ${n('gcdbb')}명, 타워 디펜스 ${n('prime-tower')}명, 제로섬 ${n('zero-sum')}명, 파리 잡기 ${n('fly-coords')}명의 기록이 있어요.`);
+          H.db.ref('r/' + r.key + '/apps/_check').remove().catch(() => {});
+        } catch (e) {
+          add('bad', '선생님 계정', `${H.user.email} 계정으로는 이 방의 기록을 볼 수 없어요.`);
+        }
+      } else {
+        add(canManage() ? 'info' : 'bad', '선생님 계정', canManage() ? `${H.user.email}(${role}) 계정이에요. 학교 방을 만들면 그 방의 기록도 확인해요.` : `${H.user.email}(${role}) 계정이에요. 관리자가 가입을 승인해야 학교 방을 만들 수 있어요.`);
+      }
+    } else {
+      add('info', '선생님 계정', '위에서 선생님 Google 계정으로 로그인한 뒤 다시 점검하면, 선생님 계정과 학교 방 저장도 확인해요.');
+    }
+  } finally {
+    H.check.running = false;
+    render();
+  }
+}
+function checkHTML() {
+  const c = H.check;
+  const items = c ? c.items : [];
+  const bad = items.some(i => i.state === 'bad');
+  const summary = !c || c.running ? '' : bad ? '✗ 표시된 항목을 고친 뒤 다시 점검해 주세요.'
+    : '모두 정상이에요. 그래도 기록이 안 보이면 학생 노트북에서 게임 화면을 Ctrl+Shift+R로 새로 고침해 주세요.';
+  return `<section class="panel check">
+  <h2>학급 서버 점검</h2>
+  <p class="muted">학생 노트북과 똑같은 방법으로 학급 서버에 들어가 보고, 기록을 저장해 봐요. 학생 기록이 안 들어올 때 눌러 보세요.</p>
+  <button type="button" class="btn" data-act="check"${c && c.running ? ' disabled' : ''}>${c && c.running ? '점검하는 중…' : c ? '다시 점검하기' : '점검하기'}</button>
+  ${items.length ? `<ol class="chk">${items.map(i => `<li class="chk-${i.state}"><span class="chk-mark" aria-hidden="true">${i.state === 'ok' ? '✓' : i.state === 'bad' ? '✗' : '·'}</span><span><b>${esc(i.title)}</b><span class="chk-d">${esc(i.detail)}</span></span><span class="sr">${i.state === 'ok' ? '정상' : i.state === 'bad' ? '문제 있음' : '안내'}</span></li>`).join('')}</ol>` : ''}
+  ${summary ? `<p class="status">${esc(summary)}</p>` : ''}
+</section>`;
+}
+
+/* ===== 그리기와 입력 ===== */
+let lastVisible = '';
+function render(force) {
+  const focus = document.activeElement;
+  const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]`
+    : focus.dataset.act === 'move' ? `[data-act="move"][data-id="${focus.dataset.id}"][data-dir="${focus.dataset.dir}"]`
+    : focus.dataset.act === 'tpick' ? `[data-act="tpick"][data-id="${focus.dataset.id}"]` : null);
+  if (!force && focus && focus.matches && focus.matches('#app form input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), #app form textarea')) return;
+  const teacher = isTeacherView();
+  $('#app').innerHTML = teacher ? teacherHTML() : studentHTML();
+  document.title = teacher ? `수업 관리 | ${TITLE}` : TITLE;
+  if (keep) { const el = document.querySelector(keep); if (el) el.focus(); }
+  if (!teacher && !(H.mode === 'pending' || (H.mode === 'firebase' && !H.loaded))) {
+    const v = visible();
+    const ids = v.list.map(g => g.id);
+    const text = v.selected ? (ids.length ? `열린 게임: ${v.list.map(g => g.name).join(', ')}` : '열린 게임이 없어요.') : '';
+    if (H.shown && ids.join() !== lastVisible && text) $('#announce').textContent = text;
+    lastVisible = ids.join();
+    H.shown = new Set(ids);
+  }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const d = a.dataset;
+  switch (d.act) {
+    case 'signin': signIn(); break;
+    case 'signout': H.auth.signOut().then(render); break;
+    case 'check': runCheck(); break;
+    case 'move': moveGame(d.id, Number(d.dir)); break;
+    case 'decide':
+      if (d.status === 'rejected' && H.armed !== 'dec-' + d.uid) { H.armed = 'dec-' + d.uid; render(); setTimeout(() => { if (H.armed === 'dec-' + d.uid) { H.armed = null; render(); } }, 4000); break; }
+      H.armed = null; decide(d.uid, d.status); break;
+    case 'tpick': H.note = ''; H.err = ''; H.form = null; selectRoom(d.id); break;
+    case 'newRoom': H.form = 'room'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#roomForm input[name="school"]'); if (i) i.focus(); } break;
+    case 'editCode': H.form = 'code'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#codeForm input[name="code"]'); if (i) { i.focus(); i.select(); } } break;
+    case 'cancelForm': H.form = null; H.err = ''; render(); break;
+    case 'delRoom': deleteRoom(); break;
+    default:
+  }
+});
+document.addEventListener('submit', e => {
+  const id = e.target.id;
+  if (!['signupForm', 'roomForm', 'codeForm'].includes(id)) return;
+  e.preventDefault();
+  const f = e.target.elements;
+  if (id === 'signupForm') submitSignup(f);
+  else if (id === 'roomForm') createRoom(f);
+  else changeCode(f);
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (!H.db || !H.user || !isTeacherView()) return;
+  if (t.name === 'mode') writeView(p => H.db.ref(p + '/mode').set(t.value));
+  else if (t.dataset.open) writeView(p => H.db.ref(p + '/open/' + t.dataset.open).set(t.checked ? true : null));
+});
+window.addEventListener('hashchange', () => { H.err = ''; H.note = ''; render(); window.scrollTo(0, 0); });
+window.addEventListener('storage', e => {
+  if (e.key === 'mathgames.student') render();
+  if (e.key === 'mathgames.room') { H.room = readRoom(); watchStudentRoom(); }
+});
+
 /* ===== 학생 화면 ===== */
 const LOCK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.4" fill="currentColor"/><path d="M8.2 11V8.2a3.8 3.8 0 0 1 7.6 0V11" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
 const UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const DOWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function moveGame(id, dir) {
-  if (!H.db || !H.user) return;
-  const ids = orderedGames().map(g => g.id);
-  const i = ids.indexOf(id), j = i + dir;
-  if (i < 0 || j < 0 || j >= ids.length) return;
-  [ids[i], ids[j]] = [ids[j], ids[i]];
-  writeHub(() => H.db.ref('hub/order').set(ids));
-}
 const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SCHOOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l9-6 9 6v10H3z" fill="#fff4c7" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 20v-5h4v5M12 4v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
 function cover(g, feature) {
   return `<span class="cover" aria-hidden="true">${ART.cover(g)}${!g.ready ? `<span class="ribbon">${LOCK}곧 열려요</span>` : ''}${feature ? '<span class="ribbon today">오늘의 게임</span>' : ''}</span>`;
 }
@@ -640,10 +1024,20 @@ function cardHTML(g, feature) {
   if (!g.ready) {
     return `<div class="card soon" aria-disabled="true">${cover(g)}<span class="card-body"><span class="name">${esc(g.name)}</span><span class="desc">${esc(g.desc)}</span>${tagsHTML(g)}<span class="tag">준비 중</span></span></div>`;
   }
-  return `<a class="card${feature ? ' feature' : ''}${fresh}" href="${esc(gameURL(g))}">${cover(g, feature)}<span class="card-body"><span class="name">${esc(g.name)}</span><span class="desc">${esc(g.desc)}</span>${tagsHTML(g)}<span class="go">입장하기${ARROW}</span></span></a>`;
+  return `<a class="card${feature ? ' feature' : ''}${fresh}" href="${esc(gameURL(g))}" data-game="${esc(g.id)}">${cover(g, feature)}<span class="card-body"><span class="name">${esc(g.name)}</span><span class="desc">${esc(g.desc)}</span>${tagsHTML(g)}<span class="go">입장하기${ARROW}</span></span></a>`;
+}
+function whoHTML() {
+  const me = student();
+  if (registered() && me) {
+    const room = needRoom() && H.room ? `<span class="who-room">${SCHOOL}${esc(roomName(H.room))}</span>` : '';
+    return `<p class="who">${room}<span class="who-no">${esc(me.sid)}</span>${esc(me.name)} 선수, 어서 와요!<button type="button" class="who-switch" data-act="switch">${needRoom() ? '바꾸기' : '선수 바꾸기'}</button></p>`;
+  }
+  if (H.mode === 'pending') return '';
+  return needRoom()
+    ? `<p class="who-login"><button type="button" class="btn primary" data-act="login">학교 방 입장하기</button><span class="muted small">학교를 고르고 선생님이 알려 준 입장 코드를 넣은 뒤 학번과 이름을 등록해요.</span></p>`
+    : `<p class="who-login"><button type="button" class="btn primary" data-act="login">선수 등록하기</button><span class="muted small">학번과 이름을 한 번 등록하면 모든 게임에서 이어져요.</span></p>`;
 }
 function studentHTML() {
-  const me = student();
   const v = visible();
   const lead = v.selected ? '선생님이 이번 수업에 연 게임이에요.' : '게임을 골라 들어가세요.';
   let body;
@@ -666,92 +1060,81 @@ function studentHTML() {
     <p class="kicker">놀면서 배우는</p>
     <h1 class="title"><span>${esc(TITLE)}</span></h1>
     <p class="lead">${lead}</p>
-    ${me ? `<p class="who"><span class="who-no">${esc(me.sid)}</span>${esc(me.name)} 선수, 어서 와요!<button type="button" class="who-switch" data-act="switch">선수 바꾸기</button></p>`
-      : `<p class="who-login"><button type="button" class="btn primary" data-act="login">선수 등록하기</button><span class="muted small">학번과 이름을 한 번 등록하면 모든 게임에서 이어져요.</span></p>`}
+    ${whoHTML()}
   </div>
   <div class="head-art">${ART.hero()}</div>
 </header>
 ${body}`;
 }
 
-/* ===== 선생님 화면: 수업 관리 ===== */
-function teacherHTML() {
-  let body;
-  if (H.mode === 'pending') {
-    body = '<p class="loading"><span></span><span></span><span></span>학급 서버를 확인하고 있어요.</p>';
-  } else if (H.mode === 'local') {
-    body = `<section class="panel">
-  <h2>학급 서버가 연결되어 있지 않아요</h2>
-  <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 학생 화면에 보일 게임을 고를 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
-  <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
-</section>`;
-  } else if (!H.user) {
-    body = `<section class="panel">
-  <h2>선생님 로그인</h2>
-  <p class="muted">규칙에 적어 둔 선생님 Google 계정으로 로그인하면 학생 화면에 보일 게임을 고를 수 있어요.</p>
-  <button type="button" class="btn primary" data-act="signin"${H.busy ? ' disabled' : ''}>${H.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
-  ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
-</section>`;
-  } else {
-    const st = H.state || {};
-    const mode = st.mode === 'selected' ? 'selected' : 'all';
-    const open = st.open || {};
-    const list = orderedGames();
-    const ord = (g, i) => `<span class="ord"><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="-1" aria-label="${esc(g.name)} 위로 올리기"${i === 0 ? ' disabled' : ''}>${UP}</button><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="1" aria-label="${esc(g.name)} 아래로 내리기"${i === list.length - 1 ? ' disabled' : ''}>${DOWN}</button></span>`;
-    const rows = list.map((g, i) => g.ready
-      ? `<li>${ord(g, i)}<label class="switch"><input type="checkbox" data-open="${esc(g.id)}"${open[g.id] ? ' checked' : ''}><span class="knob" aria-hidden="true"></span><span class="t-name">${esc(g.name)}</span><span class="t-state">${open[g.id] ? '열림' : '닫힘'}</span></label>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`
-      : `<li class="soon">${ord(g, i)}<span class="t-name">${esc(g.name)}</span><span class="t-state">준비 중</span></li>`).join('');
-    body = `<section class="panel">
-  <h2>학생 화면에 보일 게임</h2>
-  <div class="modes" role="radiogroup" aria-label="게임 보이는 방식">
-    <label class="mode"><input type="radio" name="mode" value="all"${mode === 'all' ? ' checked' : ''}><span><b>모든 게임 보이기</b><small>학생이 목록에서 골라 들어가요.</small></span></label>
-    <label class="mode"><input type="radio" name="mode" value="selected"${mode === 'selected' ? ' checked' : ''}><span><b>고른 게임만 보이기</b><small>켠 게임만 보이고, 나머지 게임은 주소로 들어가도 닫혀 있어요.</small></span></label>
-  </div>
-  <h3>게임 순서와 열기</h3>
-  <p class="muted small">▲ ▼ 단추로 학생 화면에 보이는 게임 순서를 바꿀 수 있어요. 스위치를 켠 게임이 수업에서 열려요.</p>
-  <ul class="tlist">${rows}</ul>
-  <p class="status">${esc(statusText(mode, open))}</p>
-  ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
-</section>`;
-  }
-  return `<header class="head t-head">
-  <div><p class="kicker">선생님 전용</p><h1 class="title"><span>수업 관리</span></h1><p class="lead">학생들이 게임 목록에서 어떤 게임을 볼지 정해요.</p></div>
-  ${H.user ? `<p class="acct">${esc(H.user.email || '')}<button type="button" class="link" data-act="signout">로그아웃</button></p>` : ''}
-</header>
-${body}
-${H.mode === 'pending' ? '' : checkHTML()}
-<footer class="foot"><span></span><a href="#">학생 화면 보기</a></footer>`;
-}
-
-/* ===== 선수 등록: 게임 목록에서 한 번 등록하면 모든 게임이 같은 학번과 이름을 써요 ===== */
-const LOGIN = { open: false, next: '' };
+/* ===== 선수 등록: 학교 방 고르기, 입장 코드, 학번과 이름 ===== */
+const LOGIN = { open: false, next: '', pick: null, q: '' };
 function safeNext(v) {
   const s = String(v || '');
   return GAMES.some(g => !g.href && s === encodeURI(g.id) + '/') ? s : '';
 }
+function roomsListHTML() {
+  if (H.dir === null) return '<p class="muted small">학교 방 목록을 불러오고 있어요.</p>';
+  const q = LOGIN.q.trim();
+  const list = H.dir.filter(r => !q || (roomName(r) + ' ' + (r.teacher || '')).indexOf(q) >= 0).slice(0, 40);
+  if (!H.dir.length) return '<p class="muted small">아직 만들어진 학교 방이 없어요. 선생님께 여쭤보세요.</p>';
+  if (!list.length) return '<p class="muted small">찾는 학교가 없어요. 학교 이름을 다시 확인해 주세요.</p>';
+  return `<ul class="room-list">${list.map(r => `<li><button type="button" class="room-opt" data-act="pickRoom" data-id="${esc(r.id)}">${SCHOOL}<span><b>${esc(r.school)}</b>${r.label ? ` ${esc(r.label)}` : ''}${r.teacher ? `<small>${esc(r.teacher)} 선생님</small>` : ''}</span></button></li>`).join('')}</ul>`;
+}
+function roomSectionHTML() {
+  const cur = H.room;
+  const pick = LOGIN.pick && ((cur && cur.id === LOGIN.pick) ? cur : (H.dir || []).find(r => r.id === LOGIN.pick));
+  if (pick) {
+    const same = cur && cur.id === pick.id;
+    return `<div class="fld-room"><span class="fld-lbl">학교 방</span>
+  <p class="room-chosen">${SCHOOL}<span><b>${esc(pick.school)}</b>${pick.label ? ` ${esc(pick.label)}` : ''}${pick.teacher ? `<small>${esc(pick.teacher)} 선생님</small>` : ''}</span><button type="button" class="link" data-act="unpickRoom">다른 방 고르기</button></p>
+  ${same ? '' : '<label class="fld"><span>입장 코드</span><input name="code" autocomplete="off" spellcheck="false" maxlength="12" placeholder="선생님이 알려 준 코드" style="text-transform:uppercase"></label>'}
+</div>`;
+  }
+  return `<div class="fld-room"><span class="fld-lbl">학교 방</span>
+  <input id="roomSearch" class="room-search" autocomplete="off" spellcheck="false" placeholder="학교 이름으로 찾기" value="${esc(LOGIN.q)}" aria-label="학교 이름으로 찾기">
+  <div id="roomList">${roomsListHTML()}</div>
+</div>`;
+}
 function loginHTML() {
   const cur = student();
+  const title = needRoom() ? (registered() ? '학교 방과 선수 바꾸기' : '학교 방 입장') : (cur ? '선수 바꾸기' : '선수 등록');
+  const sub = needRoom() ? '학교 방을 고르고 입장 코드를 넣은 뒤, 학번과 이름을 적어 주세요. 한 번 하면 모든 게임에서 이어져요.'
+    : cur ? `지금은 <b>${esc(cur.sid)} ${esc(cur.name)}</b> 선수예요. 새로 들어올 선수의 학번과 이름을 넣어 주세요.` : '한 번 등록하면 모든 게임에서 기록이 이어져요.';
   return `<div class="dlg-back">
   <form class="dlg" id="loginForm" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" novalidate>
     <div class="dlg-pals" aria-hidden="true"><img src="${SPR.t2}" alt=""><img src="${SPR.slime_meadow}" alt=""><img src="${SPR.t3}" alt=""></div>
-    <h2 class="dlg-title" id="dlgTitle">${cur ? '선수 바꾸기' : '선수 등록'}</h2>
-    <p class="dlg-sub">${cur ? `지금은 <b>${esc(cur.sid)} ${esc(cur.name)}</b> 선수예요. 새로 들어올 선수의 학번과 이름을 넣어 주세요.` : '한 번 등록하면 모든 게임에서 기록이 이어져요.'}</p>
+    <h2 class="dlg-title" id="dlgTitle">${title}</h2>
+    <p class="dlg-sub">${sub}</p>
+    ${needRoom() ? roomSectionHTML() : ''}
     <label class="fld"><span>학번</span><input name="sid" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="6" placeholder="예: 10523"></label>
     <label class="fld"><span>이름</span><input name="name" autocomplete="off" spellcheck="false" maxlength="20" placeholder="예: 김민준"></label>
     <p class="err" id="loginErr" role="alert"></p>
-    <div class="dlg-actions"><button type="submit" class="btn primary">${LOGIN.next ? '등록하고 게임으로' : cur ? '바꾸기' : '등록하기'}</button><button type="button" class="btn" data-act="dlgClose">닫기</button></div>
+    <div class="dlg-actions"><button type="submit" class="btn primary">${LOGIN.next ? '입장하고 게임으로' : '입장하기'}</button><button type="button" class="btn" data-act="dlgClose">닫기</button></div>
     ${cur ? '<button type="button" class="link dlg-out" data-act="logout">등록 지우기</button>' : ''}
   </form>
 </div>`;
 }
+function drawLogin() {
+  const box = $('#dlg');
+  const f = box.querySelector('#loginForm');
+  const keep = f ? { sid: f.elements.sid.value, name: f.elements.name.value, code: f.elements.code ? f.elements.code.value : '' } : null;
+  box.innerHTML = loginHTML();
+  const g = box.querySelector('#loginForm');
+  if (keep) { g.elements.sid.value = keep.sid; g.elements.name.value = keep.name; if (g.elements.code) g.elements.code.value = keep.code; }
+}
 function openLogin(next) {
   LOGIN.open = true;
   LOGIN.next = safeNext(next);
+  LOGIN.pick = H.room ? H.room.id : null;
+  LOGIN.q = '';
   const box = $('#dlg');
-  box.innerHTML = loginHTML();
+  box.innerHTML = '';
+  drawLogin();
   box.hidden = false;
   document.body.classList.add('dlg-on');
-  setTimeout(() => { const i = box.querySelector('input[name="sid"]'); if (i) i.focus(); }, 30);
+  if (needRoom() && H.dir === null) loadDirectory().then(() => { if (!LOGIN.open) return; const l = $('#roomList'); if (l) l.innerHTML = roomsListHTML(); else drawLogin(); });
+  setTimeout(() => { const i = box.querySelector(needRoom() && !LOGIN.pick ? '#roomSearch' : 'input[name="sid"]'); if (i) i.focus(); }, 30);
 }
 function closeLogin() {
   LOGIN.open = false;
@@ -761,27 +1144,64 @@ function closeLogin() {
   document.body.classList.remove('dlg-on');
   if (/[?&]login=1/.test(location.search)) history.replaceState(null, '', location.pathname + location.hash);
 }
-function submitLogin(form) {
+async function submitLogin(form) {
   const err = $('#loginErr');
   const sid = form.elements.sid.value.replace(/\s+/g, '');
   const name = form.elements.name.value.replace(/\s+/g, '');
   if (!/^\d{4,6}$/.test(sid)) { err.textContent = '학번은 숫자 4~6자리로 입력하세요. 예: 10523'; form.elements.sid.focus(); return; }
   if (!name) { err.textContent = '이름을 입력하세요.'; form.elements.name.focus(); return; }
   if (name.length > 20) { err.textContent = '이름은 20자까지 입력할 수 있어요.'; form.elements.name.focus(); return; }
-  try { localStorage.setItem('mathgames.student', JSON.stringify({ sid, name })); } catch (e) { /* 저장할 수 없는 브라우저 */ }
+  let room = H.room;
+  if (needRoom()) {
+    if (!LOGIN.pick) { err.textContent = '먼저 학교 방을 골라 주세요.'; const s = $('#roomSearch'); if (s) s.focus(); return; }
+    if (!H.room || H.room.id !== LOGIN.pick) {
+      const code = normCode(form.elements.code ? form.elements.code.value : '');
+      if (!validCode(code)) { err.textContent = '입장 코드를 넣어 주세요. 영어와 숫자 4~12자리예요.'; if (form.elements.code) form.elements.code.focus(); return; }
+      const r = (H.dir || []).find(x => x.id === LOGIN.pick);
+      let key = null;
+      try { key = await checkDoor(LOGIN.pick, code); } catch (e) { err.textContent = '학급 서버에 닿지 않아요. 인터넷 연결을 확인해 주세요.'; return; }
+      if (!key) { err.textContent = '입장 코드가 맞지 않아요. 선생님께 코드를 다시 확인해 주세요.'; form.elements.code.focus(); form.elements.code.select(); return; }
+      room = { id: LOGIN.pick, key, school: r ? r.school : '', label: r ? r.label || '' : '', teacher: r ? r.teacher || '' : '' };
+    }
+  }
+  try {
+    localStorage.setItem('mathgames.student', JSON.stringify({ sid, name }));
+    if (room) localStorage.setItem('mathgames.room', JSON.stringify(room));
+  } catch (e) { /* 저장할 수 없는 브라우저 */ }
+  const changedRoom = room && (!H.room || H.room.id !== room.id);
+  H.room = readRoom();
   const next = LOGIN.next;
   closeLogin();
   if (next) { location.href = next; return; }
+  if (changedRoom) watchStudentRoom();
   render();
-  $('#announce').textContent = `${sid} ${name} 선수로 등록했어요.`;
+  $('#announce').textContent = `${room ? roomName(room) + ' 방, ' : ''}${sid} ${name} 선수로 입장했어요.`;
 }
 document.addEventListener('click', e => {
   if (e.target.classList && e.target.classList.contains('dlg-back')) { closeLogin(); return; }
+  const card = e.target.closest('a.card[data-game]');
+  if (card && !isTeacherView() && H.mode === 'firebase' && !registered()) {
+    e.preventDefault();
+    openLogin(card.getAttribute('href'));
+    return;
+  }
   const a = e.target.closest('[data-act]');
   if (!a) return;
-  if (a.dataset.act === 'login' || a.dataset.act === 'switch') openLogin('');
-  else if (a.dataset.act === 'dlgClose') closeLogin();
-  else if (a.dataset.act === 'logout') { try { localStorage.removeItem('mathgames.student'); } catch (x) { /* 무시 */ } closeLogin(); render(); }
+  const act = a.dataset.act;
+  if (act === 'login' || act === 'switch') openLogin('');
+  else if (act === 'dlgClose') closeLogin();
+  else if (act === 'pickRoom') { LOGIN.pick = a.dataset.id; drawLogin(); const c = $('#loginForm input[name="code"]'); if (c) c.focus(); }
+  else if (act === 'unpickRoom') { LOGIN.pick = null; drawLogin(); const s = $('#roomSearch'); if (s) s.focus(); }
+  else if (act === 'logout') {
+    try { localStorage.removeItem('mathgames.student'); localStorage.removeItem('mathgames.room'); } catch (x) { /* 무시 */ }
+    H.room = null; closeLogin(); watchStudentRoom(); render();
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id !== 'roomSearch') return;
+  LOGIN.q = e.target.value;
+  const l = $('#roomList');
+  if (l) l.innerHTML = roomsListHTML();
 });
 document.addEventListener('submit', e => {
   if (e.target.id !== 'loginForm') return;
@@ -789,143 +1209,139 @@ document.addEventListener('submit', e => {
   submitLogin(e.target);
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && LOGIN.open) closeLogin(); });
-(function fromGame() {
-  const q = new URLSearchParams(location.search);
-  if (q.get('login') === '1' && !isTeacherView()) setTimeout(() => openLogin(q.get('next')), 0);
-})();
 
-function statusText(mode, open) {
-  if (mode !== 'selected') return '지금 학생 화면: 모든 게임이 보여요.';
-  const names = ready.filter(g => open[g.id]).map(g => g.name);
-  return names.length ? `지금 학생 화면: ${names.join(', ')}` : '지금 학생 화면: 열린 게임이 없어서 학생들은 기다리는 화면을 봐요.';
+/* ===== 선생님 화면: 수업 관리 ===== */
+function field(label, name, value, attrs) {
+  return `<label class="fld"><span>${label}</span><input name="${name}" value="${esc(value || '')}" autocomplete="off" spellcheck="false"${attrs || ''}></label>`;
 }
-/* ===== 학급 서버 점검: 학생 노트북과 똑같은 방법으로 하나씩 해 본다 ===== */
-function withTimeout(promise, ms) {
-  return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'timeout' })), ms))]);
-}
-async function runCheck() {
-  if (H.check && H.check.running) return;
-  H.check = { running: true, items: [] };
-  render();
-  const add = (state, title, detail) => { H.check.items.push({ state, title, detail }); render(); };
-  const cfg = window.CLASS_FIREBASE_CONFIG;
-  try {
-    if (!cfg || !cfg.databaseURL) {
-      add('bad', '설정 파일', 'firebase-config.js를 찾지 못했거나 설정값이 비어 있어요. 게임 목록 index.html과 같은 폴더에 있는지 확인하고, 고친 뒤 1~2분 기다렸다가 Ctrl+Shift+R로 새로 고침해 주세요.');
-      return;
-    }
-    add('ok', '설정 파일', `프로젝트 ${cfg.projectId || ''}에 연결하도록 적혀 있어요.`);
-    const base = String(cfg.databaseURL).replace(/\/+$/, '');
-    try {
-      const res = await withTimeout(fetch(base + '/hub.json', { cache: 'no-store' }), 10000);
-      if (res.ok) add('ok', '보안 규칙', '선생님이 붙여 넣은 규칙이 게시되어 있어요.');
-      else if (res.status === 401 || res.status === 403) { add('bad', '보안 규칙', '규칙이 아직 처음의 잠금 모드예요. firebase-rules.json 내용을 Realtime Database의 규칙 탭에 붙여 넣고 게시해 주세요.'); }
-      else if (res.status === 404) { add('bad', '데이터베이스 주소', 'databaseURL이 가리키는 데이터베이스가 없어요. Realtime Database 데이터 탭 맨 위의 주소를 그대로 복사해 주세요.'); }
-      else add('bad', '보안 규칙', `학급 서버가 ${res.status} 응답을 보냈어요. databaseURL을 다시 확인해 주세요.`);
-    } catch (e) {
-      add('bad', '데이터베이스 주소', '학급 서버 주소에 닿지 않아요. databaseURL을 확인하고, 학교 인터넷에서 firebasedatabase.app 주소가 막혀 있지 않은지 확인해 주세요.');
-    }
-    if (!H.FB) { add('bad', '학생 로그인', 'Firebase 프로그램을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.'); return; }
-    let app2 = null;
-    try {
-      app2 = H.FB.initializeApp(cfg, 'check-' + Date.now());
-      let user = null;
-      try {
-        const cred = await withTimeout(app2.auth().signInAnonymously(), 12000);
-        user = cred.user;
-        add('ok', '학생 로그인(익명)', '학생 노트북이 이름 없이 학급 서버에 들어갈 수 있어요.');
-      } catch (e) {
-        const c = (e && e.code) || '';
-        add('bad', '학생 로그인(익명)', c === 'auth/operation-not-allowed' || c === 'auth/admin-restricted-operation'
-          ? '익명 로그인이 꺼져 있어요. 학생 기록이 안 들어오는 까닭이 바로 이거예요. Authentication의 로그인 방법 탭에서 익명을 사용 설정해 주세요.'
-          : c === 'auth/network-request-failed' || c === 'timeout' ? '로그인 서버에 닿지 않아요. 학교 인터넷에서 Google 로그인 서버가 막혀 있는지 확인해 주세요.'
-          : c.indexOf('api-key') >= 0 ? 'apiKey가 맞지 않아요. 프로젝트 설정에서 웹 앱 설정값을 다시 복사해 firebase-config.js에 넣어 주세요.'
-          : `학생 로그인에 실패했어요. (${c || e.message})`);
-      }
-      if (user) {
-        try {
-          await withTimeout(app2.database().ref('apps/_check/live/probe').set({ online: false, t: Date.now() }), 12000);
-          add('ok', '학생 기록 저장', '학생 기록을 학급 서버에 저장할 수 있어요.');
-        } catch (e) {
-          const denied = /permission/i.test(String((e && (e.code || e.message)) || ''));
-          add('bad', '학생 기록 저장', denied ? '규칙 때문에 저장이 막혔어요. firebase-rules.json 내용을 규칙 탭에 그대로 붙여 넣고 게시했는지 확인해 주세요.' : `저장하지 못했어요. (${(e && (e.code || e.message)) || ''})`);
-        }
-        try {
-          await withTimeout(app2.database().ref('apps/_check/board/all/all/probe').set({ sid: '0000', name: '점검', score: 0 }), 12000);
-          add('ok', '랭킹 저장', '제로섬 스페이스 미션, 파리 잡기 좌표게임의 랭킹을 저장할 수 있어요.');
-        } catch (e) {
-          add('bad', '랭킹 저장', '규칙이 예전 버전이에요. 새 firebase-rules.json 내용을 규칙 탭에 붙여 넣고 게시해 주세요. 그래야 두 게임의 랭킹이 저장돼요.');
-        }
-      }
-    } finally {
-      if (app2) app2.delete().catch(() => {});
-    }
-    if (H.user) {
-      try {
-        const [a, b] = await Promise.all(['gcdbb', 'prime-tower'].map(id => withTimeout(H.db.ref('apps/' + id + '/players').once('value'), 12000)));
-        const n = snap => Object.keys(snap.val() || {}).length;
-        add('ok', '선생님 계정', `${H.user.email} 계정으로 기록을 볼 수 있어요. 지금 숫자야구에 ${n(a)}명, 타워 디펜스에 ${n(b)}명의 기록이 있어요.`);
-        H.db.ref('apps/_check').remove().catch(() => {});
-      } catch (e) {
-        add('bad', '선생님 계정', `${H.user.email} 계정으로는 기록을 볼 수 없어요. 규칙 안의 teacher@example.com 두 곳을 이 주소(영문 소문자)로 바꾸고 게시해 주세요.`);
-      }
-    } else {
-      add('info', '선생님 계정', '위에서 선생님 Google 계정으로 로그인한 뒤 다시 점검하면, 선생님 계정으로 기록을 볼 수 있는지도 확인해요.');
-    }
-  } finally {
-    H.check.running = false;
-    render();
-  }
-}
-function checkHTML() {
-  const c = H.check;
-  const items = c ? c.items : [];
-  const bad = items.some(i => i.state === 'bad');
-  const summary = !c || c.running ? '' : bad ? '✗ 표시된 항목을 고친 뒤 다시 점검해 주세요.'
-    : '모두 정상이에요. 그래도 기록이 안 보이면 학생 노트북에서 게임 화면을 Ctrl+Shift+R로 새로 고침해 주세요.';
-  return `<section class="panel check">
-  <h2>학급 서버 점검</h2>
-  <p class="muted">학생 노트북과 똑같은 방법으로 학급 서버에 들어가 보고, 기록을 저장해 봐요. 학생 기록이 안 들어올 때 눌러 보세요.</p>
-  <button type="button" class="btn" data-act="check"${c && c.running ? ' disabled' : ''}>${c && c.running ? '점검하는 중…' : c ? '다시 점검하기' : '점검하기'}</button>
-  ${items.length ? `<ol class="chk">${items.map(i => `<li class="chk-${i.state}"><span class="chk-mark" aria-hidden="true">${i.state === 'ok' ? '✓' : i.state === 'bad' ? '✗' : '·'}</span><span><b>${esc(i.title)}</b><span class="chk-d">${esc(i.detail)}</span></span><span class="sr">${i.state === 'ok' ? '정상' : i.state === 'bad' ? '문제 있음' : '안내'}</span></li>`).join('')}</ol>` : ''}
-  ${summary ? `<p class="status">${esc(summary)}</p>` : ''}
+function signupHTML() {
+  return `<section class="panel">
+  <h2>선생님 가입 신청</h2>
+  <p class="muted">처음 오신 선생님은 가입 신청을 보내 주세요. 관리자가 확인하고 승인하면 학교 방을 만들고 게임을 열 수 있어요.</p>
+  <form id="signupForm" class="t-form" novalidate>
+    ${field('이름', 'name', H.user.displayName || '', ' maxlength="30" placeholder="예: 김지현"')}
+    ${field('학교 이름', 'school', '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
+    ${field('지역 (시·도)', 'region', '', ' maxlength="20" placeholder="예: 전북"')}
+    ${field('관리자에게 한마디 (선택)', 'memo', '', ' maxlength="200" placeholder="예: 1학년 수학 담당이에요."')}
+    <p class="muted small">Google 계정 ${esc(H.user.email || '')}로 신청해요.</p>
+    <button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>가입 신청 보내기</button>
+  </form>
 </section>`;
 }
-
-let lastVisible = '';
-function render() {
-  const focus = document.activeElement;
-  const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]` : focus.dataset.act === 'move' ? `[data-act="move"][data-id="${focus.dataset.id}"][data-dir="${focus.dataset.dir}"]` : null);
-  const teacher = isTeacherView();
-  $('#app').innerHTML = teacher ? teacherHTML() : studentHTML();
-  document.title = teacher ? `수업 관리 | ${TITLE}` : TITLE;
-  if (keep) { const el = document.querySelector(keep); if (el) el.focus(); }
-  if (!teacher && !(H.mode === 'pending' || (H.mode === 'firebase' && !H.loaded))) {
-    const v = visible();
-    const ids = v.list.map(g => g.id);
-    const text = v.selected ? (ids.length ? `열린 게임: ${v.list.map(g => g.name).join(', ')}` : '열린 게임이 없어요.') : '';
-    if (H.shown && ids.join() !== lastVisible && text) $('#announce').textContent = text;
-    lastVisible = ids.join();
-    H.shown = new Set(ids);
-  }
+function pendingHTML() {
+  const p = H.prof;
+  return `<section class="panel">
+  <h2>승인을 기다리고 있어요</h2>
+  <p class="muted">관리자가 가입 신청을 확인하고 있어요. 승인되면 이 화면에서 바로 학교 방을 만들 수 있어요. 승인된 뒤 새로 고침해 주세요.</p>
+  <dl class="t-dl"><div><dt>이름</dt><dd>${esc(p.name)}</dd></div><div><dt>학교</dt><dd>${esc(p.school)}</dd></div>${p.region ? `<div><dt>지역</dt><dd>${esc(p.region)}</dd></div>` : ''}<div><dt>계정</dt><dd>${esc(p.email)}</dd></div></dl>
+</section>`;
 }
+function rejectedHTML() {
+  return `<section class="panel"><h2>가입이 승인되지 않았어요</h2><p class="muted">자세한 내용은 관리자에게 문의해 주세요.</p></section>`;
+}
+function adminHTML() {
+  const all = Object.keys(H.teachers || {}).map(uid => Object.assign({ uid }, H.teachers[uid]));
+  const pend = all.filter(t => t.status === 'pending');
+  const ok = all.filter(t => t.status === 'approved');
+  const row = (t, btns) => `<li><span class="t-who"><b>${esc(t.name || '')}</b><span>${esc(t.school || '')}${t.region ? ` · ${esc(t.region)}` : ''}</span><small>${esc(t.email || '')}</small>${t.memo ? `<small class="t-memo">${esc(t.memo)}</small>` : ''}</span><span class="t-btns">${btns}</span></li>`;
+  return `<section class="panel admin">
+  <h2>관리자: 선생님 가입 신청</h2>
+  ${pend.length ? `<ul class="tlist t-people">${pend.map(t => row(t, `<button type="button" class="btn primary" data-act="decide" data-uid="${esc(t.uid)}" data-status="approved">승인</button><button type="button" class="btn" data-act="decide" data-uid="${esc(t.uid)}" data-status="rejected">${H.armed === 'dec-' + t.uid ? '한 번 더 누르면 거절' : '거절'}</button>`)).join('')}</ul>` : '<p class="muted">새 가입 신청이 없어요.</p>'}
+  <h3>승인된 선생님 ${ok.length}명</h3>
+  ${ok.length ? `<ul class="tlist t-people">${ok.map(t => row(t, `<button type="button" class="btn" data-act="decide" data-uid="${esc(t.uid)}" data-status="rejected">${H.armed === 'dec-' + t.uid ? '한 번 더 누르면 승인 취소' : '승인 취소'}</button>`)).join('')}</ul>` : '<p class="muted">아직 없어요.</p>'}
+</section>`;
+}
+function roomsHTML() {
+  const rooms = H.myRooms;
+  if (rooms === null) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>내 학교 방을 불러오고 있어요.</p></section>';
+  const r = curRoom();
+  const creating = H.form === 'room' || !rooms.length;
+  const pills = rooms.length ? `<div class="room-pills" role="tablist" aria-label="내 학교 방">${rooms.map(x => `<button type="button" role="tab" class="room-pill" data-act="tpick" data-id="${esc(x.id)}" aria-selected="${x.id === H.cur}">${SCHOOL}${esc(roomName(x))}</button>`).join('')}${creating ? '' : '<button type="button" class="room-pill add" data-act="newRoom">+ 새 방 만들기</button>'}</div>` : '';
+  const form = creating ? `<form id="roomForm" class="t-form room-form" novalidate>
+    <h3>${rooms.length ? '새 학교 방 만들기' : '첫 학교 방을 만들어 주세요'}</h3>
+    <p class="muted small">학생들은 게임 목록에서 학교 이름으로 방을 찾고, 여기서 정한 입장 코드를 넣어 들어와요. 방마다 학생 기록과 게임 설정이 따로 저장돼요.</p>
+    ${field('학교 이름', 'school', (H.prof && H.prof.school) || '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
+    ${field('방 이름 (선택)', 'label', '', ' maxlength="20" placeholder="예: 1학년 수학"')}
+    ${field('입장 코드', 'code', '', ' maxlength="12" placeholder="예: MATH2026" style="text-transform:uppercase"')}
+    <div class="dlg-actions"><button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>방 만들기</button>${rooms.length ? '<button type="button" class="btn" data-act="cancelForm">취소</button>' : ''}</div>
+  </form>` : '';
+  const info = r && !creating ? `<div class="room-card">
+    <div class="room-top"><h3>${SCHOOL}${esc(roomName(r))}</h3><button type="button" class="btn danger-soft${H.armed === 'del' ? ' armed' : ''}" data-act="delRoom">${H.armed === 'del' ? '한 번 더 누르면 방과 기록이 모두 지워져요' : '방 지우기'}</button></div>
+    ${H.form === 'code' ? `<form id="codeForm" class="t-form code-form" novalidate>${field('새 입장 코드', 'code', r.code || '', ' maxlength="12" style="text-transform:uppercase"')}<div class="dlg-actions"><button type="submit" class="btn primary">바꾸기</button><button type="button" class="btn" data-act="cancelForm">취소</button></div></form>`
+      : `<p class="room-code">입장 코드 <b>${esc(r.code || '')}</b><button type="button" class="link" data-act="editCode">코드 바꾸기</button></p>`}
+    <p class="muted small">학생 안내: 게임 목록에서 "학교 방 입장하기" → ${esc(roomName(r))} 선택 → 입장 코드 ${esc(r.code || '')}</p>
+  </div>` : '';
+  return `<section class="panel"><h2>내 학교 방</h2>${pills}${form}${info}</section>`;
+}
+function viewHTML() {
+  if (!H.tloaded) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>이 방의 게임 설정을 불러오고 있어요.</p></section>';
+  const st = H.tview || {};
+  const mode = st.mode === 'selected' ? 'selected' : 'all';
+  const open = st.open || {};
+  const list = orderedGames(st);
+  const ord = (g, i) => `<span class="ord"><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="-1" aria-label="${esc(g.name)} 위로 올리기"${i === 0 ? ' disabled' : ''}>${UP}</button><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="1" aria-label="${esc(g.name)} 아래로 내리기"${i === list.length - 1 ? ' disabled' : ''}>${DOWN}</button></span>`;
+  const rows = list.map((g, i) => g.ready
+    ? `<li>${ord(g, i)}<label class="switch"><input type="checkbox" data-open="${esc(g.id)}"${open[g.id] ? ' checked' : ''}><span class="knob" aria-hidden="true"></span><span class="t-name">${esc(g.name)}</span><span class="t-state">${open[g.id] ? '열림' : '닫힘'}</span></label>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`
+    : `<li class="soon">${ord(g, i)}<span class="t-name">${esc(g.name)}</span><span class="t-state">준비 중</span></li>`).join('');
+  return `<section class="panel">
+  <h2>${esc(roomName(curRoom()))} 학생 화면에 보일 게임</h2>
+  <div class="modes" role="radiogroup" aria-label="게임 보이는 방식">
+    <label class="mode"><input type="radio" name="mode" value="all"${mode === 'all' ? ' checked' : ''}><span><b>모든 게임 보이기</b><small>학생이 목록에서 골라 들어가요.</small></span></label>
+    <label class="mode"><input type="radio" name="mode" value="selected"${mode === 'selected' ? ' checked' : ''}><span><b>고른 게임만 보이기</b><small>켠 게임만 보이고, 나머지 게임은 주소로 들어가도 닫혀 있어요.</small></span></label>
+  </div>
+  <h3>게임 순서와 열기</h3>
+  <p class="muted small">▲ ▼ 단추로 학생 화면에 보이는 게임 순서를 바꿀 수 있어요. 스위치를 켠 게임이 수업에서 열려요. 이 설정은 이 방에만 적용돼요.</p>
+  <ul class="tlist">${rows}</ul>
+  <p class="status">${esc(statusText(mode, open))}</p>
+</section>`;
+}
+function teacherHTML() {
+  let body;
+  if (H.mode === 'pending') {
+    body = '<p class="loading"><span></span><span></span><span></span>학급 서버를 확인하고 있어요.</p>';
+  } else if (H.mode === 'local') {
+    body = `<section class="panel">
+  <h2>학급 서버가 연결되어 있지 않아요</h2>
+  <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 선생님 가입, 학교 방 만들기, 게임 열기를 할 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
+  <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
+</section>`;
+  } else if (!H.user) {
+    body = `<section class="panel">
+  <h2>선생님 로그인</h2>
+  <p class="muted">Google 계정으로 로그인하세요. 처음이면 가입 신청을 보내고, 관리자가 승인하면 학교 방을 만들어 게임을 열 수 있어요.</p>
+  <button type="button" class="btn primary" data-act="signin"${H.busy ? ' disabled' : ''}>${H.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
+  ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
+</section>`;
+  } else if (H.prof === undefined) {
+    body = '<section class="panel"><p class="loading"><span></span><span></span><span></span>선생님 정보를 확인하고 있어요.</p></section>';
+  } else {
+    const parts = [];
+    if (H.note) parts.push(`<p class="status ok-note" role="status">${esc(H.note)}</p>`);
+    if (H.err) parts.push(`<p class="err" role="alert">${esc(H.err)}</p>`);
+    if (H.isAdmin) parts.push(adminHTML());
+    if (canManage()) { parts.push(roomsHTML()); if (curRoom() && H.form !== 'room') parts.push(viewHTML()); }
+    else if (!H.prof) parts.push(signupHTML());
+    else if (H.prof.status === 'pending') parts.push(pendingHTML());
+    else parts.push(rejectedHTML());
+    body = parts.join('');
+  }
+  const who = H.user ? `<p class="acct">${H.isAdmin ? '<span class="role">관리자</span>' : ''}${esc(H.user.email || '')}<button type="button" class="link" data-act="signout">로그아웃</button></p>` : '';
+  return `<header class="head t-head">
+  <div><p class="kicker">선생님 전용</p><h1 class="title"><span>수업 관리</span></h1><p class="lead">학교 방을 만들고, 방마다 학생들이 볼 게임을 정해요.</p></div>
+  ${who}
+</header>
+${body}
+${H.mode === 'pending' ? '' : checkHTML()}
+<footer class="foot"><span></span><a href="#">학생 화면 보기</a></footer>`;
+}
+(function fromGame() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('login') === '1' && !isTeacherView()) {
+    const go = () => { if (H.mode === 'pending') { setTimeout(go, 80); return; } openLogin(q.get('next')); };
+    setTimeout(go, 0);
+  }
+})();
 
-document.addEventListener('click', e => {
-  const a = e.target.closest('[data-act]');
-  if (!a) return;
-  if (a.dataset.act === 'signin') signIn();
-  if (a.dataset.act === 'signout') H.auth.signOut().then(render);
-  if (a.dataset.act === 'check') runCheck();
-  if (a.dataset.act === 'move') moveGame(a.dataset.id, Number(a.dataset.dir));
-});
-document.addEventListener('change', e => {
-  const t = e.target;
-  if (!H.db || !H.user) return;
-  if (t.name === 'mode') writeHub(() => H.db.ref('hub/mode').set(t.value));
-  else if (t.dataset.open) writeHub(() => H.db.ref('hub/open/' + t.dataset.open).set(t.checked ? true : null));
-});
-window.addEventListener('hashchange', () => { H.err = ''; render(); window.scrollTo(0, 0); });
-window.addEventListener('storage', e => { if (e.key === 'mathgames.student') render(); });
 boot();
 </script>
 </body>
