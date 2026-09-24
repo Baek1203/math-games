@@ -607,6 +607,11 @@ h1, h2, h3, .page-title, .rec-title, .t-title, .code-title { font-family: var(--
 .plays li, .recent li, .code-list li, .live-list li { border-radius: 14px; }
 .t-table, .rec-table { border-radius: 14px; }
 .t-tabs .seg, .t-tabs { font-weight: 400; }
+
+/* 선생님 화면: 학교 방 고르기 */
+.t-room { display: inline-flex; align-items: center; gap: .45rem; margin-left: .7rem; font-size: 1rem; color: #2b2140; vertical-align: middle; }
+.t-room select { font: inherit; padding: .35rem .7rem; border-radius: 12px; border: 3px solid #2b2140; background: #fff; color: #2b2140; box-shadow: 0 3px 0 #2b2140; cursor: pointer; }
+span.t-room { padding: .2rem .8rem; border-radius: 999px; border: 3px solid #2b2140; background: #fff4c7; box-shadow: 0 3px 0 #2b2140; }
 </style>
 </head>
 <body>
@@ -750,7 +755,12 @@ const LOCAL = {
 
 /* Firebase 경로에 쓸 수 없는 문자는 _로 바꾼다 */
 const keyOf = (sid, name) => (sid + '_' + name).replace(/[.#$\[\]\/\u0000-\u001f\u007f]/g, '_');
-const appPath = sub => 'apps/' + APP_ID + '/' + sub;
+/* 학교 방: 게임 목록에서 고른 방의 비밀 열쇠 아래에 기록한다 (선생님 화면은 고른 방) */
+const ROOM_LS = 'mathgames.room';
+const readRoom = () => { try { const r = JSON.parse(localStorage.getItem(ROOM_LS)); return r && typeof r.key === 'string' && /^[A-Za-z0-9]{20,40}$/.test(r.key) ? r : null; } catch (e) { return null; } };
+let ROOM = readRoom();
+const appRoot = () => (ROOM ? 'r/' + ROOM.key + '/apps/' : 'apps/') + APP_ID;
+const appPath = sub => appRoot() + '/' + sub;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function withTimeout(promise, ms) {
   return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
@@ -926,9 +936,22 @@ const Net = (() => {
     /* ----- 게임 목록에서 선생님이 연 게임 ----- */
     watchHub(cb) {
       if (mode !== 'firebase') { cb(null); return () => {}; }
-      const ref = db.ref('hub');
+      if (!ROOM) { cb(null); return () => {}; }
+      const ref = db.ref('views/' + ROOM.key);
       const h = ref.on('value', s => cb(s.val()), () => cb(null));
       return () => ref.off('value', h);
+    },
+
+    /* ----- 학교 방 ----- */
+    room() { return ROOM; },
+    useRoom(r) { ROOM = r || null; },
+    async teacherRooms() {
+      const u = this.teacher();
+      if (!u) return [];
+      const snap = await withTimeout(db.ref('teacherRooms/' + u.uid).once('value'), 10000);
+      const v = snap.val() || {};
+      return Object.keys(v).map(id => Object.assign({ id }, v[id])).filter(r => r && typeof r.key === 'string')
+        .sort((a, b) => String(a.school || '').localeCompare(String(b.school || ''), 'ko') || String(a.label || '').localeCompare(String(b.label || ''), 'ko'));
     },
 
     /* ----- 선생님 ----- */
@@ -969,7 +992,7 @@ const Net = (() => {
       else local.clearLive();
     },
     async clearAll() {
-      if (mode === 'firebase') await db.ref('apps/' + APP_ID).remove();
+      if (mode === 'firebase') await db.ref(appRoot()).remove();
       else local.clearAll();
     },
   };
@@ -982,6 +1005,18 @@ const KEY = {
   save: key => LOCAL.save(key),
   tcodes: 'gcdbb.v3.tcodes',
 };
+
+/* 학급 서버를 쓰면 선수 등록과 학교 방 입장은 게임 목록에서 한다 */
+const HUB_LOGIN = !!(window.CLASS_FIREBASE_CONFIG && window.CLASS_FIREBASE_CONFIG.databaseURL);
+const hubLoginURL = () => '../?login=1&next=' + encodeURIComponent(GAME_SLUG + '/');
+function hubReady() {
+  try {
+    const s = JSON.parse(localStorage.getItem('mathgames.student'));
+    const r = JSON.parse(localStorage.getItem('mathgames.room'));
+    return !!(s && s.sid && s.name && r && r.key);
+  } catch (e) { return false; }
+}
+if (HUB_LOGIN && location.hash !== '#teacher' && !hubReady()) location.replace(hubLoginURL());
 
 const BADGE_GROUPS = [
   { id: 'play', name: '출전' },
@@ -1153,6 +1188,7 @@ async function syncAfterBoot() {
       const merged = mergeProfiles(me, remote ? normalizeProfile(remote, me.sid, me.name) : null);
       const changed = JSON.stringify(merged) !== JSON.stringify(me);
       me = merged;
+      if (changed && view === 'home') homeLevel = defaultLevel(); /* 다른 노트북에서 이어 할 때 알맞은 난이도로 */
       Net.saveProfile(me);
       if (changed && (view === 'home' || view === 'records')) render();
     }
@@ -1386,6 +1422,7 @@ async function doLogin() {
   go('home');
 }
 function doLogout() {
+  if (HUB_LOGIN) { location.href = hubLoginURL(); return; }
   Net.stopPresence(true);
   syncNote = '';
   me = null;
@@ -2005,7 +2042,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ===== 선생님 화면 ===== */
-const T = {
+const T = { rooms: null,
   tab: 'live', cls: 'all', sort: { col: 'sid', dir: 1 }, open: null,
   code: '', genLevel: 2, reveal: {}, players: {}, live: {}, games: {},
   err: '', note: '', busy: false, armed: null, armTimer: null,
@@ -2072,8 +2109,13 @@ function startTeacherData() {
     return;
   }
   if (Net.mode === 'firebase' && !Net.teacher()) return;
+  if (Net.mode === 'firebase' && T.rooms === null) {
+    loadTeacherRooms().then(() => { if (view === 'teacher') { render(); startTeacherData(); } });
+    return;
+  }
+  if (Net.mode === 'firebase' && !Net.room()) return;
   const denied = () => {
-    T.err = '이 계정으로는 기록을 볼 수 없어요. 규칙 파일에 적은 선생님 Google 계정으로 로그인했는지 확인하세요.';
+    T.err = '이 방의 기록을 볼 수 없어요. 게임 목록의 수업 관리에서 승인받은 선생님 계정인지 확인해 주세요.';
     renderTeacherBody();
   };
   T.unsub.push(Net.watch('players', v => { T.players = v || {}; onTeacherData('players'); }, denied));
@@ -2106,6 +2148,33 @@ function onTeacherData(kind) {
 function renderTeacherBody() { const b = $('#tbody'); if (b) b.innerHTML = teacherBodyHTML(); }
 function renderCodeResults() { const b = $('#codeResults'); if (b) b.innerHTML = codeResultsHTML(); }
 
+/* 선생님의 학교 방: 수업 관리에서 마지막으로 고른 방을 먼저 보여 준다 */
+async function loadTeacherRooms() {
+  if (Net.mode !== 'firebase' || !Net.teacher()) return;
+  try { T.rooms = await Net.teacherRooms(); } catch (e) { T.rooms = []; T.err = '방 목록을 불러오지 못했어요. 잠시 뒤 다시 들어와 주세요.'; }
+  let want = null;
+  try { want = localStorage.getItem('mathgames.teacherRoom'); } catch (e) { /* 무시 */ }
+  const pick = T.rooms.find(r => r.id === want) || T.rooms[0] || null;
+  Net.useRoom(pick);
+}
+function roomName(r) { return r ? (r.school || '') + (r.label ? ' ' + r.label : '') : ''; }
+function roomPickerHTML() {
+  if (!T.rooms || !T.rooms.length) return '';
+  const cur = Net.room();
+  if (T.rooms.length === 1) return `<span class="t-room">${esc(roomName(T.rooms[0]))}</span>`;
+  return `<label class="t-room">방 <select id="troomSel">${T.rooms.map(r => `<option value="${esc(r.id)}"${cur && cur.id === r.id ? ' selected' : ''}>${esc(roomName(r))}</option>`).join('')}</select></label>`;
+}
+document.addEventListener('change', e => {
+  if (e.target.id !== 'troomSel' || !T.rooms) return;
+  const r = T.rooms.find(x => x.id === e.target.value);
+  if (!r) return;
+  Net.useRoom(r);
+  try { localStorage.setItem('mathgames.teacherRoom', r.id); } catch (x) { /* 무시 */ }
+  T.players = {}; T.live = {}; T.games = {}; T.err = '';
+  render();
+  startTeacherData();
+});
+
 async function teacherSignIn() {
   T.busy = true;
   T.err = '';
@@ -2134,9 +2203,17 @@ function teacherHTML() {
   } else if (Net.mode === 'firebase' && !user) {
     body = `<section class="panel t-gate">
   <h2>선생님 로그인</h2>
-  <p class="muted">규칙 파일에 적어 둔 선생님 Google 계정으로 로그인해야 학생 기록을 볼 수 있어요.</p>
+  <p class="muted">게임 목록의 수업 관리에서 승인받은 선생님 Google 계정으로 로그인하면 내 학교 방 학생들의 기록을 볼 수 있어요.</p>
   <button type="button" class="btn primary" data-act="tsignin"${T.busy ? ' disabled' : ''}>${T.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
   ${T.err ? `<p class="err">${esc(T.err)}</p>` : ''}
+</section>`;
+  } else if (Net.mode === 'firebase' && T.rooms === null) {
+    body = '<section class="panel t-gate"><p>내 학교 방을 찾고 있어요.</p></section>';
+  } else if (Net.mode === 'firebase' && !Net.room()) {
+    body = `<section class="panel t-gate">
+  <h2>아직 만든 학교 방이 없어요</h2>
+  <p class="muted">게임 목록의 수업 관리에서 학교 방을 만들고 입장 코드를 정하면, 그 방 학생들의 기록이 여기에 보여요.</p>
+  <a class="btn primary" href="../#teacher">수업 관리로 가기</a>
 </section>`;
   } else {
     body = `<div class="t-tabs"><div class="seg" role="tablist" aria-label="선생님 화면 메뉴">${TTABS.map(([id, label]) =>
@@ -2145,6 +2222,7 @@ function teacherHTML() {
   }
   return `<div class="t-head">
   <h1 class="t-title">선생님 화면</h1>
+  ${Net.mode === 'firebase' ? roomPickerHTML() : ''}
   ${user ? `<span class="t-account">${esc(user.email || '')}<button type="button" class="text-btn" data-act="tsignout">로그아웃</button></span>` : ''}
 </div>
 ${Net.mode === 'local' ? '<p class="t-note">학급 서버에 연결되어 있지 않아서 이 노트북에 저장된 기록만 보여요. 학급 서버 연결 방법은 함께 드린 설정 안내를 따라 주세요.</p>' : ''}
@@ -2424,7 +2502,7 @@ function onTeacherAct(a) {
     case 'tsignin': teacherSignIn(); break;
     case 'tsignout':
       stopTeacherData();
-      Net.teacherSignOut().catch(() => {}).then(() => { T.players = {}; T.live = {}; T.games = {}; render(); });
+      Net.teacherSignOut().catch(() => {}).then(() => { T.players = {}; T.live = {}; T.games = {}; T.rooms = null; Net.useRoom(null); render(); });
       break;
     case 'ttab': T.tab = a.dataset.tab; T.err = ''; T.note = ''; T.armed = null; render(); break;
     case 'tgenlv': T.genLevel = Number(a.dataset.level); renderTeacherBody(); break;
