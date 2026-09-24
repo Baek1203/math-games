@@ -189,10 +189,35 @@ a.card:hover .art { transform: scale(1.03); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 선수 등록 */
+.who-switch { margin-left: .4rem; padding: .15rem .7rem; border-radius: 999px; border: 2px solid var(--edge); background: var(--card-2); color: var(--text); font: inherit; font-size: .88rem; cursor: pointer; }
+.who-switch:hover { background: #fff4c7; color: #2b2140; }
+.who-login { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: 1rem 0 0; }
+.who-login .muted { margin: 0; }
+#dlg[hidden] { display: none; }
+.dlg-back { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 1.2rem; background: rgba(20, 16, 40, .55); animation: fade .15s ease; }
+@keyframes fade { from { opacity: 0; } }
+.dlg { position: relative; width: min(25rem, 100%); display: grid; gap: .8rem; margin-top: 3rem; padding: 2.4rem 1.5rem 1.3rem; background: var(--card); color: var(--text); border: 4px solid var(--edge); border-radius: 24px; box-shadow: 0 9px 0 var(--edge); animation: pop .3s cubic-bezier(.2, 1.4, .5, 1); }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+.dlg-pals { position: absolute; left: 50%; top: -3.9rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: .1rem; }
+.dlg-pals img { width: 4.6rem; height: 4.6rem; }
+.dlg-pals img:nth-child(2) { width: 3.4rem; height: 3.4rem; margin-bottom: .4rem; }
+.dlg-title { margin: 0; text-align: center; font-family: var(--display); font-weight: 400; font-size: 2rem; }
+.dlg-sub { margin: 0; text-align: center; color: var(--text-soft); }
+.fld { display: grid; gap: .3rem; font-size: 1.05rem; }
+.fld input { font: inherit; font-size: 1.35rem; padding: .55rem .85rem; border: 3px solid var(--edge); border-radius: 14px; background: var(--card-2); color: var(--text); width: 100%; }
+.fld input:focus { outline: 3px solid #2c6bed; outline-offset: 1px; }
+.fld input::placeholder { color: var(--text-soft); opacity: .7; }
+.dlg .err { margin: 0; min-height: 1.4em; }
+.dlg-actions { display: flex; gap: .6rem; }
+.dlg-actions .btn.primary { flex: 1; font-size: 1.25rem; }
+.dlg-out { justify-self: center; font-size: .92rem; }
 </style>
 </head>
 <body>
 <main class="wrap" id="app"></main>
+<div id="dlg" hidden></div>
 <p class="sr" id="announce" aria-live="polite"></p>
 <script src="firebase-config.js"></script>
 <script>
@@ -620,7 +645,7 @@ function cardHTML(g, feature) {
 function studentHTML() {
   const me = student();
   const v = visible();
-  const lead = v.selected ? '선생님이 이번 수업에 연 게임이에요.' : '게임을 골라 들어가세요. 한 게임에서 학번과 이름으로 입장하면 다른 게임에서도 그대로 이어져요.';
+  const lead = v.selected ? '선생님이 이번 수업에 연 게임이에요.' : '게임을 골라 들어가세요.';
   let body;
   if (H.mode === 'pending' || (H.mode === 'firebase' && !H.loaded)) {
     body = '<p class="loading"><span></span><span></span><span></span>열린 게임을 확인하고 있어요.</p>';
@@ -641,7 +666,8 @@ function studentHTML() {
     <p class="kicker">놀면서 배우는</p>
     <h1 class="title"><span>${esc(TITLE)}</span></h1>
     <p class="lead">${lead}</p>
-    ${me ? `<p class="who"><span class="who-no">${esc(me.sid)}</span>${esc(me.name)} 선수, 어서 와요!</p>` : ''}
+    ${me ? `<p class="who"><span class="who-no">${esc(me.sid)}</span>${esc(me.name)} 선수, 어서 와요!<button type="button" class="who-switch" data-act="switch">선수 바꾸기</button></p>`
+      : `<p class="who-login"><button type="button" class="btn primary" data-act="login">선수 등록하기</button><span class="muted small">학번과 이름을 한 번 등록하면 모든 게임에서 이어져요.</span></p>`}
   </div>
   <div class="head-art">${ART.hero()}</div>
 </header>
@@ -696,6 +722,77 @@ ${body}
 ${H.mode === 'pending' ? '' : checkHTML()}
 <footer class="foot"><span></span><a href="#">학생 화면 보기</a></footer>`;
 }
+
+/* ===== 선수 등록: 게임 목록에서 한 번 등록하면 모든 게임이 같은 학번과 이름을 써요 ===== */
+const LOGIN = { open: false, next: '' };
+function safeNext(v) {
+  const s = String(v || '');
+  return GAMES.some(g => !g.href && s === encodeURI(g.id) + '/') ? s : '';
+}
+function loginHTML() {
+  const cur = student();
+  return `<div class="dlg-back">
+  <form class="dlg" id="loginForm" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" novalidate>
+    <div class="dlg-pals" aria-hidden="true"><img src="${SPR.t2}" alt=""><img src="${SPR.slime_meadow}" alt=""><img src="${SPR.t3}" alt=""></div>
+    <h2 class="dlg-title" id="dlgTitle">${cur ? '선수 바꾸기' : '선수 등록'}</h2>
+    <p class="dlg-sub">${cur ? `지금은 <b>${esc(cur.sid)} ${esc(cur.name)}</b> 선수예요. 새로 들어올 선수의 학번과 이름을 넣어 주세요.` : '한 번 등록하면 모든 게임에서 기록이 이어져요.'}</p>
+    <label class="fld"><span>학번</span><input name="sid" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="6" placeholder="예: 10523"></label>
+    <label class="fld"><span>이름</span><input name="name" autocomplete="off" spellcheck="false" maxlength="20" placeholder="예: 김민준"></label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <div class="dlg-actions"><button type="submit" class="btn primary">${LOGIN.next ? '등록하고 게임으로' : cur ? '바꾸기' : '등록하기'}</button><button type="button" class="btn" data-act="dlgClose">닫기</button></div>
+    ${cur ? '<button type="button" class="link dlg-out" data-act="logout">등록 지우기</button>' : ''}
+  </form>
+</div>`;
+}
+function openLogin(next) {
+  LOGIN.open = true;
+  LOGIN.next = safeNext(next);
+  const box = $('#dlg');
+  box.innerHTML = loginHTML();
+  box.hidden = false;
+  document.body.classList.add('dlg-on');
+  setTimeout(() => { const i = box.querySelector('input[name="sid"]'); if (i) i.focus(); }, 30);
+}
+function closeLogin() {
+  LOGIN.open = false;
+  const box = $('#dlg');
+  box.hidden = true;
+  box.innerHTML = '';
+  document.body.classList.remove('dlg-on');
+  if (/[?&]login=1/.test(location.search)) history.replaceState(null, '', location.pathname + location.hash);
+}
+function submitLogin(form) {
+  const err = $('#loginErr');
+  const sid = form.elements.sid.value.replace(/\s+/g, '');
+  const name = form.elements.name.value.replace(/\s+/g, '');
+  if (!/^\d{4,6}$/.test(sid)) { err.textContent = '학번은 숫자 4~6자리로 입력하세요. 예: 10523'; form.elements.sid.focus(); return; }
+  if (!name) { err.textContent = '이름을 입력하세요.'; form.elements.name.focus(); return; }
+  if (name.length > 20) { err.textContent = '이름은 20자까지 입력할 수 있어요.'; form.elements.name.focus(); return; }
+  try { localStorage.setItem('mathgames.student', JSON.stringify({ sid, name })); } catch (e) { /* 저장할 수 없는 브라우저 */ }
+  const next = LOGIN.next;
+  closeLogin();
+  if (next) { location.href = next; return; }
+  render();
+  $('#announce').textContent = `${sid} ${name} 선수로 등록했어요.`;
+}
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('dlg-back')) { closeLogin(); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  if (a.dataset.act === 'login' || a.dataset.act === 'switch') openLogin('');
+  else if (a.dataset.act === 'dlgClose') closeLogin();
+  else if (a.dataset.act === 'logout') { try { localStorage.removeItem('mathgames.student'); } catch (x) { /* 무시 */ } closeLogin(); render(); }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'loginForm') return;
+  e.preventDefault();
+  submitLogin(e.target);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && LOGIN.open) closeLogin(); });
+(function fromGame() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('login') === '1' && !isTeacherView()) setTimeout(() => openLogin(q.get('next')), 0);
+})();
 
 function statusText(mode, open) {
   if (mode !== 'selected') return '지금 학생 화면: 모든 게임이 보여요.';
@@ -752,6 +849,12 @@ async function runCheck() {
         } catch (e) {
           const denied = /permission/i.test(String((e && (e.code || e.message)) || ''));
           add('bad', '학생 기록 저장', denied ? '규칙 때문에 저장이 막혔어요. firebase-rules.json 내용을 규칙 탭에 그대로 붙여 넣고 게시했는지 확인해 주세요.' : `저장하지 못했어요. (${(e && (e.code || e.message)) || ''})`);
+        }
+        try {
+          await withTimeout(app2.database().ref('apps/_check/board/all/all/probe').set({ sid: '0000', name: '점검', score: 0 }), 12000);
+          add('ok', '랭킹 저장', '제로섬 스페이스 미션, 파리 잡기 좌표게임의 랭킹을 저장할 수 있어요.');
+        } catch (e) {
+          add('bad', '랭킹 저장', '규칙이 예전 버전이에요. 새 firebase-rules.json 내용을 규칙 탭에 붙여 넣고 게시해 주세요. 그래야 두 게임의 랭킹이 저장돼요.');
         }
       }
     } finally {
