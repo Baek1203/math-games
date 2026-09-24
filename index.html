@@ -151,6 +151,12 @@ a.card:hover .art { transform: scale(1.03); }
 .tlist li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: .65rem .9rem; border: 2px solid var(--line); border-radius: 14px; background: var(--card-2); }
 .tlist li.soon { opacity: .6; }
 .tlist .link { margin-left: auto; }
+.ord { display: inline-flex; gap: .25rem; }
+.ord-btn { display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border-radius: 10px; border: 2px solid var(--edge); background: var(--card); color: var(--text); cursor: pointer; box-shadow: 0 2px 0 var(--edge); }
+.ord-btn svg { width: 1.05rem; height: 1.05rem; }
+.ord-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.ord-btn:disabled { opacity: .3; cursor: default; box-shadow: none; }
+.small { font-size: .92rem; }
 .switch { display: inline-flex; align-items: center; gap: .7rem; cursor: pointer; }
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .knob { position: relative; width: 3.1rem; height: 1.75rem; border-radius: 999px; background: #c9c3d9; border: 3px solid var(--edge); transition: background .15s ease; flex: none; }
@@ -198,12 +204,15 @@ const TITLE = '수학 게임';
    - color: 그림이 없을 때 표지 색, mark: 그림이 없을 때 크게 쓰는 짧은 글자
    - tags: 카드에 붙는 작은 꼬리표 (없어도 돼요)
    - ready: false로 두면 '준비 중'으로만 보이고 들어갈 수 없어요.
+   - teacher: false로 두면 수업 관리에서 '이 게임의 선생님 화면' 링크를 숨겨요(선생님 화면이 없는 게임).
    - href: 다른 곳에 있는 앱(예: 구글 앱스 스크립트)이면 그 주소를 적어요.
      이때 id는 겹치지 않는 아무 이름이면 됩니다. */
 const GAMES = [
   { id: 'gcd-baseball', name: '최대공약수 숫자야구', desc: '최대공약수만 단서로 숨은 비밀 수를 찾아내요.', art: 'baseball', color: '#17402c', mark: '60 ▶ 12', tags: ['최대공약수', '추리'], ready: true },
-  { id: 'prime-tower', name: '소인수 타워 디펜스', desc: '수를 나누는 수호대로 숫자 몬스터를 막아요. 15단계와 보스가 기다려요.', art: 'tower', color: '#5b3a8c', mark: '2 3 5 7', tags: ['소인수분해', '전략'], ready: true },
-  { id: 'coord-battle', name: '좌표 해전', desc: '그래프 무기로 숨은 함대를 찾아요.', art: 'sea', color: '#1c5585', mark: '(3, -2)', tags: ['좌표', '그래프'], ready: false },
+  { id: 'prime-tower', name: '소인수 타워 디펜스', desc: '수를 나누는 수호대로 숫자 몬스터를 막아요.', art: 'tower', color: '#5b3a8c', mark: '2 3 5 7', tags: ['소인수분해', '전략'], ready: true },
+  { id: 'zero-sum', name: '제로섬 스페이스 미션', desc: '합이 0이 되게 숫자 크리스탈을 묶어요.', art: 'space', color: '#1a2140', mark: '0', tags: ['정수', '덧셈'], ready: true, teacher: false },
+  { id: 'fly-coords', name: '파리 잡기 좌표게임', desc: '좌표를 맞춰 칠판 위의 파리를 잡아요.', art: 'fly', color: '#1e332a', mark: '(x, y)', tags: ['좌표', '순서쌍'], ready: true, teacher: false },
+  { id: 'coord-battle', name: '좌표 해전', desc: '그래프 무기로 숨은 함대를 찾아요.', art: 'sea', color: '#1c5585', mark: '(3, -2)', tags: ['그래프', '정비례', '반비례'], ready: false },
   { id: 'math-liar', name: '수학 라이어 게임', desc: '모둠 안에서 제시어를 모르는 라이어를 찾아요.', art: 'liar', color: '#a13d2d', mark: '?', tags: ['모둠', '추론'], ready: false },
   { id: 'data-coach', name: '데이터 감독 게임', desc: '기록의 분포를 보고 이어달리기 팀을 꾸려요.', art: 'coach', color: '#2e6b52', mark: '▂▅▇▃', tags: ['자료 정리', '분포'], ready: false },
 ];
@@ -378,6 +387,84 @@ ${bubble(69, 80, 12)}${bubble(127, 74, 18)}${bubble(190, 72, '?', true)}${bubble
 <g transform="rotate(-30 216 172)"><rect x="196" y="166" width="42" height="13" rx="6" fill="#ff9f43" stroke="${INK}" stroke-width="3"/><path d="M206 166 v13 M226 166 v13" stroke="#e07b12" stroke-width="2.5"/></g>`, '데이터 감독 게임: 트랙 위의 기록판 그래프와 스톱워치');
   }
 
+  /* 제로섬 스페이스 미션: 우주 속 숫자 크리스탈 */
+  function space() {
+    const rng = (() => { let a = 7; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
+    let stars = '';
+    for (let i = 0; i < 42; i++) stars += `<circle cx="${(rng() * 320).toFixed(1)}" cy="${(rng() * 200).toFixed(1)}" r="${(0.6 + rng() * 1.2).toFixed(1)}" fill="#fff" opacity="${(0.4 + rng() * 0.6).toFixed(2)}"/>`;
+    const vals = [[4, 3, -5, 2, -7], [-3, 0, 6, -1, 1], [0, -8, 7, -2, -4], [5, 1, -6, 0, 9]];
+    const X0 = 118, Y0 = 40, S = 34, G = 6;
+    let tiles = '';
+    vals.forEach((row, r) => row.forEach((v, c) => {
+      const kind = v > 0 ? 'p' : v < 0 ? 'n' : 'z';
+      const x = X0 + c * (S + G), y = Y0 + r * (S + G);
+      tiles += `<rect x="${x}" y="${y}" width="${S}" height="${S}" rx="8" fill="url(#sp-${kind})" stroke="${INK}" stroke-width="2"/><path d="M${x + 6} ${y + 7} h${S - 16}" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".35"/>${num(v < 0 ? '−' + (-v) : v, x + S / 2, y + S / 2 + 1, 15)}`;
+    }));
+    const bx = X0 + 1 * (S + G) - 5, by = Y0 - 5, bw = 3 * S + 2 * G + 10, bh = S + 10;
+    return svg('space', `<defs>
+  <linearGradient id="sp-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b1c"/><stop offset="1" stop-color="#1a2140"/></linearGradient>
+  <radialGradient id="sp-n1"><stop offset="0" stop-color="#7a4fd6" stop-opacity=".55"/><stop offset="1" stop-color="#7a4fd6" stop-opacity="0"/></radialGradient>
+  <radialGradient id="sp-n2"><stop offset="0" stop-color="#4fd1ff" stop-opacity=".35"/><stop offset="1" stop-color="#4fd1ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sp-p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb4ff"/><stop offset="1" stop-color="#1d5a94"/></linearGradient>
+  <linearGradient id="sp-n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f07a6e"/><stop offset="1" stop-color="#8a2f2f"/></linearGradient>
+  <linearGradient id="sp-z" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a73a6"/><stop offset="1" stop-color="#343b60"/></linearGradient>
+  <filter id="sp-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="320" height="200" fill="url(#sp-s)"/>
+<circle cx="250" cy="40" r="90" fill="url(#sp-n1)"/><circle cx="60" cy="160" r="80" fill="url(#sp-n2)"/>${stars}
+<g><circle cx="44" cy="168" r="44" fill="#ff8a4c" stroke="${INK}" stroke-width="3"/><path d="M14 156 q30 -14 60 4 M18 184 q24 -8 50 2" stroke="#ffb98c" stroke-width="5" fill="none" stroke-linecap="round"/>
+<ellipse cx="44" cy="170" rx="68" ry="14" fill="none" stroke="#ffd9b8" stroke-width="4" transform="rotate(-14 44 170)"/></g>
+<g transform="translate(46 58) rotate(38)"><path d="M0 -26 C10 -16 12 0 10 16 H-10 C-12 0 -10 -16 0 -26 Z" fill="#eef0fb" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="0" cy="-6" r="5.5" fill="#4fd1ff" stroke="${INK}" stroke-width="2.5"/><path d="M-10 6 L-18 18 L-10 16 Z M10 6 L18 18 L10 16 Z" fill="#dd6058" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M-6 16 Q0 34 6 16 Z" fill="#ffc93c" stroke="${INK}" stroke-width="2.2"/></g>
+${tiles}
+<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="11" fill="rgba(127,227,255,.12)" stroke="#7fe3ff" stroke-width="3" stroke-dasharray="7 5" filter="url(#sp-glow)"/>
+<g><rect x="${bx + bw / 2 - 34}" y="${by - 26}" width="68" height="22" rx="11" fill="#7fe3ff" stroke="${INK}" stroke-width="2.5"/><text x="${bx + bw / 2}" y="${by - 15}" font-size="13" text-anchor="middle" dominant-baseline="central" font-family="'Black Han Sans', Jua, sans-serif" fill="${INK}">합 = 0</text></g>
+${num('+3', 94, 108, 14, '#7fe3ff')}`, '제로섬 스페이스 미션: 합이 0이 되는 숫자 크리스탈을 상자로 묶는 우주 장면');
+  }
+
+  /* 파리 잡기 좌표게임: 칠판 좌표평면 위의 파리 */
+  function fly() {
+    const OX = 150, OY = 104, U = 13;
+    let grid = '';
+    for (let i = -8; i <= 8; i++) {
+      grid += `<path d="M${OX + i * U} 26 V182" stroke="#fff" stroke-width="${i % 2 ? 0.6 : 1}" opacity="${i % 2 ? 0.08 : 0.16}"/>`;
+      if (Math.abs(i) <= 5) grid += `<path d="M36 ${OY + i * U} H264" stroke="#fff" stroke-width="${i % 2 ? 0.6 : 1}" opacity="${i % 2 ? 0.08 : 0.16}"/>`;
+    }
+    let labels = '';
+    [-6, -4, -2, 2, 4, 6].forEach(v => { labels += `<text x="${OX + v * U}" y="${OY + 13}" font-size="9" text-anchor="middle" fill="#f5f2e6" opacity=".75" font-family="Jua, sans-serif">${v < 0 ? '−' + (-v) : v}</text>`; });
+    [-4, -2, 2, 4].forEach(v => { labels += `<text x="${OX - 9}" y="${OY - v * U + 3}" font-size="9" text-anchor="end" fill="#f5f2e6" opacity=".75" font-family="Jua, sans-serif">${v < 0 ? '−' + (-v) : v}</text>`; });
+    const FX = OX - 4 * U, FY = OY - 3 * U;
+    return svg('fly', `<defs>
+  <linearGradient id="fl-w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a6b43"/><stop offset="1" stop-color="#6a4528"/></linearGradient>
+  <radialGradient id="fl-b" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#2a4a3c"/><stop offset="1" stop-color="#18291f"/></radialGradient>
+</defs>
+<rect width="320" height="200" fill="url(#fl-w)"/>
+<rect x="12" y="12" width="296" height="168" rx="6" fill="url(#fl-b)" stroke="${INK}" stroke-width="3"/>
+<ellipse cx="90" cy="60" rx="60" ry="22" fill="#fff" opacity=".04"/><ellipse cx="230" cy="150" rx="70" ry="20" fill="#fff" opacity=".035"/>
+<rect x="20" y="180" width="280" height="12" rx="3" fill="#5a3a22" stroke="${INK}" stroke-width="2.5"/>
+<rect x="60" y="182" width="22" height="6" rx="3" fill="#f5f2e6" stroke="${INK}" stroke-width="1.5"/><rect x="90" y="182" width="16" height="6" rx="3" fill="#f2c94c" stroke="${INK}" stroke-width="1.5"/>
+${grid}
+<path d="M36 ${OY} H264 M${OX} 26 V182" stroke="#f5f2e6" stroke-width="2.4" opacity=".85" stroke-linecap="round"/>
+<path d="M258 ${OY - 5} l7 5 l-7 5 M${OX - 5} 32 l5 -7 l5 7" fill="none" stroke="#f5f2e6" stroke-width="2.2" opacity=".85" stroke-linecap="round" stroke-linejoin="round"/>
+${labels}
+<path d="M${FX} ${OY} V${FY} M${OX} ${FY} H${FX}" stroke="#8fc7e8" stroke-width="2.4" stroke-dasharray="5 4"/>
+<circle cx="${FX}" cy="${FY}" r="15" fill="none" stroke="#8fc7e8" stroke-width="3"/><path d="M${FX - 22} ${FY} h8 M${FX + 14} ${FY} h8 M${FX} ${FY - 22} v8 M${FX} ${FY + 14} v8" stroke="#8fc7e8" stroke-width="3" stroke-linecap="round"/>
+<g class="hop"><g transform="translate(${FX} ${FY})">
+<ellipse cx="-9" cy="-9" rx="11" ry="6.5" transform="rotate(-35 -9 -9)" fill="rgba(210,235,255,.75)" stroke="${INK}" stroke-width="1.8"/>
+<ellipse cx="9" cy="-9" rx="11" ry="6.5" transform="rotate(35 9 -9)" fill="rgba(210,235,255,.75)" stroke="${INK}" stroke-width="1.8"/>
+<path d="M-6 6 l-6 5 M6 6 l6 5 M-7 1 l-8 1 M7 1 l8 1" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>
+<ellipse cx="0" cy="3" rx="7.5" ry="9" fill="#3a3a3a" stroke="${INK}" stroke-width="2"/>
+<circle cx="-4" cy="-4" r="4.2" fill="#ff5a5f" stroke="${INK}" stroke-width="1.6"/><circle cx="4" cy="-4" r="4.2" fill="#ff5a5f" stroke="${INK}" stroke-width="1.6"/>
+<circle cx="-5" cy="-5.4" r="1.3" fill="#fff"/><circle cx="3" cy="-5.4" r="1.3" fill="#fff"/></g></g>
+<g><rect x="${FX - 58}" y="${FY - 38}" width="54" height="20" rx="10" fill="#1e332a" stroke="#f2c94c" stroke-width="2"/><text x="${FX - 31}" y="${FY - 27.5}" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="'Black Han Sans', Jua, sans-serif" fill="#f2c94c">(−4, 3)</text></g>
+<g transform="translate(236 132) rotate(-28)"><rect x="-4" y="0" width="8" height="58" rx="3" fill="#f2c94c" stroke="${INK}" stroke-width="2.5"/>
+<rect x="-24" y="-44" width="48" height="46" rx="10" fill="#ff7aa2" stroke="${INK}" stroke-width="3"/>
+<path d="M-14 -42 v42 M-4 -42 v42 M6 -42 v42 M16 -42 v42 M-22 -32 h44 M-22 -22 h44 M-22 -12 h44" stroke="#c9486f" stroke-width="1.6"/></g>
+<path d="M196 72 q14 -10 30 -8 M200 84 q14 -6 26 -2" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".85"/>
+${num('찰싹!', 272, 58, 16, '#ffd23f')}`, '파리 잡기 좌표게임: 칠판 좌표평면 위의 파리를 조준하고 파리채를 휘두르는 장면');
+  }
+
   /* 그림이 없는 게임: 색과 글자로 만든 표지 */
   function plain(g) {
     const c = safeColor(g.color);
@@ -414,7 +501,7 @@ ${img('t2', 54, 62, 70, 70)}${img('t3', 116, 58, 72, 72)}${img('slime_meadow', 1
 <text x="116" y="30" font-size="15" fill="#fff" stroke="${INK}" stroke-width="3.5" paint-order="stroke" font-family="'Black Han Sans', sans-serif">z</text>
 <text x="160" y="42" font-size="18" fill="#fff" stroke="${INK}" stroke-width="4" paint-order="stroke" font-family="'Black Han Sans', sans-serif">Z</text></svg>`;
   }
-  const BY_KEY = { tower, baseball, sea, liar, coach };
+  const BY_KEY = { tower, baseball, sea, liar, coach, space, fly };
   return { cover: g => (BY_KEY[g.art] ? BY_KEY[g.art]() : plain(g)), hero, waiting };
 })();
 
@@ -426,10 +513,19 @@ function student() {
 }
 
 /* 학생 화면에 지금 보여 줄 게임. selected: 선생님이 고른 게임만 보이는 중인지 */
+/* 선생님이 정한 순서 (hub/order). 순서에 없는 게임은 원래 목록 순서대로 뒤에 붙는다 */
+function orderedGames() {
+  const st = H.mode === 'firebase' ? H.state : null;
+  const o = st && st.order;
+  const raw = Array.isArray(o) ? o : o && typeof o === 'object' ? Object.keys(o).sort((a, b) => a - b).map(k => o[k]) : [];
+  const pos = id => { const i = raw.indexOf(id); return i < 0 ? 1000 + GAMES.findIndex(g => g.id === id) : i; };
+  return GAMES.slice().sort((a, b) => pos(a.id) - pos(b.id));
+}
 function visible() {
   const st = H.mode === 'firebase' ? H.state : null;
-  if (st && st.mode === 'selected') return { selected: true, list: ready.filter(g => st.open && st.open[g.id]) };
-  return { selected: false, list: GAMES };
+  const list = orderedGames();
+  if (st && st.mode === 'selected') return { selected: true, list: list.filter(g => g.ready && st.open && st.open[g.id]) };
+  return { selected: false, list };
 }
 
 /* ===== 학급 서버 ===== */
@@ -497,6 +593,16 @@ async function signIn() {
 /* ===== 화면 ===== */
 /* ===== 학생 화면 ===== */
 const LOCK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.4" fill="currentColor"/><path d="M8.2 11V8.2a3.8 3.8 0 0 1 7.6 0V11" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+const UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const DOWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function moveGame(id, dir) {
+  if (!H.db || !H.user) return;
+  const ids = orderedGames().map(g => g.id);
+  const i = ids.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  writeHub(() => H.db.ref('hub/order').set(ids));
+}
 const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function cover(g, feature) {
   return `<span class="cover" aria-hidden="true">${ART.cover(g)}${!g.ready ? `<span class="ribbon">${LOCK}곧 열려요</span>` : ''}${feature ? '<span class="ribbon today">오늘의 게임</span>' : ''}</span>`;
@@ -551,7 +657,7 @@ function teacherHTML() {
     body = `<section class="panel">
   <h2>학급 서버가 연결되어 있지 않아요</h2>
   <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 학생 화면에 보일 게임을 고를 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
-  <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
+  <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
 </section>`;
   } else if (!H.user) {
     body = `<section class="panel">
@@ -564,16 +670,19 @@ function teacherHTML() {
     const st = H.state || {};
     const mode = st.mode === 'selected' ? 'selected' : 'all';
     const open = st.open || {};
-    const rows = GAMES.map(g => g.ready
-      ? `<li><label class="switch"><input type="checkbox" data-open="${esc(g.id)}"${open[g.id] ? ' checked' : ''}><span class="knob" aria-hidden="true"></span><span class="t-name">${esc(g.name)}</span><span class="t-state">${open[g.id] ? '열림' : '닫힘'}</span></label>${g.href ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`
-      : `<li class="soon"><span class="t-name">${esc(g.name)}</span><span class="t-state">준비 중</span></li>`).join('');
+    const list = orderedGames();
+    const ord = (g, i) => `<span class="ord"><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="-1" aria-label="${esc(g.name)} 위로 올리기"${i === 0 ? ' disabled' : ''}>${UP}</button><button type="button" class="ord-btn" data-act="move" data-id="${esc(g.id)}" data-dir="1" aria-label="${esc(g.name)} 아래로 내리기"${i === list.length - 1 ? ' disabled' : ''}>${DOWN}</button></span>`;
+    const rows = list.map((g, i) => g.ready
+      ? `<li>${ord(g, i)}<label class="switch"><input type="checkbox" data-open="${esc(g.id)}"${open[g.id] ? ' checked' : ''}><span class="knob" aria-hidden="true"></span><span class="t-name">${esc(g.name)}</span><span class="t-state">${open[g.id] ? '열림' : '닫힘'}</span></label>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`
+      : `<li class="soon">${ord(g, i)}<span class="t-name">${esc(g.name)}</span><span class="t-state">준비 중</span></li>`).join('');
     body = `<section class="panel">
   <h2>학생 화면에 보일 게임</h2>
   <div class="modes" role="radiogroup" aria-label="게임 보이는 방식">
     <label class="mode"><input type="radio" name="mode" value="all"${mode === 'all' ? ' checked' : ''}><span><b>모든 게임 보이기</b><small>학생이 목록에서 골라 들어가요.</small></span></label>
     <label class="mode"><input type="radio" name="mode" value="selected"${mode === 'selected' ? ' checked' : ''}><span><b>고른 게임만 보이기</b><small>켠 게임만 보이고, 나머지 게임은 주소로 들어가도 닫혀 있어요.</small></span></label>
   </div>
-  <h3>수업에서 열 게임</h3>
+  <h3>게임 순서와 열기</h3>
+  <p class="muted small">▲ ▼ 단추로 학생 화면에 보이는 게임 순서를 바꿀 수 있어요. 스위치를 켠 게임이 수업에서 열려요.</p>
   <ul class="tlist">${rows}</ul>
   <p class="status">${esc(statusText(mode, open))}</p>
   ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
@@ -683,7 +792,7 @@ function checkHTML() {
 let lastVisible = '';
 function render() {
   const focus = document.activeElement;
-  const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]` : null);
+  const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]` : focus.dataset.act === 'move' ? `[data-act="move"][data-id="${focus.dataset.id}"][data-dir="${focus.dataset.dir}"]` : null);
   const teacher = isTeacherView();
   $('#app').innerHTML = teacher ? teacherHTML() : studentHTML();
   document.title = teacher ? `수업 관리 | ${TITLE}` : TITLE;
@@ -704,6 +813,7 @@ document.addEventListener('click', e => {
   if (a.dataset.act === 'signin') signIn();
   if (a.dataset.act === 'signout') H.auth.signOut().then(render);
   if (a.dataset.act === 'check') runCheck();
+  if (a.dataset.act === 'move') moveGame(a.dataset.id, Number(a.dataset.dir));
 });
 document.addEventListener('change', e => {
   const t = e.target;
