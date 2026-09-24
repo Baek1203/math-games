@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>수학 게임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+  --paper: #f7f9fc;
+  --grid-minor: rgba(64, 105, 180, 0.06);
+  --grid-major: rgba(64, 105, 180, 0.12);
+  --card: #ffffff;
+  --ink: #1b2440;
+  --ink-soft: #5a6480;
+  --line: #d5ddeb;
+  --marker: #fde35a;
+  --pen: #2d5bd1;
+  --pen-ink: #ffffff;
+  --ok: #237a4b;
+  --danger: #c23a2b;
+  --hand: 'Gaegu', 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --text: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #0f1522; --grid-minor: rgba(140, 170, 230, 0.06); --grid-major: rgba(140, 170, 230, 0.12);
+    --card: #182135; --ink: #e9eef8; --ink-soft: #a4afc6; --line: #2b3753;
+    --marker: #b89c1f; --pen: #7fa3ff; --pen-ink: #0d1424; --ok: #63c78d; --danger: #ff7a6b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0f1522; --grid-minor: rgba(140, 170, 230, 0.06); --grid-major: rgba(140, 170, 230, 0.12);
+  --card: #182135; --ink: #e9eef8; --ink-soft: #a4afc6; --line: #2b3753;
+  --marker: #b89c1f; --pen: #7fa3ff; --pen-ink: #0d1424; --ok: #63c78d; --danger: #ff7a6b;
+}
+*, *::before, *::after { box-sizing: inherit; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--text);
+  line-height: 1.6;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+:focus-visible { outline: 3px solid var(--pen); outline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+p { text-wrap: pretty; }
+.wrap {
+  width: 100%; max-width: 64rem; margin: 0 auto;
+  padding: 1.4rem max(1rem, env(safe-area-inset-right, 0px)) 3rem max(1rem, env(safe-area-inset-left, 0px));
+}
+
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .8rem 1.5rem; margin-top: .6rem; }
+.title { margin: 0; font-family: var(--hand); font-weight: 700; font-size: clamp(3rem, 9vw, 4.8rem); line-height: 1.05; }
+.title span {
+  padding: 0 .12em;
+  background: linear-gradient(transparent 56%, var(--marker) 56%, var(--marker) 90%, transparent 90%);
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+.lead { margin: .6rem 0 0; color: var(--ink-soft); font-size: 1.05rem; max-width: 34rem; }
+.who {
+  margin: 0; font-family: var(--hand); font-weight: 700; font-size: 1.35rem; line-height: 1.3;
+  padding: .25rem .9rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--card);
+  transform: rotate(-1.5deg);
+}
+.acct { display: inline-flex; flex-wrap: wrap; gap: .3rem .9rem; align-items: baseline; color: var(--ink-soft); }
+
+.section { margin: 2.2rem 0 .8rem; font-family: var(--hand); font-weight: 700; font-size: 1.9rem; line-height: 1.2; }
+.grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.1rem; }
+.card {
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  color: var(--ink); text-decoration: none;
+  box-shadow: 0 1px 0 rgba(20, 30, 60, .04), 0 12px 26px -20px rgba(20, 30, 60, .45);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+a.card:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(20, 30, 60, .04), 0 16px 30px -18px rgba(20, 30, 60, .5); }
+.cover { display: grid; place-items: center; min-height: 6.5rem; padding: .8rem; background: var(--c, var(--pen)); color: #fff; }
+.mark { font-family: var(--hand); font-weight: 700; font-size: 2rem; line-height: 1.1; text-align: center; text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+.card-body { display: grid; gap: .3rem; align-content: start; flex: 1; padding: .9rem 1rem 1.1rem; }
+.name { font-family: var(--hand); font-weight: 700; font-size: 1.55rem; line-height: 1.15; }
+.desc { color: var(--ink-soft); }
+.go {
+  justify-self: start; margin-top: .5rem; padding: .35rem 1rem; border-radius: 10px;
+  font-family: var(--hand); font-weight: 700; font-size: 1.3rem; background: var(--pen); color: var(--pen-ink);
+}
+.card.soon { opacity: .62; box-shadow: none; }
+.card.soon .cover { filter: grayscale(.7); }
+.tag { justify-self: start; margin-top: .5rem; padding: .05rem .75rem; border: 1px dashed var(--ink-soft); border-radius: 999px; font-size: .9rem; color: var(--ink-soft); }
+.feature { flex-direction: row; min-height: 14rem; }
+.feature .cover { flex: 0 0 min(40%, 18rem); min-height: 12rem; }
+.feature .mark { font-size: clamp(2.2rem, 5vw, 3.2rem); }
+.feature .card-body { align-content: center; padding: 1.4rem 1.6rem; }
+.feature .name { font-size: clamp(2rem, 5vw, 2.8rem); }
+.feature .desc { font-size: 1.1rem; }
+.feature .go { font-size: 1.7rem; padding: .5rem 1.5rem; margin-top: .9rem; }
+@media (max-width: 40rem) { .feature { flex-direction: column; } .feature .cover { flex-basis: auto; min-height: 8rem; } }
+
+.empty { margin-top: 2.2rem; padding: 2.2rem 1.4rem; text-align: center; background: var(--card); border: 2px dashed var(--line); border-radius: 16px; }
+.empty-title { margin: 0 0 .4rem; font-family: var(--hand); font-weight: 700; font-size: 2.1rem; line-height: 1.2; }
+.empty p { margin-left: auto; margin-right: auto; max-width: 30rem; }
+.waiting { display: inline-flex; align-items: center; gap: .55rem; color: var(--ink-soft); }
+.pulse { width: .7rem; height: .7rem; border-radius: 50%; background: var(--ok); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: .35; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
+.appear { animation: appear .45s ease-out both; }
+@keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.loading { margin-top: 2.2rem; color: var(--ink-soft); }
+
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .6rem 1rem; margin-top: 2.6rem; color: var(--ink-soft); font-size: .95rem; }
+.foot a, .link { color: var(--pen); }
+.link { background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+
+.panel { margin-top: 1.6rem; padding: 1.3rem 1.4rem 1.4rem; background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+.panel h2 { margin: 0 0 .4rem; font-family: var(--hand); font-weight: 700; font-size: 1.8rem; line-height: 1.2; }
+.panel h3 { margin: 1.5rem 0 .5rem; font-family: var(--hand); font-weight: 700; font-size: 1.45rem; }
+.muted { margin: 0 0 1rem; color: var(--ink-soft); }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: .6rem; }
+.mode { display: flex; gap: .7rem; align-items: flex-start; padding: .8rem .9rem; border: 2px solid var(--line); border-radius: 12px; cursor: pointer; }
+.mode:has(input:checked) { border-color: var(--pen); }
+.mode input { width: 1.15rem; height: 1.15rem; margin-top: .35rem; accent-color: var(--pen); flex: none; }
+.mode b { display: block; font-family: var(--hand); font-size: 1.4rem; line-height: 1.2; }
+.mode small { display: block; color: var(--ink-soft); font-size: .92rem; }
+.tlist { list-style: none; padding: 0; margin: 0; display: grid; gap: .45rem; }
+.tlist li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: .6rem .8rem; border: 1px solid var(--line); border-radius: 12px; }
+.tlist li.soon { opacity: .62; }
+.switch { position: relative; display: inline-flex; align-items: center; gap: .75rem; flex: 1; min-width: 12rem; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.knob { position: relative; flex: none; width: 2.8rem; height: 1.6rem; border-radius: 999px; background: var(--line); transition: background .15s ease; }
+.knob::after {
+  content: ''; position: absolute; top: .2rem; left: .2rem; width: 1.2rem; height: 1.2rem; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); transition: transform .15s ease;
+}
+.switch input:checked + .knob { background: var(--ok); }
+.switch input:checked + .knob::after { transform: translateX(1.2rem); }
+.switch input:focus-visible + .knob { outline: 3px solid var(--pen); outline-offset: 2px; }
+.t-name { font-family: var(--hand); font-weight: 700; font-size: 1.35rem; line-height: 1.2; }
+.t-state { color: var(--ink-soft); font-size: .92rem; }
+.status { margin: 1.3rem 0 0; padding: .8rem 1rem; border-radius: 12px; background: var(--paper); border-left: 6px solid var(--marker); }
+.btn {
+  font-family: var(--hand); font-weight: 700; font-size: 1.35rem; line-height: 1.2;
+  padding: .55rem 1.25rem; border-radius: 12px; border: 2px solid var(--ink);
+  background: var(--card); color: var(--ink); box-shadow: 0 3px 0 var(--ink); cursor: pointer;
+}
+.btn.primary { background: var(--pen); color: var(--pen-ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+.err { margin: .8rem 0 0; color: var(--danger); }
+@media (prefers-reduced-motion: reduce) {
+  .pulse, .appear { animation: none; }
+  .card, .knob, .knob::after { transition: none; }
+}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+<p class="sr" id="announce" aria-live="polite"></p>
+<script src="firebase-config.js"></script>
+<script>
+/* ============================================================
+   게임 목록: 새 게임을 만들면 여기에 한 줄 추가하세요.
+   - id: 저장소 안의 게임 폴더 이름 (예: gcd-baseball)
+   - color: 카드 윗부분 색, mark: 카드 윗부분에 크게 쓰는 짧은 글자
+   - ready: false로 두면 '준비 중'으로만 보이고 들어갈 수 없어요.
+   - href: 다른 곳에 있는 앱(예: 구글 앱스 스크립트)이면 그 주소를 적어요.
+     이때 id는 겹치지 않는 아무 이름이면 됩니다.
+   ============================================================ */
+const TITLE = '수학 게임';
+const GAMES = [
+  { id: 'gcd-baseball', name: '최대공약수 숫자야구', desc: '최대공약수만 단서로 숨은 비밀 수를 찾아내요.', color: '#17402c', mark: '60 ▶ 12', ready: true },
+  { id: 'prime-tower', name: '소인수 타워 디펜스', desc: '수를 나누는 탑을 세워 몬스터를 막아요.', color: '#5b3a8c', mark: '2 3 5 7', ready: true },
+  { id: 'coord-battle', name: '좌표 해전', desc: '그래프 무기로 숨은 함대를 찾아요.', color: '#1c5585', mark: '(3, -2)', ready: false },
+  { id: 'math-liar', name: '수학 라이어 게임', desc: '모둠 안에서 제시어를 모르는 라이어를 찾아요.', color: '#a13d2d', mark: '?', ready: false },
+  { id: 'data-coach', name: '데이터 감독 게임', desc: '기록의 분포를 보고 이어달리기 팀을 꾸려요.', color: '#2e6b52', mark: '▂▅▇▃', ready: false },
+];
+const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+/* ===== 상태 ===== */
+const H = { mode: 'pending', FB: null, auth: null, db: null, state: null, loaded: false, user: null, err: '', busy: false, shown: null };
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeColor = c => (/^#[0-9a-fA-F]{3,8}$/.test(c || '') ? c : '#2d5bd1');
+const isTeacherView = () => location.hash === '#teacher';
+const ready = GAMES.filter(g => g.ready);
+const gameURL = (g, suffix) => (g.href ? g.href : encodeURI(g.id) + '/' + (suffix || ''));
+
+function student() {
+  try {
+    const s = JSON.parse(localStorage.getItem('mathgames.student'));
+    return s && typeof s.sid === 'string' && typeof s.name === 'string' ? s : null;
+  } catch (e) { return null; }
+}
+
+/* 학생 화면에 지금 보여 줄 게임. selected: 선생님이 고른 게임만 보이는 중인지 */
+function visible() {
+  const st = H.mode === 'firebase' ? H.state : null;
+  if (st && st.mode === 'selected') return { selected: true, list: ready.filter(g => st.open && st.open[g.id]) };
+  return { selected: false, list: GAMES };
+}
+
+/* ===== 학급 서버 ===== */
+function loadScript(src, ms) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    s.src = src;
+    s.async = false;
+    s.onload = () => { clearTimeout(timer); resolve(); };
+    s.onerror = () => { clearTimeout(timer); reject(new Error('load')); };
+    document.head.appendChild(s);
+  });
+}
+async function boot() {
+  render();
+  const cfg = window.CLASS_FIREBASE_CONFIG;
+  if (!cfg || !cfg.databaseURL) { H.mode = 'local'; render(); return; }
+  try {
+    for (const f of ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-database-compat.js']) {
+      await loadScript(FIREBASE_SDK_BASE + f, 12000);
+    }
+    const FB = window.firebase;
+    FB.initializeApp(cfg);
+    H.FB = FB;
+    H.auth = FB.auth();
+    H.db = FB.database();
+    H.mode = 'firebase';
+    H.auth.onAuthStateChanged(u => { H.user = u && !u.isAnonymous ? u : null; if (isTeacherView()) render(); });
+    H.db.ref('hub').on('value', snap => { H.state = snap.val(); H.loaded = true; render(); },
+      () => { H.state = null; H.loaded = true; render(); });
+  } catch (e) {
+    H.mode = 'local';
+  }
+  render();
+}
+async function writeHub(fn) {
+  H.err = '';
+  try {
+    await fn();
+    await H.db.ref('hub').update({ t: H.FB.database.ServerValue.TIMESTAMP });
+  } catch (e) {
+    H.err = '바꾸지 못했어요. 규칙에 적어 둔 선생님 계정으로 로그인했는지 확인하세요.';
+    render();
+  }
+}
+async function signIn() {
+  H.busy = true;
+  H.err = '';
+  render();
+  try {
+    await H.auth.setPersistence(H.FB.auth.Auth.Persistence.SESSION);
+    await H.auth.signInWithPopup(new H.FB.auth.GoogleAuthProvider());
+  } catch (e) {
+    const c = e && e.code;
+    H.err = c === 'auth/popup-blocked' ? '팝업이 막혔어요. 주소창에서 팝업을 허용한 뒤 다시 눌러 주세요.'
+      : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? '로그인 창이 닫혔어요. 다시 눌러 주세요.'
+      : c === 'auth/unauthorized-domain' ? '이 주소에서는 로그인할 수 없어요. Authentication 설정의 승인된 도메인에 이 주소를 추가하세요.'
+      : '로그인하지 못했어요. 다시 시도해 주세요.';
+  }
+  H.busy = false;
+  render();
+}
+
+/* ===== 화면 ===== */
+function cover(g) {
+  return `<span class="cover" style="--c:${safeColor(g.color)}" aria-hidden="true"><span class="mark">${esc(g.mark || '')}</span></span>`;
+}
+function cardHTML(g, feature) {
+  const fresh = H.shown && !H.shown.has(g.id) ? ' appear' : '';
+  if (!g.ready) {
+    return `<div class="card soon" aria-disabled="true">${cover(g)}<span class="card-body"><span class="name">${esc(g.name)}</span><span class="desc">${esc(g.desc)}</span><span class="tag">준비 중</span></span></div>`;
+  }
+  return `<a class="card${feature ? ' feature' : ''}${fresh}" href="${esc(gameURL(g))}">${cover(g)}<span class="card-body"><span class="name">${esc(g.name)}</span><span class="desc">${esc(g.desc)}</span><span class="go">입장하기</span></span></a>`;
+}
+function studentHTML() {
+  const me = student();
+  const v = visible();
+  const lead = v.selected ? '선생님이 이번 수업에 연 게임이에요.' : '게임을 골라 들어가세요. 한 게임에서 학번과 이름으로 입장하면 다른 게임에서도 그대로 이어져요.';
+  let body;
+  if (H.mode === 'pending' || (H.mode === 'firebase' && !H.loaded)) {
+    body = '<p class="loading">열린 게임을 확인하고 있어요.</p>';
+  } else if (v.selected && !v.list.length) {
+    body = `<section class="empty">
+  <p class="empty-title">지금은 열린 게임이 없어요</p>
+  <p>선생님이 게임을 열면 이 화면에 바로 나타나요. 새로고침하지 않아도 돼요.</p>
+  <p class="waiting"><span class="pulse" aria-hidden="true"></span>기다리는 중</p>
+</section>`;
+  } else if (v.selected && v.list.length === 1) {
+    body = `<h2 class="section">오늘의 게임</h2>${cardHTML(v.list[0], true)}`;
+  } else {
+    body = `<h2 class="section">${v.selected ? '오늘의 게임' : '게임 목록'}</h2><ul class="grid">${v.list.map(g => `<li>${cardHTML(g, false)}</li>`).join('')}</ul>`;
+  }
+  return `<header class="head">
+  <div><h1 class="title"><span>${esc(TITLE)}</span></h1><p class="lead">${lead}</p></div>
+  ${me ? `<p class="who">${esc(me.sid)} ${esc(me.name)}</p>` : ''}
+</header>
+${body}`;
+}
+
+function statusText(mode, open) {
+  if (mode !== 'selected') return '지금 학생 화면: 모든 게임이 보여요.';
+  const names = ready.filter(g => open[g.id]).map(g => g.name);
+  return names.length ? `지금 학생 화면: ${names.join(', ')}` : '지금 학생 화면: 열린 게임이 없어서 학생들은 기다리는 화면을 봐요.';
+}
+function teacherHTML() {
+  let body;
+  if (H.mode === 'pending') {
+    body = '<p class="loading">학급 서버를 확인하고 있어요.</p>';
+  } else if (H.mode === 'local') {
+    body = `<section class="panel">
+  <h2>학급 서버가 연결되어 있지 않아요</h2>
+  <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 학생 화면에 보일 게임을 고를 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
+  <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
+</section>`;
+  } else if (!H.user) {
+    body = `<section class="panel">
+  <h2>선생님 로그인</h2>
+  <p class="muted">규칙에 적어 둔 선생님 Google 계정으로 로그인하면 학생 화면에 보일 게임을 고를 수 있어요.</p>
+  <button type="button" class="btn primary" data-act="signin"${H.busy ? ' disabled' : ''}>${H.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
+  ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
+</section>`;
+  } else {
+    const st = H.state || {};
+    const mode = st.mode === 'selected' ? 'selected' : 'all';
+    const open = st.open || {};
+    const rows = GAMES.map(g => g.ready
+      ? `<li><label class="switch"><input type="checkbox" data-open="${esc(g.id)}"${open[g.id] ? ' checked' : ''}><span class="knob" aria-hidden="true"></span><span class="t-name">${esc(g.name)}</span><span class="t-state">${open[g.id] ? '열림' : '닫힘'}</span></label>${g.href ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`
+      : `<li class="soon"><span class="t-name">${esc(g.name)}</span><span class="tag">준비 중</span></li>`).join('');
+    body = `<section class="panel">
+  <h2>학생 화면에 보일 게임</h2>
+  <div class="modes" role="radiogroup" aria-label="게임 보이는 방식">
+    <label class="mode"><input type="radio" name="mode" value="all"${mode === 'all' ? ' checked' : ''}><span><b>모든 게임 보이기</b><small>학생이 목록에서 골라 들어가요.</small></span></label>
+    <label class="mode"><input type="radio" name="mode" value="selected"${mode === 'selected' ? ' checked' : ''}><span><b>고른 게임만 보이기</b><small>켠 게임만 보이고, 나머지 게임은 주소로 들어가도 닫혀 있어요.</small></span></label>
+  </div>
+  <h3>수업에서 열 게임</h3>
+  <ul class="tlist">${rows}</ul>
+  <p class="status">${esc(statusText(mode, open))}</p>
+  ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
+</section>`;
+  }
+  return `<header class="head">
+  <div><h1 class="title"><span>수업 관리</span></h1><p class="lead">학생들이 게임 목록에서 어떤 게임을 볼지 정해요.</p></div>
+  ${H.user ? `<p class="acct">${esc(H.user.email || '')}<button type="button" class="link" data-act="signout">로그아웃</button></p>` : ''}
+</header>
+${body}
+<footer class="foot"><span></span><a href="#">학생 화면 보기</a></footer>`;
+}
+
+let lastVisible = '';
+function render() {
+  const focus = document.activeElement;
+  const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]` : null);
+  const teacher = isTeacherView();
+  $('#app').innerHTML = teacher ? teacherHTML() : studentHTML();
+  document.title = teacher ? `수업 관리 | ${TITLE}` : TITLE;
+  if (keep) { const el = document.querySelector(keep); if (el) el.focus(); }
+  if (!teacher && !(H.mode === 'pending' || (H.mode === 'firebase' && !H.loaded))) {
+    const v = visible();
+    const ids = v.list.map(g => g.id);
+    const text = v.selected ? (ids.length ? `열린 게임: ${v.list.map(g => g.name).join(', ')}` : '열린 게임이 없어요.') : '';
+    if (H.shown && ids.join() !== lastVisible && text) $('#announce').textContent = text;
+    lastVisible = ids.join();
+    H.shown = new Set(ids);
+  }
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  if (a.dataset.act === 'signin') signIn();
+  if (a.dataset.act === 'signout') H.auth.signOut().then(render);
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (!H.db || !H.user) return;
+  if (t.name === 'mode') writeHub(() => H.db.ref('hub/mode').set(t.value));
+  else if (t.dataset.open) writeHub(() => H.db.ref('hub/open/' + t.dataset.open).set(t.checked ? true : null));
+});
+window.addEventListener('hashchange', () => { H.err = ''; render(); window.scrollTo(0, 0); });
+window.addEventListener('storage', e => { if (e.key === 'mathgames.student') render(); });
+boot();
+</script>
+</body>
+</html>

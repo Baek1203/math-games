@@ -1,0 +1,2395 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>최대공약수 숫자야구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Sunflower:wght@300;500;700&display=swap">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+  --field: #e9f0e5;
+  --stripe: rgba(38, 104, 58, 0.055);
+  --chalk: #ffffff;
+  --chalk-2: #f3f7f0;
+  --ink: #15233b;
+  --ink-soft: #56637b;
+  --line: #cdd9c9;
+  --edge: #15233b;
+  --input-edge: #95a6bf;
+  --red: #cf3328;
+  --red-ink: #ffffff;
+  --red-soft: rgba(207, 51, 40, 0.1);
+  --green: #25703f;
+  --green-soft: rgba(37, 112, 63, 0.12);
+  --navy-soft: rgba(21, 35, 59, 0.08);
+  /* 전광판은 실제 물건처럼 밝기 설정과 상관없이 같은 색 */
+  --board: #10231a;
+  --board-deep: #0a1711;
+  --board-line: #264335;
+  --board-text: #eaf3ec;
+  --board-soft: #9ab4a3;
+  --led: #ffb627;
+  --led-glow: rgba(255, 170, 40, 0.5);
+  --font: 'Sunflower', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  --font-led: 'DotGothic16', 'Consolas', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --field: #0e1627;
+    --stripe: rgba(125, 160, 255, 0.04);
+    --chalk: #16213a;
+    --chalk-2: #1c2946;
+    --ink: #edf1f8;
+    --ink-soft: #a5b0c6;
+    --line: #2b3a5e;
+    --edge: #050912;
+    --input-edge: #3d5080;
+    --red: #df4639;
+    --red-ink: #ffffff;
+    --red-soft: rgba(239, 90, 75, 0.16);
+    --green: #62c787;
+    --green-soft: rgba(98, 199, 135, 0.16);
+    --navy-soft: rgba(237, 241, 248, 0.08);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --field: #0e1627;
+  --stripe: rgba(125, 160, 255, 0.04);
+  --chalk: #16213a;
+  --chalk-2: #1c2946;
+  --ink: #edf1f8;
+  --ink-soft: #a5b0c6;
+  --line: #2b3a5e;
+  --edge: #050912;
+  --input-edge: #3d5080;
+  --red: #df4639;
+  --red-ink: #ffffff;
+  --red-soft: rgba(239, 90, 75, 0.16);
+  --green: #62c787;
+  --green-soft: rgba(98, 199, 135, 0.16);
+  --navy-soft: rgba(237, 241, 248, 0.08);
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+html.big { font-size: 125%; }
+body {
+  margin: 0;
+  background-color: var(--field);
+  background-image: repeating-linear-gradient(90deg, var(--stripe) 0 4.5rem, transparent 4.5rem 9rem);
+  color: var(--ink);
+  font-family: var(--font);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+button, input { font: inherit; color: inherit; }
+img, svg { max-width: 100%; }
+:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+main.wrap { padding-bottom: 3rem; }
+.topbar { display: flex; align-items: center; gap: .6rem .9rem; padding-top: .9rem; padding-bottom: .7rem; flex-wrap: wrap; }
+.topbar .spacer { flex: 1; }
+.pill {
+  font-weight: 500; font-size: .95rem; line-height: 1;
+  padding: .55rem .9rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--chalk); color: var(--ink); cursor: pointer;
+}
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--chalk); border-color: var(--ink); }
+.me-chip { display: inline-flex; align-items: baseline; gap: .45rem; font-weight: 700; }
+.me-chip .no { font-family: var(--font-led); font-weight: 400; color: var(--ink-soft); }
+
+h1, h2, h3 { letter-spacing: -0.01em; }
+h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 .3rem; line-height: 1.3; }
+h2 label { cursor: pointer; }
+.page-title { font-size: 1.95rem; font-weight: 700; margin: 0 0 .3rem; line-height: 1.2; }
+.muted { color: var(--ink-soft); margin: .1rem 0 .9rem; }
+.small { font-size: .9rem; line-height: 1.5; }
+p { max-width: 44rem; text-wrap: pretty; }
+dd { text-wrap: pretty; }
+.board-sub, .result-line, .hero-sub { text-wrap: balance; }
+
+/* ===== 전광판 ===== */
+.board {
+  position: relative;
+  overflow: hidden;
+  margin: 6px;
+  padding: 1.1rem clamp(.9rem, 2.6vw, 1.6rem) 1.2rem;
+  border-radius: 20px;
+  color: var(--board-text);
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1.4px);
+  background-size: 6px 6px;
+  box-shadow: inset 0 0 0 1px var(--board-line), 0 0 0 6px var(--board-deep), 0 22px 40px -24px rgba(0, 0, 0, .65);
+}
+.led {
+  font-family: var(--font-led);
+  font-weight: 400;
+  color: var(--led);
+  text-shadow: 0 0 .35em var(--led-glow), 0 0 1.2em rgba(255, 140, 20, .22);
+}
+.led.flash { animation: flash .7s ease-out 1; }
+@keyframes flash {
+  0% { color: #fff6d6; text-shadow: 0 0 .6em rgba(255, 214, 130, .95), 0 0 2em rgba(255, 150, 30, .6); }
+  100% { color: var(--led); }
+}
+.board-sub { color: var(--board-soft); margin: .8rem auto 0; }
+.board-link {
+  background: none; border: 0; padding: .3rem 0; cursor: pointer;
+  color: var(--board-soft); font-weight: 500; font-size: .95rem;
+  text-decoration: underline; text-underline-offset: .2em;
+}
+.board-link:hover { color: var(--board-text); }
+.board-foot { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem .8rem; margin-top: .85rem; }
+
+.ls-wrap {
+  margin-top: .9rem;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--board-deep);
+  box-shadow: inset 0 0 0 1px var(--board-line);
+}
+.ls { border-collapse: separate; border-spacing: 0; width: 100%; }
+.ls th, .ls td { padding: .5rem .6rem; text-align: center; white-space: nowrap; border-right: 1px solid var(--board-line); }
+.ls tr > :last-child { border-right: 0; }
+.ls thead th { font-weight: 300; font-size: .85rem; color: var(--board-soft); border-bottom: 1px solid var(--board-line); }
+.ls tbody tr:first-child > * { border-bottom: 1px solid var(--board-line); }
+.ls th[scope="row"], .ls thead th:first-child {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--board-deep); text-align: left; font-weight: 500; color: var(--board-soft); min-width: 4.6rem;
+}
+.ls td { font-family: var(--font-led); color: var(--led); text-shadow: 0 0 .35em var(--led-glow); font-size: 1.35rem; min-width: 3rem; }
+.ls td.empty { color: rgba(255, 182, 39, .2); text-shadow: none; }
+.ls td.now { background: rgba(255, 182, 39, .1); }
+.ls td.hr { color: #fff1c2; }
+
+.plate {
+  background: var(--board-deep); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--board-line);
+  padding: .6rem .8rem .85rem; text-align: center; display: grid; gap: .3rem; align-content: start;
+}
+.plate .lbl { color: var(--board-soft); font-size: .95rem; }
+.plates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-top: 1.1rem; }
+.plates.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 34rem) { .plates.four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.plates .val { font-size: 1.45rem; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+.plates .led.val { font-weight: 400; }
+
+/* 첫 화면 */
+.hero { padding-top: 1.35rem; }
+.hero-head { display: flex; gap: 1rem; align-items: center; }
+.hero-ball { width: clamp(3rem, 9vw, 4.6rem); height: auto; flex: none; }
+.hero-title { margin: 0; font-size: clamp(1.9rem, 5.2vw, 3.05rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: var(--board-text); }
+.hero-sub { margin: .4rem 0 0; color: var(--board-soft); font-weight: 300; font-size: 1.05rem; }
+.hero .ls td { font-size: 1.5rem; }
+.demo-cap { margin: 0; color: var(--board-soft); flex: 1 1 16rem; }
+
+.player {
+  margin: 1.1rem 6px 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.1rem;
+  background: var(--chalk); border: 1px solid var(--line); border-radius: 16px; padding: .85rem 1rem;
+}
+.player-no {
+  font-family: var(--font-led); font-weight: 400; color: var(--led); background: var(--board);
+  border-radius: 10px; padding: .3rem .7rem; font-size: 1.35rem; line-height: 1.2;
+  text-shadow: 0 0 .35em var(--led-glow); box-shadow: inset 0 0 0 1px var(--board-line);
+}
+.player-name { font-size: 1.35rem; font-weight: 700; }
+.player-stats { display: flex; gap: .3rem 1rem; flex-wrap: wrap; color: var(--ink-soft); }
+.player-stats b { color: var(--ink); font-size: 1.1rem; margin-left: .3rem; }
+.player .spacer { flex: 1; }
+.player-actions { display: flex; gap: .6rem 1rem; align-items: center; flex-wrap: wrap; }
+
+.resume {
+  margin: 1.1rem 6px 0;
+  display: flex; flex-wrap: wrap; gap: .7rem 1rem; align-items: center; justify-content: space-between;
+  background: var(--green-soft); border: 1px solid var(--green); border-radius: 14px; padding: .8rem 1rem;
+}
+.resume p { margin: 0; }
+
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 1.25rem 6px 0; }
+@media (min-width: 52rem) { .home-grid { grid-template-columns: 1.15fr 1fr; align-items: start; } }
+.stack { display: grid; gap: 1rem; align-content: start; }
+.panel { background: var(--chalk); border: 1px solid var(--line); border-radius: 16px; padding: 1.15rem 1.25rem 1.25rem; }
+.blurb { margin: .8rem 0 0; }
+.rules { margin: .8rem 0 1.1rem; display: grid; gap: .45rem; }
+.rules div { display: grid; grid-template-columns: 7rem 1fr; gap: .6rem; }
+.rules dt { color: var(--ink-soft); }
+.rules dd { margin: 0; }
+@media (max-width: 30rem) { .rules div { grid-template-columns: 1fr; gap: 0; } }
+.steps { margin: .5rem 0 0; padding-left: 1.4rem; display: grid; gap: .45rem; }
+.steps li { padding-left: .2rem; }
+.steps li::marker { font-family: var(--font-led); color: var(--red); }
+
+.field { display: grid; gap: .3rem; margin-bottom: .85rem; }
+.field label { font-weight: 700; font-size: 1.05rem; }
+.field input, .code-in, .guess-in {
+  font-weight: 700; font-size: 1.4rem; line-height: 1.2; letter-spacing: .03em;
+  padding: .6rem .85rem; border-radius: 12px;
+  border: 2px solid var(--input-edge); background: var(--chalk-2); color: var(--ink);
+}
+.field input { width: 100%; }
+.field input:focus, .code-in:focus, .guess-in:focus { outline: 3px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+.field input::placeholder, .code-in::placeholder, .guess-in::placeholder { color: var(--ink-soft); opacity: .6; font-weight: 500; }
+.guess-in { font-size: 1.8rem; }
+.signin .btn.wide { margin-top: .3rem; }
+.signin .btn.wide + .muted { margin: .9rem 0 0; }
+
+.ticket {
+  display: grid; grid-template-columns: 1fr 3.1rem;
+  background: var(--chalk); border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+}
+.ticket-main { padding: 1.15rem 1.25rem 1rem; min-width: 0; }
+.ticket-stub {
+  writing-mode: vertical-rl;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--red); color: var(--red-ink);
+  font-weight: 700; letter-spacing: .35em; font-size: 1rem;
+  border-left: 2px dashed var(--chalk);
+}
+
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 14px; background: var(--chalk-2); border: 1px solid var(--line); }
+.seg button { font-weight: 700; font-size: 1.05rem; line-height: 1; padding: .65rem 1.05rem; border: 0; border-radius: 10px; background: transparent; color: var(--ink-soft); cursor: pointer; }
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--chalk); }
+
+.btn {
+  font-weight: 700; font-size: 1.1rem; line-height: 1.1;
+  padding: .8rem 1.15rem; border-radius: 12px;
+  border: 2px solid var(--edge); background: var(--chalk-2); color: var(--ink);
+  box-shadow: 0 3px 0 var(--edge); cursor: pointer; white-space: nowrap;
+  transition: transform .06s ease, box-shadow .06s ease;
+}
+.btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge); }
+.btn.primary { background: var(--red); color: var(--red-ink); }
+.btn.wide { width: 100%; font-size: 1.35rem; padding: 1rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+.btn .cost { font-weight: 500; font-size: .85rem; margin-left: .45rem; color: var(--red); }
+.btn.on-board { background: transparent; color: var(--board-text); border-color: var(--board-line); box-shadow: 0 3px 0 #000; }
+.text-btn {
+  background: none; border: 0; padding: .35rem .1rem; cursor: pointer;
+  font-weight: 500; font-size: .95rem; line-height: 1.2; color: var(--ink-soft);
+  text-decoration: underline; text-underline-offset: .2em;
+}
+.text-btn:disabled { opacity: .45; cursor: default; }
+.text-btn.danger { color: var(--red); }
+.text-btn.danger.armed { font-weight: 700; text-decoration: none; background: var(--red-soft); padding: .45rem .7rem; border-radius: 8px; }
+
+.inline-row { display: flex; gap: .5rem; align-items: stretch; flex-wrap: wrap; }
+.inline-row input { flex: 1 1 8rem; min-width: 0; }
+.err { color: var(--red); min-height: 1.5em; margin: .45rem 0 0; font-weight: 500; }
+
+/* ===== 경기 화면 ===== */
+.game-head { display: flex; gap: .5rem .8rem; align-items: center; flex-wrap: wrap; margin: 0 6px; }
+.lvl-chip { display: inline-block; font-weight: 700; padding: .2rem .75rem; border-radius: 999px; font-size: .95rem; line-height: 1.4; }
+.lvl-chip.lv1 { background: var(--green-soft); color: var(--green); }
+.lvl-chip.lv2 { background: var(--navy-soft); color: var(--ink); }
+.lvl-chip.lv3 { background: var(--red-soft); color: var(--red); }
+.code-chip { color: var(--ink-soft); }
+.code-chip b { color: var(--ink); margin-left: .2rem; letter-spacing: .03em; }
+
+.game-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin-top: .75rem; }
+.col-main { min-width: 0; }
+@media (min-width: 56rem) { .game-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
+.readout { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: .6rem; align-items: stretch; }
+.led.big { font-size: clamp(2.6rem, 9vw, 4.6rem); line-height: 1; }
+.sep { align-self: center; font-size: 1.3rem; opacity: .5; }
+.board-msg { margin: .85rem 0 0; min-height: 1.6em; font-size: 1.05rem; }
+.count-lbl { color: var(--board-soft); }
+.count { font-size: 1.9rem; line-height: 1; }
+.count-sub { color: var(--board-soft); font-size: .9rem; }
+
+.guess-box { margin: 1rem 6px 0; }
+.guess-label { display: block; font-weight: 700; font-size: 1.1rem; margin-bottom: .35rem; }
+.guess-box .btn { font-size: 1.25rem; padding: .8rem 1.4rem; }
+.guess-box .muted { margin-bottom: .4rem; }
+
+.memo { margin: 0 6px; }
+.memo-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.memo-count { color: var(--ink-soft); }
+.numgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: .4rem; margin-top: .4rem; }
+.num {
+  position: relative; min-height: 2.6rem; padding: .5rem 0;
+  font-weight: 700; font-size: 1.05rem; line-height: 1;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--chalk-2); color: var(--ink); cursor: pointer;
+}
+.num:hover:not(:disabled) { border-color: var(--ink-soft); }
+.num.x, .num.auto, .num.called { color: var(--ink-soft); background: transparent; }
+.num.x::after, .num.auto::after, .num.called::after {
+  content: ''; position: absolute; left: 18%; right: 18%; top: 50%; height: 2px; border-radius: 2px;
+  background: var(--red); transform: rotate(-24deg);
+}
+.num.auto { opacity: .45; border-style: dashed; cursor: default; }
+.num.auto::after { background: var(--ink-soft); }
+.num.called { opacity: .6; cursor: default; }
+.num.called::after { background: var(--ink); }
+.num.revived { border-color: var(--green); box-shadow: 0 0 0 2px var(--green); animation: revive 1.6s ease-out 1; }
+@keyframes revive { 0% { transform: scale(1.12); } 40% { transform: scale(1); } }
+.num.sel { background: var(--red); color: var(--red-ink); border-color: var(--red); }
+.memo-actions { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-top: 1rem; }
+.memo-actions + .muted { margin: .7rem 0 0; }
+.memo-note { min-height: 1.5em; margin: .5rem 0 0; color: var(--green); font-weight: 700; }
+
+/* ===== 결과 화면 ===== */
+.result-board { text-align: center; padding-top: 1.6rem; }
+.result-title {
+  margin: 0; font-size: clamp(3rem, 13vw, 6rem); line-height: 1; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--led); text-shadow: 0 0 .25em var(--led-glow), 0 0 1em rgba(255, 140, 20, .3);
+}
+.result-board:not(.won) .result-title { color: var(--board-soft); text-shadow: none; }
+.result-line { margin: .7rem auto 0; font-size: 1.2rem; }
+.result-board .ls-wrap { text-align: left; }
+.fly-ball { position: absolute; width: 3.2rem; left: 0; bottom: 0; pointer-events: none; animation: fly 1.7s cubic-bezier(.2, .7, .3, 1) .2s 1 both; }
+@keyframes fly {
+  0% { transform: translate(-3rem, 2rem) rotate(0deg) scale(.7); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translate(min(80vw, 58rem), -15rem) rotate(900deg) scale(1.1); opacity: 0; }
+}
+.result-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 1.25rem 6px 0; }
+@media (min-width: 56rem) { .result-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; } }
+.secret-line { font-size: 1.25rem; margin: .4rem 0 .2rem; }
+.plays { list-style: none; padding: 0; margin: .8rem 0 0; display: grid; gap: .45rem; }
+.plays li { display: grid; grid-template-columns: 2rem 1fr; gap: .5rem; align-items: baseline; padding: .55rem .7rem; border-radius: 12px; background: var(--chalk-2); }
+.plays li.win { background: var(--red-soft); }
+.play-n { font-family: var(--font-led); color: var(--ink-soft); font-size: 1.1rem; text-align: center; }
+.play-body { display: flex; flex-wrap: wrap; gap: .15rem 1rem; align-items: baseline; }
+.fx { font-size: 1.1rem; }
+.res { color: var(--ink-soft); }
+.plays li.win .res { color: var(--red); font-weight: 700; }
+mark { background: var(--green-soft); color: var(--green); font-weight: 700; border-radius: 6px; padding: 0 .18em; }
+sup { font-size: .7em; line-height: 0; }
+.insight { margin: 1rem 0 0; padding: .75rem .95rem; background: var(--chalk-2); border-radius: 12px; }
+.tip { font-size: 1.15rem; margin: .3rem 0 0; }
+.actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1rem; }
+
+.badges { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .5rem; }
+.badge { display: flex; gap: .6rem; align-items: center; padding: .55rem .7rem; border-radius: 12px; border: 1px dashed var(--line); color: var(--ink-soft); }
+.badge.on { border: 1px solid var(--green); background: var(--green-soft); color: var(--ink); }
+.mini-ball { width: 1.7rem; height: 1.7rem; display: block; flex: none; opacity: .3; filter: grayscale(1); }
+.badge.on .mini-ball { opacity: 1; filter: none; }
+.bn { display: block; font-weight: 700; }
+.bd { display: block; font-size: .82rem; color: var(--ink-soft); line-height: 1.35; }
+.badge-group h3 { font-size: 1.05rem; margin: 1rem 0 0; display: flex; gap: .5rem; align-items: baseline; }
+.badge-group h3 .cnt { color: var(--ink-soft); font-weight: 500; font-size: .9rem; }
+
+/* ===== 기록실 ===== */
+.rec-head { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+.rec-title { margin: 0; font-size: clamp(1.6rem, 4.4vw, 2.4rem); font-weight: 700; line-height: 1.15; color: var(--board-text); }
+.records-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 1.25rem 6px 0; }
+@media (min-width: 56rem) { .records-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.records-badges { margin: 1rem 6px 0; }
+.table-wrap { overflow-x: auto; margin-top: .6rem; }
+.rec-table { border-collapse: collapse; width: 100%; min-width: 21rem; }
+.rec-table th, .rec-table td { padding: .55rem .6rem; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.rec-table thead th { color: var(--ink-soft); font-weight: 500; font-size: .9rem; }
+.rec-table tbody th { text-align: left; font-weight: 500; }
+.rec-table td { font-weight: 700; font-size: 1.1rem; }
+.recent { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .4rem; }
+.recent li { display: flex; flex-wrap: wrap; gap: .3rem .8rem; align-items: center; padding: .5rem .7rem; border-radius: 12px; background: var(--chalk-2); }
+.rc-code { font-weight: 700; letter-spacing: .03em; }
+.rc-res { font-weight: 700; }
+.rc-res.win { color: var(--green); }
+.rc-res.lose { color: var(--ink-soft); }
+.rc-time { color: var(--ink-soft); font-size: .9rem; margin-left: auto; }
+.page-actions { margin: 1.2rem 6px 0; }
+
+/* ===== 문제 내기 ===== */
+.create-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin: 0 6px; }
+@media (min-width: 56rem) {
+  .create-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
+  .create-grid .board { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); }
+}
+.create-grid .numgrid { margin-bottom: .6rem; }
+.code-board { text-align: center; padding: 1.7rem 1.2rem 1.5rem; margin: 6px; }
+.code-board.empty { display: grid; place-items: center; min-height: 13rem; }
+.code-board .lbl { color: var(--board-soft); margin: 0 auto; }
+.code-big { font-size: clamp(3rem, 12vw, 5.4rem); margin: .25rem auto .5rem; line-height: 1; }
+.peek-row { display: flex; justify-content: center; align-items: center; gap: .8rem; margin: .7rem 0 1rem; min-height: 2.6rem; }
+.peek-val { font-size: 2rem; line-height: 1; }
+.note { color: var(--green); font-weight: 700; margin: .8rem 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .fly-ball { display: none; }
+}
+
+/* ===== 공통: 아래쪽 정보 줄 ===== */
+.site-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1.2rem; padding-top: 1.4rem; padding-bottom: 1.6rem; color: var(--ink-soft); font-size: .9rem; }
+.site-foot .text-btn { margin-left: auto; }
+.sync { display: inline-flex; align-items: center; gap: .45rem; }
+.sync::before { content: ''; width: .6rem; height: .6rem; border-radius: 50%; background: var(--line); }
+.sync.on::before { background: var(--green); }
+.sync.local::before { background: #d49a1f; }
+.sync-note { color: var(--red); }
+
+/* ===== 선생님 화면 ===== */
+.seg button[aria-selected="true"] { background: var(--ink); color: var(--chalk); }
+.t-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; margin: 0 6px; }
+.t-title { font-size: 1.95rem; font-weight: 700; margin: 0; line-height: 1.2; }
+.t-account { margin-left: auto; display: inline-flex; gap: .7rem; align-items: baseline; color: var(--ink-soft); }
+.t-note { margin: .8rem 6px 0; padding: .75rem .95rem; border-radius: 12px; background: var(--chalk); border: 1px dashed #d49a1f; }
+.t-gate { margin: 1rem 6px 0; max-width: 34rem; }
+.t-tabs { margin: 1rem 6px 0; }
+.t-section { margin: 1rem 6px 0; }
+.t-err { margin: .8rem 6px 0; }
+.t-board { margin-top: 1rem; }
+.t-board .plates { margin-top: .2rem; }
+.t-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 1rem 6px 0; }
+@media (min-width: 52rem) { .t-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin: 1rem 6px 0; }
+.filters h2 { margin: 0; }
+.t-section .filters { margin: 0 0 .4rem; }
+.filters .spacer { flex: 1; }
+.filter { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; }
+.filter select {
+  font: inherit; font-weight: 700; padding: .45rem .7rem; border-radius: 10px;
+  border: 2px solid var(--input-edge); background: var(--chalk-2); color: var(--ink);
+}
+.count-inline { color: var(--ink-soft); }
+.muted-inline { color: var(--ink-soft); font-weight: 500; }
+.ok { color: var(--green); font-weight: 700; }
+.live-list, .rank, .code-list, .mini-recent { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .35rem; }
+.live-list li {
+  display: grid; grid-template-columns: auto 4.2rem minmax(4.5rem, 7rem) 1fr auto; gap: .3rem .8rem; align-items: center;
+  padding: .5rem .75rem; border-radius: 12px; background: var(--chalk-2);
+}
+.live-list li.off { opacity: .55; }
+@media (max-width: 40rem) { .live-list li { grid-template-columns: auto auto 1fr; } .live-list .lv-state { grid-column: 2 / -1; } .live-list .lv-time { grid-column: 2 / -1; } }
+.dot { width: .65rem; height: .65rem; border-radius: 50%; background: var(--line); display: inline-block; }
+.dot.on { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.lv-sid { font-weight: 700; letter-spacing: .02em; }
+.lv-name { font-weight: 700; }
+.lv-time { color: var(--ink-soft); font-size: .9rem; white-space: nowrap; }
+.code-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem; padding: .55rem .75rem; border-radius: 12px; background: var(--chalk-2); }
+.cl-code { font-weight: 700; font-size: 1.25rem; letter-spacing: .04em; }
+.code-list .btn { margin-left: auto; font-size: .95rem; padding: .5rem .8rem; }
+.code-title { margin: 0; font-size: clamp(2rem, 6vw, 3rem); line-height: 1; font-weight: 400; }
+.hist-cap { margin: 1.1rem 0 0; color: var(--board-soft); }
+.hist { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: .45rem; align-items: stretch; height: 11rem; margin-top: .6rem; }
+.hbar { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: .25rem; min-width: 0; }
+.hbar .track { width: 100%; max-width: 2.8rem; display: flex; align-items: flex-end; }
+.hbar .bar { width: 100%; background: var(--led); border-radius: 6px 6px 2px 2px; box-shadow: 0 0 .7rem var(--led-glow); }
+.hcnt { font-size: 1.1rem; min-height: 1.3em; }
+.htick { color: var(--board-soft); font-size: .85rem; }
+.rank li { display: grid; grid-template-columns: 2rem 4.2rem minmax(4.5rem, 1fr) auto auto; gap: .3rem .8rem; align-items: center; padding: .5rem .75rem; border-radius: 12px; background: var(--chalk-2); }
+.rk { font-family: var(--font-led); color: var(--ink-soft); text-align: center; }
+.table-panel { padding: .4rem .6rem .6rem; }
+.t-table { border-collapse: collapse; width: 100%; min-width: 46rem; }
+.t-table th, .t-table td { padding: .55rem .55rem; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+.t-table th { color: var(--ink-soft); font-weight: 500; font-size: .9rem; }
+.t-table th button { background: none; border: 0; padding: .2rem .1rem; font: inherit; color: inherit; cursor: pointer; }
+.t-table th[aria-sort="ascending"], .t-table th[aria-sort="descending"] { color: var(--ink); font-weight: 700; }
+.t-table .l { text-align: left; }
+.t-table td { font-weight: 700; }
+.t-table tr.row { cursor: pointer; }
+.t-table tr.row:hover, .t-table tr.row.open { background: var(--chalk-2); }
+.t-detail td { background: var(--chalk-2); text-align: left; white-space: normal; font-weight: 500; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem 1.5rem; padding: .3rem .2rem .5rem; }
+@media (min-width: 46rem) { .detail-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.detail-grid h3 { font-size: 1rem; margin: .2rem 0 .2rem; }
+.detail-grid p { margin: 0; }
+.mini-recent li { display: flex; flex-wrap: wrap; gap: .2rem .5rem; align-items: center; }
+.btn.danger { background: var(--chalk-2); color: var(--red); border-color: var(--red); box-shadow: 0 3px 0 var(--red); }
+.board .lvl-chip { background: rgba(255, 255, 255, .08); color: var(--board-text); box-shadow: inset 0 0 0 1px var(--board-line); }
+.board .lvl-chip.lv1 { color: #86e3a6; }
+.board .lvl-chip.lv3 { color: #ff9a8c; }
+.t-grid .actions + .muted, .t-grid .actions + .code-list { margin-top: .9rem; }
+.site-foot .hub-link { margin-left: auto; }
+.site-foot .hub-link + .text-btn { margin-left: 0; }
+a.text-btn { display: inline-block; }
+a.btn { display: inline-block; text-decoration: none; }
+.closed-board { text-align: center; padding: 2.2rem 1.2rem 2rem; }
+.closed-board .hero-ball { display: block; width: 4.2rem; margin: 0 auto .8rem; }
+.closed-board .board-sub { max-width: 32rem; }
+.closed-board .btn { margin-top: 1.3rem; }
+</style>
+</head>
+<body>
+<header class="topbar wrap">
+  <button type="button" class="pill" id="homeBtn" data-act="home" hidden>처음으로</button>
+  <span class="me-chip" id="meChip" hidden></span>
+  <span class="spacer"></span>
+  <button type="button" class="pill" id="bigBtn" data-act="toggleBig" aria-pressed="false">화면 크게</button>
+</header>
+<main id="view" class="wrap"></main>
+<footer id="foot" class="site-foot wrap"></footer>
+<!-- 여러 게임이 함께 쓰는 학급 서버 설정. 파일이 없으면 이 노트북에만 저장합니다. -->
+<script src="../firebase-config.js"></script>
+<script>
+/* ============================================================
+   학급 서버(Firebase) 설정
+   - 저장소 맨 위의 firebase-config.js에 적은 설정을 모든 게임이 함께 씁니다.
+     이 파일은 고치지 않아도 됩니다.
+   - Firebase Hosting에 올린 경우에는 설정을 자동으로 읽어 옵니다.
+   - 학급 서버에 닿지 않으면 게임은 이 노트북에만 기록을 저장하며 그대로 진행됩니다.
+   ============================================================ */
+const FIREBASE_CONFIG = window.CLASS_FIREBASE_CONFIG || null;
+const APP_ID = 'gcdbb';                  /* 학급 서버에서 이 게임의 기록이 들어가는 칸 이름 */
+/* 이 게임이 들어 있는 폴더 이름. 게임 목록에서 선생님이 게임을 열고 닫을 때 이 이름을 씁니다. */
+const GAME_SLUG = (() => {
+  const parts = location.pathname.split('/').filter(Boolean);
+  if (parts.length && /\.html?$/i.test(parts[parts.length - 1])) parts.pop();
+  try { return parts.length ? decodeURIComponent(parts[parts.length - 1]) : ''; } catch (e) { return ''; }
+})();
+const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+/* ===== 게임 규칙과 계산 (DOM 없음) ===== */
+const LEVELS = {
+  1: { id: 1, name: '입문', max: 30, cap: 30 },
+  2: { id: 2, name: '기본', max: 100, cap: 100 },
+  3: { id: 3, name: '도전', max: 300, cap: 300 },
+};
+
+function gcd(a, b) { while (b) { const t = a % b; a = b; b = t; } return a; }
+
+function isSmooth7(n) {
+  for (const p of [2, 3, 5, 7]) while (n % p === 0) n /= p;
+  return n === 1;
+}
+
+const _cands = {};
+function candidates(levelId) {
+  if (!_cands[levelId]) {
+    const out = [];
+    for (let n = 2; n <= LEVELS[levelId].max; n++) if (isSmooth7(n)) out.push(n);
+    _cands[levelId] = out;
+  }
+  return _cands[levelId];
+}
+
+function factorize(n) {
+  const out = [];
+  let m = n;
+  for (let p = 2; p * p <= m; p++) {
+    if (m % p === 0) {
+      let e = 0;
+      while (m % p === 0) { m /= p; e++; }
+      out.push([p, e]);
+    }
+  }
+  if (m > 1) out.push([m, 1]);
+  return out;
+}
+
+function hash32(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+function pad4(seed) { return String(seed).padStart(4, '0'); }
+
+function secretFor(levelId, seed) {
+  const c = candidates(levelId);
+  return c[hash32('gcdbb:v1:' + levelId + ':' + pad4(seed)) % c.length];
+}
+
+function formatCode(levelId, seed) { return levelId + '-' + pad4(seed); }
+
+function parseCode(text) {
+  const d = String(text || '').replace(/\D/g, '');
+  if (d.length !== 5) return null;
+  const levelId = Number(d[0]);
+  if (!LEVELS[levelId]) return null;
+  return { levelId, seed: Number(d.slice(1)) };
+}
+
+function randomSeed() { return Math.floor(Math.random() * 10000); }
+
+function seedForSecret(levelId, secret) {
+  const start = randomSeed();
+  for (let i = 0; i < 10000; i++) {
+    const s = (start + i) % 10000;
+    if (secretFor(levelId, s) === secret) return s;
+  }
+  return null;
+}
+
+/* 지금까지의 응답과 모순되지 않는 후보인가 */
+function isConsistent(c, plays) {
+  for (const p of plays) {
+    if (p.win) continue;
+    if (p.g === c) return false;
+    if (gcd(p.g, c) !== p.r) return false;
+  }
+  return true;
+}
+
+/* 숫자를 한국어로 읽을 때 받침이 있는가 (일·삼·육·칠·팔, 십·백·천·만) */
+function hasBatchim(n) {
+  const d = n % 10;
+  return d === 0 || d === 1 || d === 3 || d === 6 || d === 7 || d === 8;
+}
+function josa(n, withB, withoutB) { return hasBatchim(n) ? withB : withoutB; }
+
+/* ===== 저장소: 학급 서버(Firebase) 또는 이 노트북(localStorage) ===== */
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v == null ? fallback : JSON.parse(v); }
+    catch (e) { return fallback; }
+  },
+  set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 저장할 수 없는 환경 */ } },
+  del(key) { try { localStorage.removeItem(key); } catch (e) { /* 무시 */ } },
+};
+
+const LOCAL = {
+  profile: key => 'gcdbb.v3.p.' + key,
+  save: key => 'gcdbb.v3.save.' + key,
+  index: 'gcdbb.v3.index',
+  games: 'gcdbb.v3.games',
+  live: 'gcdbb.v3.live',
+};
+
+/* Firebase 경로에 쓸 수 없는 문자는 _로 바꾼다 */
+const keyOf = (sid, name) => (sid + '_' + name).replace(/[.#$\[\]\/\u0000-\u001f\u007f]/g, '_');
+const appPath = sub => 'apps/' + APP_ID + '/' + sub;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function withTimeout(promise, ms) {
+  return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
+
+const Net = (() => {
+  let mode = 'pending';                    // pending | firebase | local
+  let FB = null, auth = null, db = null;
+  let resolveReady;
+  const ready = new Promise(r => { resolveReady = r; });
+  const statusSubs = new Set();
+  let presence = null;
+  let presenceToken = 0;
+
+  const notify = () => window.dispatchEvent(new Event('gcdbb:data'));
+  window.addEventListener('storage', e => { if (e.key && e.key.indexOf('gcdbb.v3.') === 0) notify(); });
+
+  function loadScript(src, ms) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      const timer = setTimeout(() => reject(new Error('timeout')), ms);
+      s.src = src;
+      s.async = false;
+      s.onload = () => { clearTimeout(timer); resolve(); };
+      s.onerror = () => { clearTimeout(timer); reject(new Error('load')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function readConfig() {
+    if (FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL) return FIREBASE_CONFIG;
+    if (!/^https?:$/.test(location.protocol)) return null;
+    try {
+      const res = await withTimeout(fetch('/__/firebase/init.json', { cache: 'no-store' }), 4000);
+      if (!res.ok) return null;
+      const cfg = await res.json();
+      return cfg && cfg.databaseURL ? cfg : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function boot() {
+    try {
+      const cfg = await readConfig();
+      if (!cfg) throw new Error('no-config');
+      for (const f of ['firebase-app-compat.js', 'firebase-auth-compat.js', 'firebase-database-compat.js']) {
+        await loadScript(FIREBASE_SDK_BASE + f, 12000);
+      }
+      FB = window.firebase;
+      if (!FB || typeof FB.initializeApp !== 'function') throw new Error('no-sdk');
+      FB.initializeApp(cfg);
+      auth = FB.auth();
+      db = FB.database();
+      await withTimeout(new Promise(r => { const off = auth.onAuthStateChanged(() => { off(); r(); }); }), 8000).catch(() => {});
+      mode = 'firebase';
+    } catch (e) {
+      mode = 'local';
+    }
+    resolveReady(mode);
+    statusSubs.forEach(f => { try { f(mode); } catch (e) { /* 무시 */ } });
+  }
+
+  const TS = () => (FB ? FB.database.ServerValue.TIMESTAMP : Date.now());
+  const clean = v => JSON.parse(JSON.stringify(v));
+
+  async function studentAuth() {
+    if (mode !== 'firebase') return false;
+    if (auth.currentUser) return true;
+    try { await withTimeout(auth.signInAnonymously(), 10000); return true; }
+    catch (e) { return false; }
+  }
+
+  /* 이 노트북에 저장 */
+  const local = {
+    getProfile: key => store.get(LOCAL.profile(key), null),
+    setProfile(p) {
+      store.set(LOCAL.profile(p.key), p);
+      const idx = store.get(LOCAL.index, []);
+      const list = Array.isArray(idx) ? idx : [];
+      if (!list.includes(p.key)) { list.push(p.key); store.set(LOCAL.index, list); }
+      notify();
+    },
+    players() {
+      const out = {};
+      const idx = store.get(LOCAL.index, []);
+      (Array.isArray(idx) ? idx : []).forEach(k => { const p = store.get(LOCAL.profile(k), null); if (p) out[k] = p; });
+      return out;
+    },
+    games() { const a = store.get(LOCAL.games, []); return Array.isArray(a) ? a : []; },
+    addGame(g) { const a = local.games(); a.push(g); store.set(LOCAL.games, a.slice(-3000)); notify(); },
+    live() { const m = store.get(LOCAL.live, {}); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; },
+    setLive(key, data) {
+      const m = local.live();
+      m[key] = Object.assign({}, m[key], data, { t: Date.now() });
+      store.set(LOCAL.live, m);
+      notify();
+    },
+    clearLive() { store.del(LOCAL.live); notify(); },
+    clearAll() {
+      const idx = store.get(LOCAL.index, []);
+      (Array.isArray(idx) ? idx : []).forEach(k => { store.del(LOCAL.profile(k)); store.del(LOCAL.save(k)); });
+      store.del(LOCAL.index); store.del(LOCAL.games); store.del(LOCAL.live);
+      notify();
+    },
+  };
+
+  return {
+    ready,
+    boot,
+    get mode() { return mode; },
+    onStatus(f) { statusSubs.add(f); return () => statusSubs.delete(f); },
+
+    /* ----- 학생 ----- */
+    localProfile: key => local.getProfile(key),
+    saveLocalProfile: p => local.setProfile(p),
+    /* undefined: 서버를 확인할 수 없음, null: 서버에 기록 없음 */
+    async remoteProfile(key) {
+      if (mode !== 'firebase' || !(await studentAuth())) return undefined;
+      try { const snap = await withTimeout(db.ref(appPath('players/' + key)).once('value'), 8000); return snap.val(); }
+      catch (e) { return undefined; }
+    },
+    saveProfile(p) {
+      local.setProfile(p);
+      if (mode === 'firebase') studentAuth().then(ok => { if (ok) db.ref(appPath('players/' + p.key)).set(clean(p)).catch(() => {}); });
+    },
+    addGame(g) {
+      if (mode === 'firebase') studentAuth().then(ok => { if (ok) db.ref(appPath('plays')).push(clean(g)).catch(() => {}); });
+      else local.addGame(g);
+    },
+    live(key, data) {
+      if (mode === 'firebase') {
+        studentAuth().then(ok => { if (ok) db.ref(appPath('live/' + key)).update(Object.assign(clean(data), { online: true, t: TS() })).catch(() => {}); });
+      } else {
+        local.setLive(key, Object.assign({}, data, { online: true }));
+      }
+    },
+    startPresence(key, data) {
+      this.stopPresence(false);
+      const token = ++presenceToken;
+      if (mode === 'firebase') {
+        studentAuth().then(ok => {
+          if (!ok || token !== presenceToken) return;
+          const conn = db.ref('.info/connected');
+          const ref = db.ref(appPath('live/' + key));
+          const cb = snap => {
+            if (snap.val() !== true) return;
+            ref.onDisconnect().update({ online: false, t: TS() }).catch(() => {});
+            ref.update(Object.assign(clean(data), { online: true, t: TS() })).catch(() => {});
+          };
+          conn.on('value', cb);
+          presence = { key, conn, cb, ref };
+        });
+      } else {
+        local.setLive(key, Object.assign({}, data, { online: true }));
+        presence = { key };
+      }
+    },
+    stopPresence(markOffline) {
+      presenceToken += 1;
+      if (!presence) return;
+      const p = presence;
+      presence = null;
+      if (mode === 'firebase' && p.conn) {
+        p.conn.off('value', p.cb);
+        p.ref.onDisconnect().cancel().catch(() => {});
+        if (markOffline) p.ref.update({ online: false, state: 'out', t: TS() }).catch(() => {});
+      } else if (markOffline) {
+        local.setLive(p.key, { online: false, state: 'out' });
+      }
+    },
+
+    /* ----- 게임 목록에서 선생님이 연 게임 ----- */
+    watchHub(cb) {
+      if (mode !== 'firebase') { cb(null); return () => {}; }
+      const ref = db.ref('hub');
+      const h = ref.on('value', s => cb(s.val()), () => cb(null));
+      return () => ref.off('value', h);
+    },
+
+    /* ----- 선생님 ----- */
+    teacher() {
+      return mode === 'firebase' && auth && auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null;
+    },
+    async teacherSignIn() {
+      await auth.setPersistence(FB.auth.Auth.Persistence.SESSION);
+      await auth.signInWithPopup(new FB.auth.GoogleAuthProvider());
+    },
+    async teacherSignOut() {
+      if (mode === 'firebase' && this.teacher()) await auth.signOut();
+    },
+    /* what: 'players' | 'live' | { code } */
+    watch(what, cb, onErr) {
+      if (mode === 'firebase') {
+        const ref = what === 'players' ? db.ref(appPath('players'))
+          : what === 'live' ? db.ref(appPath('live'))
+          : db.ref(appPath('plays')).orderByChild('code').equalTo(what.code);
+        const h = ref.on('value', s => cb(s.val() || {}), err => { if (onErr) onErr(err); });
+        return () => ref.off('value', h);
+      }
+      const fire = () => {
+        if (what === 'players') cb(local.players());
+        else if (what === 'live') cb(local.live());
+        else {
+          const out = {};
+          local.games().forEach((g, i) => { if (g && g.code === what.code) out['g' + i] = g; });
+          cb(out);
+        }
+      };
+      fire();
+      window.addEventListener('gcdbb:data', fire);
+      return () => window.removeEventListener('gcdbb:data', fire);
+    },
+    async clearLive() {
+      if (mode === 'firebase') await db.ref(appPath('live')).remove();
+      else local.clearLive();
+    },
+    async clearAll() {
+      if (mode === 'firebase') await db.ref('apps/' + APP_ID).remove();
+      else local.clearAll();
+    },
+  };
+})();
+
+/* ===== 학생 화면 ===== */
+const KEY = {
+  current: 'mathgames.student',        /* 모든 게임이 함께 쓰는 '지금 입장한 학생' */
+  big: 'gcdbb.v3.big',
+  save: key => LOCAL.save(key),
+  tcodes: 'gcdbb.v3.tcodes',
+};
+
+const BADGE_GROUPS = [
+  { id: 'play', name: '출전' },
+  { id: 'hr', name: '홈런' },
+  { id: 'skill', name: '실력' },
+  { id: 'hidden', name: '숨은 기록' },
+];
+const BADGES = [
+  { id: 'debut', g: 'play', name: '개막전', desc: '첫 경기를 마쳤어요' },
+  { id: 'g10', g: 'play', name: '10경기 출전', desc: '경기를 10번 마쳤어요' },
+  { id: 'grit', g: 'play', name: '끈기', desc: '8타석 이상 걸려도 끝까지 홈런' },
+  { id: 'rival', g: 'play', name: '원정 승리', desc: '경기 코드로 도전해서 홈런' },
+  { id: 'maker', g: 'play', name: '출제 위원', desc: '경기 코드를 만들었어요' },
+  { id: 'first', g: 'hr', name: '첫 홈런', desc: '처음으로 비밀 수를 맞혔어요' },
+  { id: 'w5', g: 'hr', name: '홈런 5개', desc: '홈런을 5번 쳤어요' },
+  { id: 'w10', g: 'hr', name: '홈런 10개', desc: '홈런을 10번 쳤어요' },
+  { id: 'streak3', g: 'hr', name: '3연속 홈런', desc: '기권 없이 세 경기 연속 홈런' },
+  { id: 'solo', g: 'hr', name: '혼자 힘으로', desc: '전력분석 없이 홈런' },
+  { id: 'l1', g: 'skill', name: '입문 졸업', desc: '입문을 4타석 이내에' },
+  { id: 'l2', g: 'skill', name: '기본기 완성', desc: '기본을 5타석 이내에' },
+  { id: 'l2ace', g: 'skill', name: '에이스', desc: '기본을 3타석 이내에' },
+  { id: 'l3', g: 'skill', name: '도전자', desc: '도전에서 홈런' },
+  { id: 'l3ace', g: 'skill', name: '전설', desc: '도전을 4타석 이내에' },
+  { id: 'allround', g: 'skill', name: '올라운더', desc: '세 난이도에서 모두 홈런' },
+  { id: 'deduce', g: 'skill', name: '확신의 한 방', desc: '전력분석 없이 후보를 하나로 좁힌 뒤 홈런' },
+  { id: 'firstpitch', g: 'hidden', hidden: true, name: '초구 홈런', desc: '첫 번째로 부른 수가 바로 비밀 수' },
+  { id: 'power', g: 'hidden', hidden: true, name: '거듭제곱 타법', desc: '4, 8, 9, 16처럼 한 소수를 거듭 곱한 수를 한 경기에서 세 번 이상 부르고 홈런' },
+];
+
+const TIPS = [
+  { id: 't1', need: s => s.finished >= 1, text: '응답은 언제나 비밀 수의 약수예요. 응답이 12라면 비밀 수는 12의 배수 중 하나예요.' },
+  { id: 't2', need: s => s.finished >= 2, text: '응답이 1이면 부른 수와 비밀 수는 서로소예요. 겹치는 소인수가 하나도 없다는 것도 큰 단서예요.' },
+  { id: 't3', need: s => s.finished >= 3, text: '좋은 한 수는 후보를 한꺼번에 많이 지워 주는 수예요. 부르기 전에 어떤 응답들이 나올 수 있는지 먼저 따져 보세요.' },
+  { id: 't4', need: s => s.finished >= 5, text: '2×2×2×2처럼 한 가지 소수만 거듭 곱한 수를 부르면 무엇을 알 수 있을까요?' },
+  { id: 't5', need: s => s.lv[3].f >= 1, text: '수 하나로 두 가지 소수를 한꺼번에 알아볼 수는 없을까요? 16 × 9 = 144처럼요.' },
+];
+
+const LEVEL_BLURB = {
+  1: '후보가 적어서 규칙을 익히기 좋아요.',
+  2: '학급 경기의 기본 난이도예요.',
+  3: '후보가 81개로 늘고, 수도 300까지 커져요.',
+};
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const validSid = s => /^\d{4,6}$/.test(s);
+const normName = s => String(s || '').replace(/\s+/g, '');
+const validName = s => s.length >= 1 && s.length <= 20;
+const toArr = v => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v) : []);
+
+/* ===== 선수 기록 ===== */
+function lvFresh() { return { f: 0, w: 0, best: null, sum: 0 }; }
+function freshProfile(sid, name) {
+  return {
+    key: keyOf(sid, name), sid, name,
+    finished: 0, wins: 0, giveups: 0, hintsUsed: 0, streak: 0, bestStreak: 0, codeWins: 0, made: 0,
+    lv: { 1: lvFresh(), 2: lvFresh(), 3: lvFresh() },
+    badges: [], tipsSeen: [], recent: [],
+  };
+}
+/* 저장된 값(이 노트북이나 서버)을 믿을 수 있는 모양으로 정리 */
+function normalizeProfile(s, sid, name) {
+  const base = freshProfile(sid, name);
+  if (!s || typeof s !== 'object') return base;
+  const num = v => (Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0);
+  for (const k of ['finished', 'wins', 'giveups', 'hintsUsed', 'streak', 'bestStreak', 'codeWins', 'made']) base[k] = num(s[k]);
+  for (const k of [1, 2, 3]) {
+    const v = s.lv && s.lv[k];
+    if (v) base.lv[k] = { f: num(v.f), w: num(v.w), best: Number.isFinite(v.best) ? v.best : null, sum: num(v.sum) };
+  }
+  base.badges = toArr(s.badges).filter(x => BADGES.some(b => b.id === x));
+  base.tipsSeen = toArr(s.tipsSeen).filter(x => typeof x === 'string');
+  base.recent = toArr(s.recent).filter(r => r && LEVELS[r.levelId] && typeof r.code === 'string')
+    .sort((a, b) => (Number(b.t) || 0) - (Number(a.t) || 0)).slice(0, 20);
+  return base;
+}
+/* 두 기록 중 경기를 더 많이 한 쪽을 바탕으로, 기록(배지)은 합친다 */
+function mergeProfiles(a, b) {
+  if (!b) return a;
+  const base = b.finished >= a.finished ? b : a;
+  const other = base === a ? b : a;
+  const out = JSON.parse(JSON.stringify(base));
+  out.badges = BADGES.map(x => x.id).filter(id => base.badges.includes(id) || other.badges.includes(id));
+  out.tipsSeen = [...new Set([...base.tipsSeen, ...other.tipsSeen])];
+  out.made = Math.max(base.made, other.made);
+  return out;
+}
+function saveProfile() { if (me) Net.saveProfile(me); }
+
+function loadSavedGame() {
+  if (!me) return null;
+  const s = store.get(KEY.save(me.key), null);
+  if (!s || !LEVELS[s.levelId] || !Number.isInteger(s.seed) || s.seed < 0 || s.seed > 9999) return null;
+  const secret = secretFor(s.levelId, s.seed);
+  const cap = LEVELS[s.levelId].cap;
+  const seen = new Set(), plays = [];
+  for (const p of (Array.isArray(s.plays) ? s.plays : [])) {
+    const g = p && p.g;
+    if (!Number.isInteger(g) || g < 1 || g > cap || seen.has(g) || g === secret) continue;
+    seen.add(g);
+    plays.push({ g, r: gcd(g, secret), win: false });
+  }
+  const valid = new Set(candidates(s.levelId));
+  const nums = a => (Array.isArray(a) ? a.filter(n => valid.has(n)) : []);
+  return {
+    levelId: s.levelId, seed: s.seed, secret, plays, via: s.via === 'code' ? 'code' : 'practice',
+    hints: Math.max(0, Number(s.hints) || 0), marks: nums(s.marks), auto: nums(s.auto), revived: [], note: '',
+  };
+}
+function saveGame() {
+  if (!game || !me) return;
+  store.set(KEY.save(me.key), {
+    levelId: game.levelId, seed: game.seed, via: game.via, plays: game.plays.map(p => ({ g: p.g })),
+    hints: game.hints, marks: game.marks, auto: game.auto,
+  });
+}
+function clearSave() { if (me) store.del(KEY.save(me.key)); }
+
+/* ===== 화면 상태 ===== */
+let me = null;
+let view = 'home';
+let game = null;
+let lastResult = null;
+let homeLevel = 1;
+let create = { levelId: 2, selected: null, seed: null, peek: false, note: '' };
+let timers = [];
+let pendingRoll = false;
+let giveupArmed = false;
+let big = store.get(KEY.big, false) === true;
+let demoIndex = 0;
+let syncNote = '';
+let hubState = null;
+
+/* 게임 목록에서 선생님이 '고른 게임만 보이기'로 두었는데 이 게임은 열지 않은 경우 */
+function closedByTeacher() {
+  return !!window.CLASS_GAMES_HUB && Net.mode === 'firebase' && !!hubState && hubState.mode === 'selected'
+    && !(hubState.open && hubState.open[GAME_SLUG]);
+}
+function closedHTML() {
+  return `<section class="board closed-board">
+  ${ballSVG('hero-ball')}
+  <h1 class="hero-title">지금은 닫혀 있어요</h1>
+  <p class="board-sub">선생님이 이번 수업에서 이 게임을 열어 두지 않았어요. 게임 목록에서 열린 게임을 확인해 보세요. 선생님이 열면 이 화면이 바로 바뀌어요.</p>
+  <a class="btn primary" href="../">게임 목록으로</a>
+</section>`;
+}
+
+const defaultLevel = () => (me && me.lv[1].w >= 2 ? 2 : 1);
+
+function restorePlayer() {
+  const cur = store.get(KEY.current, null);
+  if (cur && typeof cur.sid === 'string' && typeof cur.name === 'string') {
+    const sid = cur.sid, name = normName(cur.name);
+    if (validSid(sid) && validName(name)) me = normalizeProfile(Net.localProfile(keyOf(sid, name)), sid, name);
+  }
+  homeLevel = defaultLevel();
+}
+
+/* 처음 열었을 때: 이 노트북의 기록을 먼저 보여 주고, 학급 서버와 맞춘다 */
+async function syncAfterBoot() {
+  await Net.ready;
+  if (!me) return;
+  if (Net.mode === 'firebase') {
+    const remote = await Net.remoteProfile(me.key);
+    if (!me) return;
+    if (remote === undefined) {
+      syncNote = '학급 서버에 닿지 않아 이 노트북에 먼저 저장하고 있어요.';
+      updateFoot();
+    } else {
+      const merged = mergeProfiles(me, remote ? normalizeProfile(remote, me.sid, me.name) : null);
+      const changed = JSON.stringify(merged) !== JSON.stringify(me);
+      me = merged;
+      Net.saveProfile(me);
+      if (changed && (view === 'home' || view === 'records')) render();
+    }
+  }
+  if (view !== 'teacher') Net.startPresence(me.key, liveData());
+}
+
+const $ = sel => document.querySelector(sel);
+const media = q => (window.matchMedia ? window.matchMedia(q).matches : false);
+const reduceMotion = () => media('(prefers-reduced-motion: reduce)');
+const coarse = () => media('(pointer: coarse)');
+const fmt = n => n.toLocaleString('ko-KR');
+function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+function ballSVG(cls) {
+  const seam = 'M18 8.5C27 20 27 44 18 55.5M46 8.5C37 20 37 44 46 55.5';
+  return `<svg class="${cls}" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+<circle cx="32" cy="32" r="29" fill="#fbfaf4" stroke="#cfcab9" stroke-width="2"/>
+<path d="${seam}" fill="none" stroke="#cf3328" stroke-width="1.3"/>
+<path d="${seam}" fill="none" stroke="#cf3328" stroke-width="5" stroke-dasharray="1.2 3.4" opacity=".85"/>
+</svg>`;
+}
+
+function levelSeg(active, scope) {
+  return `<div class="seg" role="radiogroup" aria-label="난이도">${[1, 2, 3].map(id =>
+    `<button type="button" role="radio" aria-checked="${id === active}" data-act="level" data-scope="${scope}" data-level="${id}">${LEVELS[id].name}</button>`
+  ).join('')}</div>`;
+}
+
+function ruleList(levelId) {
+  const L = LEVELS[levelId], n = candidates(levelId).length;
+  return `<dl class="rules">
+<div><dt>비밀 수</dt><dd>2부터 ${L.max}까지의 수 중 소인수가 2, 3, 5, 7뿐인 ${n}개 중 하나</dd></div>
+<div><dt>부를 수 있는 수</dt><dd>1부터 ${fmt(L.cap)}까지</dd></div>
+</dl>`;
+}
+
+function lineScore(plays, idPrefix) {
+  const cols = Math.max(9, plays.length);
+  let head = '<th scope="col">타석</th>', gRow = '<th scope="row">부른 수</th>', rRow = '<th scope="row">응답</th>';
+  for (let i = 0; i < cols; i++) {
+    const p = plays[i];
+    const now = p && i === plays.length - 1;
+    const gid = idPrefix ? ` id="${idPrefix}g${i}"` : '';
+    const rid = idPrefix ? ` id="${idPrefix}r${i}"` : '';
+    head += `<th scope="col">${i + 1}</th>`;
+    if (p) {
+      gRow += `<td class="${now ? 'now' : ''}"${gid}>${p.g}</td>`;
+      rRow += `<td class="${[p.win ? 'hr' : '', now ? 'now' : ''].join(' ').trim()}"${rid}>${p.win ? 'HR' : p.r}</td>`;
+    } else {
+      gRow += `<td class="empty"${gid}>·</td>`;
+      rRow += `<td class="empty"${rid}>·</td>`;
+    }
+  }
+  return `<table class="ls"><thead><tr>${head}</tr></thead><tbody><tr>${gRow}</tr><tr>${rRow}</tr></tbody></table>`;
+}
+
+function badgeList(ids) {
+  const list = ids.map(id => BADGES.find(b => b.id === id)).filter(Boolean);
+  return `<ul class="badges">${list.map(b => {
+    const on = !!me && me.badges.includes(b.id);
+    const veil = b.hidden && !on;
+    return `<li class="badge${on ? ' on' : ''}">${ballSVG('mini-ball')}<span><span class="bn">${veil ? '숨은 기록' : b.name}</span><span class="bd">${veil ? '어떻게 얻는지는 비밀이에요' : b.desc}</span></span><span class="sr">${on ? '달성함' : '아직 못 함'}</span></li>`;
+  }).join('')}</ul>`;
+}
+
+/* ===== 첫 화면 ===== */
+function heroHTML() {
+  return `<section class="board hero" aria-labelledby="heroTitle">
+  <div class="hero-head">${ballSVG('hero-ball')}
+    <div>
+      <h1 id="heroTitle" class="hero-title">최대공약수 숫자야구</h1>
+      <p class="hero-sub">숨은 비밀 수를 찾아내세요. 단서는 매번 돌아오는 최대공약수뿐이에요.</p>
+    </div>
+  </div>
+  <div class="ls-wrap">${lineScore([], 'd')}</div>
+  <div class="board-foot">
+    <p class="demo-cap" id="demoCap">${DEMOS[demoIndex].start}</p>
+    <button type="button" class="board-link" data-act="nextDemo">다른 예시 보기</button>
+  </div>
+</section>`;
+}
+
+const RULES_PANEL = `<div class="panel">
+  <h2>경기 규칙</h2>
+  <ol class="steps">
+    <li>컴퓨터가 후보 가운데 비밀 수를 하나 숨겨요.</li>
+    <li>수를 하나 부르면 부른 수와 비밀 수의 최대공약수가 응답으로 돌아와요.</li>
+    <li>응답을 단서로 후보를 좁히다가 비밀 수를 정확히 부르면 홈런이에요.</li>
+    <li>홈런까지 걸린 타석이 적을수록 잘한 경기예요.</li>
+  </ol>
+</div>`;
+
+function signinHTML() {
+  return `${heroHTML()}
+<section class="home-grid">
+  <div class="panel signin">
+    <h1 class="page-title">선수 등록</h1>
+    <p class="muted">학번과 이름을 넣으면 내 기록이 따로 쌓여요.</p>
+    <div class="field"><label for="sidIn">학번</label><input id="sidIn" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="6" placeholder="예: 10523"></div>
+    <div class="field"><label for="nameIn">이름</label><input id="nameIn" autocomplete="off" spellcheck="false" maxlength="20" placeholder="예: 김민준"></div>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button type="button" class="btn primary wide" data-act="login">입장하기</button>
+  </div>
+  ${RULES_PANEL}
+</section>`;
+}
+
+function practiceInner() {
+  return `<h2>혼자 연습</h2>
+<p class="muted">난이도를 고르면 새 비밀 수로 바로 시작해요.</p>
+${levelSeg(homeLevel, 'home')}
+<p class="blurb">${LEVEL_BLURB[homeLevel]}</p>
+${ruleList(homeLevel)}
+<button type="button" class="btn primary wide" data-act="practice">플레이볼</button>`;
+}
+
+function playerStrip() {
+  return `<section class="player" aria-label="선수 정보">
+  <span class="player-no">${esc(me.sid)}</span>
+  <span class="player-name">${esc(me.name)} 선수</span>
+  <span class="player-stats"><span>경기<b>${me.finished}</b></span><span>홈런<b>${me.wins}</b></span><span>모은 기록<b>${me.badges.length}/${BADGES.length}</b></span></span>
+  <span class="spacer"></span>
+  <span class="player-actions">
+    <button type="button" class="btn" data-act="records">기록실</button>
+    <button type="button" class="text-btn" data-act="logout">선수 바꾸기</button>
+  </span>
+</section>`;
+}
+
+function homeHTML() {
+  if (!me) return signinHTML();
+  const saved = loadSavedGame();
+  const resume = saved ? `<section class="resume">
+<p><b>하던 경기가 있어요.</b> ${LEVELS[saved.levelId].name} 난이도, 경기 코드 ${formatCode(saved.levelId, saved.seed)}로 ${saved.plays.length + saved.hints}타석까지 진행했어요.</p>
+<button type="button" class="btn" data-act="resume">이어서 하기</button>
+</section>` : '';
+  return `${heroHTML()}
+${playerStrip()}
+${resume}
+<section class="home-grid">
+  <div class="panel" id="practice">${practiceInner()}</div>
+  <div class="stack">
+    <div class="ticket">
+      <div class="ticket-main">
+        <h2><label for="codeIn">경기 코드로 도전</label></h2>
+        <p class="muted">선생님이나 친구가 알려 준 코드를 넣으면 모두 같은 비밀 수로 경기해요.</p>
+        <div class="inline-row">
+          <input id="codeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="7" placeholder="예: 2-4821" aria-describedby="joinErr">
+          <button type="button" class="btn primary" data-act="join">입장</button>
+        </div>
+        <p class="err" id="joinErr" role="alert"></p>
+      </div>
+      <div class="ticket-stub" aria-hidden="true">입장권</div>
+    </div>
+    <div class="panel">
+      <h2>문제 내기</h2>
+      <p class="muted">비밀 수를 직접 골라 경기 코드를 만들고 친구에게 불러 주세요.</p>
+      <button type="button" class="btn" data-act="create">문제 만들기</button>
+    </div>
+  </div>
+</section>
+<section class="home-grid">${RULES_PANEL}</section>`;
+}
+
+const DEMOS = [
+  { plays: [[60, 12], [90, 18], [36, 'HR']], start: '예시 경기: 비밀 수가 36일 때',
+    end: '예시 경기: 비밀 수는 36. 60을 부르자 12, 90을 부르자 18이 돌아왔고, 36을 불러 3타석 만에 홈런.' },
+  { plays: [[30, 15], [54, 9], [45, 'HR']], start: '예시 경기: 비밀 수가 45일 때',
+    end: '예시 경기: 비밀 수는 45. 30을 부르자 15, 54를 부르자 9가 돌아와서 후보가 45 하나로 좁혀졌어요.' },
+  { plays: [[42, 14], [24, 8], [56, 'HR']], start: '예시 경기: 비밀 수가 56일 때',
+    end: '예시 경기: 비밀 수는 56. 42를 부르자 14, 24를 부르자 8이 돌아와서 후보가 56 하나로 좁혀졌어요.' },
+  { plays: [[30, 1], [14, 7], [7, 7], [49, 'HR']], start: '예시 경기: 비밀 수가 49일 때',
+    end: '예시 경기: 비밀 수는 49. 30을 부르자 1, 14를 부르자 7이 돌아왔어요. 7은 아니었고, 49를 불러 4타석 만에 홈런.' },
+];
+function runDemo() {
+  const demo = DEMOS[demoIndex];
+  const cell = (id, text, cls) => { const el = document.getElementById(id); if (el) { el.textContent = text; el.className = cls; } };
+  const cap = $('#demoCap');
+  for (let i = 0; i < 9; i++) { cell('dg' + i, '·', 'empty'); cell('dr' + i, '·', 'empty'); }
+  if (reduceMotion()) {
+    demo.plays.forEach(([g, r], i) => { cell('dg' + i, g, ''); cell('dr' + i, r, r === 'HR' ? 'hr' : ''); });
+    if (cap) cap.textContent = demo.end;
+    return;
+  }
+  if (cap) cap.textContent = demo.start;
+  let t = 600;
+  demo.plays.forEach(([g, r], i) => {
+    later(() => {
+      document.querySelectorAll('.hero td.now').forEach(td => td.classList.remove('now'));
+      cell('dg' + i, g, 'now');
+    }, t);
+    later(() => { cell('dg' + i, g, ''); cell('dr' + i, r, r === 'HR' ? 'hr now' : 'now'); }, t + 600);
+    t += 1400;
+  });
+  later(() => { if (cap) cap.textContent = demo.end; }, t);
+}
+
+/* ===== 선수 등록 ===== */
+let loggingIn = false;
+async function doLogin() {
+  if (loggingIn) return;
+  const sidEl = $('#sidIn'), nameEl = $('#nameIn'), err = $('#loginErr'), btn = document.querySelector('[data-act="login"]');
+  if (!sidEl || !nameEl) return;
+  const sid = sidEl.value.replace(/\s+/g, '');
+  const name = normName(nameEl.value);
+  if (!validSid(sid)) { err.textContent = '학번은 숫자 4~6자리로 입력하세요. 예: 10523'; sidEl.focus(); sidEl.select(); return; }
+  if (!name) { err.textContent = '이름을 입력하세요.'; nameEl.focus(); return; }
+  if (!validName(name)) { err.textContent = '이름은 20자까지 입력할 수 있어요.'; nameEl.focus(); return; }
+  loggingIn = true;
+  err.textContent = '';
+  if (btn) { btn.disabled = true; btn.textContent = '기록을 불러오는 중…'; }
+  const key = keyOf(sid, name);
+  let prof = normalizeProfile(Net.localProfile(key), sid, name);
+  await Promise.race([Net.ready, sleep(7000)]);
+  syncNote = '';
+  if (Net.mode === 'firebase') {
+    const remote = await Net.remoteProfile(key);
+    if (remote === undefined) syncNote = '학급 서버에 닿지 않아 이 노트북에 먼저 저장하고 있어요.';
+    else prof = mergeProfiles(prof, remote ? normalizeProfile(remote, sid, name) : null);
+  }
+  loggingIn = false;
+  me = prof;
+  Net.saveProfile(me);
+  store.set(KEY.current, { sid, name });
+  game = null;
+  lastResult = null;
+  homeLevel = defaultLevel();
+  Net.startPresence(me.key, liveData());
+  go('home');
+}
+function doLogout() {
+  Net.stopPresence(true);
+  syncNote = '';
+  me = null;
+  game = null;
+  lastResult = null;
+  store.del(KEY.current);
+  homeLevel = 1;
+  go('home');
+  const s = $('#sidIn');
+  if (s && !coarse()) s.focus();
+}
+
+/* ===== 경기 ===== */
+function startGame(levelId, seed, via) {
+  if (!me) { go('home'); return; }
+  game = { levelId, seed, via, secret: secretFor(levelId, seed), plays: [], hints: 0, marks: [], auto: [], revived: [], note: '' };
+  saveGame();
+  go('game');
+}
+
+function memoGridHTML() {
+  const called = new Set(game.plays.map(p => p.g));
+  const auto = new Set(game.auto), marks = new Set(game.marks), revived = new Set(game.revived);
+  return candidates(game.levelId).map(n => {
+    let cls = 'num', extra = '', label = String(n), pressed = false;
+    if (called.has(n)) { cls += ' called'; extra = ' disabled'; label += ', 이미 부른 수'; }
+    else if (auto.has(n)) { cls += ' auto'; extra = ' disabled'; label += ', 전력분석으로 지운 수'; }
+    else if (marks.has(n)) { cls += ' x'; label += ', 지운 수'; pressed = true; }
+    if (revived.has(n)) cls += ' revived';
+    return `<button type="button" class="${cls}" data-n="${n}" aria-pressed="${pressed}" aria-label="${label}"${extra}>${n}</button>`;
+  }).join('');
+}
+function remainingCount() {
+  const gone = new Set([...game.marks, ...game.auto, ...game.plays.map(p => p.g)]);
+  return candidates(game.levelId).filter(n => !gone.has(n)).length;
+}
+
+function gameHTML() {
+  const g = game, L = LEVELS[g.levelId], last = g.plays[g.plays.length - 1];
+  const attempts = g.plays.length + g.hints;
+  const msg = last
+    ? `${last.g}${josa(last.g, '을', '를')} 불렀어요. 응답은 ${last.r}${josa(last.r, '이에요', '예요')}.`
+    : '플레이볼! 첫 번째 수를 불러 보세요.';
+  return `
+<div class="game-head">
+  <span class="lvl-chip lv${g.levelId}">${L.name}</span>
+  <span class="code-chip">경기 코드 <b>${formatCode(g.levelId, g.seed)}</b></span>
+</div>
+<div class="game-grid">
+  <div class="col-main">
+    <section class="board" aria-label="전광판">
+      <div class="readout">
+        <div class="plate"><span class="lbl">부른 수</span><span class="led big" id="roGuess">${last ? last.g : '--'}</span></div>
+        <span class="sep led" aria-hidden="true">▶</span>
+        <div class="plate"><span class="lbl">응답</span><span class="led big" id="roResp">${last ? last.r : '--'}</span></div>
+      </div>
+      <p class="board-msg" aria-live="polite">${msg}</p>
+      <div class="ls-wrap" id="lsWrap">${lineScore(g.plays)}</div>
+      <div class="board-foot">
+        <span class="count-lbl">타석</span><span class="led count">${attempts}</span>
+        ${g.hints ? `<span class="count-sub">전력분석 ${g.hints}번 포함</span>` : ''}
+      </div>
+    </section>
+    <div class="guess-box">
+      <label class="guess-label" for="guessIn">부를 수</label>
+      <div class="inline-row">
+        <input id="guessIn" class="guess-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="${String(L.cap).length}" placeholder="1~${L.cap}" aria-describedby="guessErr guessRule">
+        <button type="button" class="btn primary" data-act="guess">부르기</button>
+      </div>
+      <p class="err" id="guessErr" role="alert"></p>
+      <p class="muted small" id="guessRule">부를 수 있는 수는 1부터 ${fmt(L.cap)}까지예요.</p>
+      <button type="button" class="text-btn danger" data-act="giveup">기권하기</button>
+    </div>
+  </div>
+  <aside class="panel memo" aria-labelledby="memoTitle">
+    <div class="memo-head"><h2 id="memoTitle">후보 메모판</h2><span class="memo-count" id="memoCount">${remainingCount()}개 남음</span></div>
+    <p class="muted small">비밀 수 후보 ${candidates(g.levelId).length}개예요. 아닐 것 같은 수를 누르면 지워지고, 다시 누르면 되살아나요.</p>
+    <div class="numgrid" id="numgrid">${memoGridHTML()}</div>
+    <div class="memo-actions">
+      <button type="button" class="btn" data-act="analyze"${g.plays.length ? '' : ' disabled'}>전력분석팀 부르기<span class="cost">+1타석</span></button>
+      <button type="button" class="text-btn" data-act="clearMarks" id="clearMarks"${g.marks.length ? '' : ' disabled'}>내 메모 지우기</button>
+    </div>
+    <p class="muted small">전력분석팀은 지금까지의 응답과 맞지 않는 후보를 모두 지워 줘요. 대신 타석이 1 늘어요.</p>
+    <p class="memo-note" aria-live="polite">${g.note}</p>
+  </aside>
+</div>`;
+}
+
+function revealLatest(wrap) {
+  if (!wrap) return;
+  const cell = wrap.querySelector('td.now');
+  if (!cell) { wrap.scrollLeft = 0; return; }
+  wrap.scrollLeft = Math.max(0, cell.offsetLeft + cell.offsetWidth - wrap.clientWidth + 8);
+}
+
+function afterGame(justGuessed) {
+  revealLatest($('#lsWrap'));
+  const inp = $('#guessIn');
+  if (inp && (justGuessed || !coarse())) inp.focus({ preventScroll: true });
+  if (justGuessed) rollLED($('#roResp'));
+  game.revived = [];
+}
+
+function rollLED(el) {
+  if (!el) return;
+  const final = el.textContent;
+  if (reduceMotion()) return;
+  let i = 0;
+  const tick = () => {
+    i += 1;
+    if (i > 8) {
+      el.textContent = final;
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+      return;
+    }
+    el.textContent = Array.from({ length: final.length }, () => Math.floor(Math.random() * 10)).join('');
+    later(tick, 45);
+  };
+  tick();
+}
+
+function submitGuess() {
+  const inp = $('#guessIn'), err = $('#guessErr');
+  if (!inp || !game) return;
+  const raw = inp.value.trim().replace(/[,\s]/g, '');
+  const L = LEVELS[game.levelId];
+  const fail = msg => { err.textContent = msg; inp.focus(); inp.select(); };
+  if (!raw) return fail('부를 수를 입력하세요.');
+  if (!/^\d+$/.test(raw)) return fail('숫자만 입력할 수 있어요.');
+  const g = parseInt(raw, 10);
+  if (g < 1 || g > L.cap) return fail(`1부터 ${fmt(L.cap)}까지의 수만 부를 수 있어요.`);
+  if (game.plays.some(p => p.g === g)) return fail(`${g}${josa(g, '은', '는')} 이미 불렀어요. 다른 수를 불러 보세요.`);
+  const win = g === game.secret;
+  game.plays.push({ g, r: gcd(g, game.secret), win });
+  game.note = '';
+  if (win) { finishGame(true); return; }
+  saveGame();
+  pendingRoll = true;
+  render();
+}
+
+function analyze() {
+  if (!game || !game.plays.length) return;
+  const all = candidates(game.levelId);
+  const possible = all.filter(c => isConsistent(c, game.plays));
+  const keep = new Set(possible);
+  const revived = game.marks.filter(n => keep.has(n));
+  game.auto = all.filter(n => !keep.has(n));
+  game.marks = [];
+  game.revived = revived;
+  game.hints += 1;
+  game.note = `남은 후보는 ${possible.length}개예요.`
+    + (revived.length ? ` 잘못 지운 후보 ${revived.length}개를 되살렸어요.` : '')
+    + (possible.length === 1 ? ' 이제 부르기만 하면 돼요.' : '');
+  saveGame();
+  render();
+}
+
+function toggleMark(n) {
+  if (!game || view !== 'game') return;
+  if (game.auto.includes(n) || game.plays.some(p => p.g === n)) return;
+  const i = game.marks.indexOf(n);
+  if (i >= 0) game.marks.splice(i, 1); else game.marks.push(n);
+  saveGame();
+  const on = game.marks.includes(n);
+  const btn = document.querySelector(`#numgrid [data-n="${n}"]`);
+  if (btn) {
+    btn.classList.toggle('x', on);
+    btn.classList.remove('revived');
+    btn.setAttribute('aria-pressed', String(on));
+    btn.setAttribute('aria-label', on ? `${n}, 지운 수` : String(n));
+  }
+  const cnt = $('#memoCount');
+  if (cnt) cnt.textContent = `${remainingCount()}개 남음`;
+  const clr = $('#clearMarks');
+  if (clr) clr.disabled = !game.marks.length;
+}
+
+function clearMarks() {
+  if (!game) return;
+  game.marks = [];
+  saveGame();
+  const grid = $('#numgrid');
+  if (grid) grid.innerHTML = memoGridHTML();
+  const cnt = $('#memoCount');
+  if (cnt) cnt.textContent = `${remainingCount()}개 남음`;
+  const clr = $('#clearMarks');
+  if (clr) clr.disabled = true;
+}
+
+function onGiveup(btn) {
+  if (!giveupArmed) {
+    giveupArmed = true;
+    btn.textContent = '한 번 더 누르면 기권해요';
+    btn.classList.add('armed');
+    later(() => {
+      giveupArmed = false;
+      if (btn.isConnected) { btn.textContent = '기권하기'; btn.classList.remove('armed'); }
+    }, 3000);
+    return;
+  }
+  giveupArmed = false;
+  finishGame(false);
+}
+
+function pickTip() {
+  const open = TIPS.filter(t => t.need(me));
+  if (!open.length) return '';
+  const fresh = open.find(t => !me.tipsSeen.includes(t.id));
+  if (fresh) { me.tipsSeen.push(fresh.id); return fresh.text; }
+  return open[Math.floor(Math.random() * open.length)].text;
+}
+
+const isPrimePower = n => { const f = factorize(n); return f.length === 1 && f[0][1] >= 2; };
+
+function awardBadges(g, won, attempts) {
+  const newly = [];
+  const award = id => { if (!me.badges.includes(id)) { me.badges.push(id); newly.push(id); } };
+  award('debut');
+  if (me.finished >= 10) award('g10');
+  if (won) {
+    award('first');
+    if (me.wins >= 5) award('w5');
+    if (me.wins >= 10) award('w10');
+    if (me.streak >= 3) award('streak3');
+    if (g.hints === 0) award('solo');
+    if (attempts >= 8) award('grit');
+    if (g.via === 'code') award('rival');
+    if (g.levelId === 1 && attempts <= 4) award('l1');
+    if (g.levelId === 2 && attempts <= 5) award('l2');
+    if (g.levelId === 2 && attempts <= 3) award('l2ace');
+    if (g.levelId === 3) award('l3');
+    if (g.levelId === 3 && attempts <= 4) award('l3ace');
+    if ([1, 2, 3].every(k => me.lv[k].w > 0)) award('allround');
+    const before = g.plays.slice(0, -1);
+    if (g.hints === 0 && before.length && candidates(g.levelId).filter(c => isConsistent(c, before)).length === 1) award('deduce');
+    if (g.plays.length === 1) award('firstpitch');
+    if (g.plays.filter(p => isPrimePower(p.g)).length >= 3) award('power');
+  }
+  return newly;
+}
+
+function finishGame(won) {
+  const g = game, attempts = g.plays.length + g.hints, lv = me.lv[g.levelId];
+  me.finished += 1;
+  lv.f += 1;
+  me.hintsUsed += g.hints;
+  if (won) {
+    me.wins += 1;
+    lv.w += 1;
+    lv.sum += attempts;
+    if (lv.best == null || attempts < lv.best) lv.best = attempts;
+    me.streak += 1;
+    me.bestStreak = Math.max(me.bestStreak, me.streak);
+    if (g.via === 'code') me.codeWins += 1;
+  } else {
+    me.giveups += 1;
+    me.streak = 0;
+  }
+  me.recent.unshift({ t: Date.now(), levelId: g.levelId, code: formatCode(g.levelId, g.seed), won, attempts, hints: g.hints, via: g.via });
+  me.recent = me.recent.slice(0, 20);
+  const newly = awardBadges(g, won, attempts);
+  const tip = pickTip();
+  saveProfile();
+  clearSave();
+  Net.addGame({
+    key: me.key, sid: me.sid, name: me.name, levelId: g.levelId, code: formatCode(g.levelId, g.seed),
+    won, attempts, hints: g.hints, via: g.via, t: Date.now(),
+  });
+  lastResult = { levelId: g.levelId, seed: g.seed, secret: g.secret, plays: g.plays.slice(), hints: g.hints, attempts, won, newly, tip };
+  game = null;
+  go('result');
+}
+
+/* ===== 결과 ===== */
+function isPrime(n) { const f = factorize(n); return f.length === 1 && f[0][1] === 1; }
+function primeHTML(n, hits) {
+  return factorize(n).map(([p, e]) => {
+    const t = e > 1 ? `${p}<sup>${e}</sup>` : String(p);
+    return hits && hits.has(p) ? `<mark>${t}</mark>` : t;
+  }).join(' × ');
+}
+function numWithFactors(n, hits) {
+  if (n === 1) return '1';
+  if (isPrime(n)) return hits && hits.has(n) ? `<mark>${n}</mark>` : String(n);
+  return `${n} = ${primeHTML(n, hits)}`;
+}
+
+function resultActions(R) {
+  const again = (lv, label, primary) =>
+    `<button type="button" class="btn${primary ? ' primary' : ''}" data-act="again" data-level="${lv}">${label}</button>`;
+  const L = LEVELS[R.levelId];
+  let html;
+  if (R.levelId === 1 && me.lv[1].w >= 2) html = again(2, '기본 난이도로 올라가기', true) + again(1, '입문 한 판 더', false);
+  else if (R.levelId === 2 && me.lv[2].w >= 3) html = again(2, '기본 난이도로 새 경기', true) + again(3, '도전으로 올라가기', false);
+  else html = again(R.levelId, `${L.name} 난이도로 새 경기`, true);
+  return `<div class="actions">${html}<button type="button" class="btn" data-act="records">기록실</button><button type="button" class="btn" data-act="home">처음으로</button></div>`;
+}
+
+function resultHTML() {
+  const R = lastResult, L = LEVELS[R.levelId], code = formatCode(R.levelId, R.seed);
+  const hits = new Set(factorize(R.secret).map(([p]) => p));
+  const rows = R.plays.map((p, i) => p.win
+    ? `<li class="win"><span class="play-n">${i + 1}</span><span class="play-body"><span class="fx">${p.g}</span><span class="res">홈런</span></span></li>`
+    : `<li><span class="play-n">${i + 1}</span><span class="play-body"><span class="fx">${numWithFactors(p.g, hits)}</span><span class="res">응답 ${numWithFactors(p.r, null)}${p.r === 1 ? ' (서로소)' : ''}</span></span></li>`
+  ).join('');
+  const line = R.won
+    ? `${R.attempts}타석 만에 비밀 수 ${R.secret}${josa(R.secret, '을', '를')} 찾았어요.`
+    : `비밀 수는 ${R.secret}${josa(R.secret, '이었어요', '였어요')}.`;
+  const challenge = R.won
+    ? `옆 친구에게 경기 코드 ${code}${josa(R.seed, '을', '를')} 알려 주세요. 같은 비밀 수로 누가 더 적은 타석에 홈런을 치는지 겨룰 수 있어요.`
+    : '새 경기에서 다시 도전해 보세요.';
+  const newly = BADGES.filter(b => R.newly.includes(b.id)).map(b => b.id);
+  return `
+<section class="board result-board${R.won ? ' won' : ''}">
+  ${R.won ? ballSVG('fly-ball') : ''}
+  <h1 class="result-title">${R.won ? '홈런!' : '기권'}</h1>
+  <p class="result-line">${line}</p>
+  <div class="plates">
+    <div class="plate"><span class="lbl">난이도</span><span class="val">${L.name}</span></div>
+    <div class="plate"><span class="lbl">경기 코드</span><span class="led val">${code}</span></div>
+    <div class="plate"><span class="lbl">타석</span><span class="led val">${R.attempts}</span></div>
+  </div>
+  <div class="ls-wrap">${lineScore(R.plays)}</div>
+  <p class="board-sub">${challenge}</p>
+</section>
+<div class="result-grid">
+  <section class="panel">
+    <h2>경기 분석</h2>
+    <p class="secret-line">비밀 수 <b>${numWithFactors(R.secret, null)}</b></p>
+    ${R.plays.length ? `<ol class="plays">${rows}</ol>` : '<p class="muted">부른 수가 없어요.</p>'}
+    ${R.hints ? `<p class="muted small">전력분석팀을 ${R.hints}번 불러서 타석에 ${R.hints}${josa(R.hints, '이', '가')} 더해졌어요.</p>` : ''}
+    <p class="insight">응답은 부른 수와 비밀 수를 소인수분해했을 때 둘이 함께 가진 부분이에요. 부른 수에서 진하게 표시된 소인수가 비밀 수와 겹친 소인수예요.</p>
+  </section>
+  <div class="stack">
+    ${R.tip ? `<section class="panel"><h2>코치의 한마디</h2><p class="tip">${R.tip}</p></section>` : ''}
+    ${newly.length ? `<section class="panel"><h2>새로 얻은 기록</h2>${badgeList(newly)}</section>` : ''}
+    ${resultActions(R)}
+  </div>
+</div>`;
+}
+
+/* ===== 기록실 ===== */
+function when(t) {
+  const d = new Date(t);
+  if (Number.isNaN(d.getTime())) return '';
+  const now = new Date();
+  const hh = String(d.getHours()).padStart(2, '0'), mm = String(d.getMinutes()).padStart(2, '0');
+  return d.toDateString() === now.toDateString() ? `오늘 ${hh}:${mm}` : `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+function recordsHTML() {
+  const rows = [1, 2, 3].map(k => {
+    const v = me.lv[k];
+    const avg = v.w ? (v.sum / v.w).toFixed(1) : '-';
+    return `<tr><th scope="row"><span class="lvl-chip lv${k}">${LEVELS[k].name}</span></th><td>${v.f}</td><td>${v.w}</td><td>${v.best == null ? '-' : v.best}</td><td>${avg}</td></tr>`;
+  }).join('');
+  const recent = me.recent.slice(0, 8).map(r => `<li>
+  <span class="lvl-chip lv${r.levelId}">${LEVELS[r.levelId].name}</span>
+  <span class="rc-code">${esc(r.code)}</span>
+  <span class="rc-res ${r.won ? 'win' : 'lose'}">${r.won ? `${r.attempts}타석 홈런` : '기권'}</span>
+  <span class="rc-time">${when(r.t)}</span>
+</li>`).join('');
+  const groups = BADGE_GROUPS.map(gr => {
+    const ids = BADGES.filter(b => b.g === gr.id).map(b => b.id);
+    const got = ids.filter(id => me.badges.includes(id)).length;
+    return `<div class="badge-group"><h3>${gr.name}<span class="cnt">${got}/${ids.length}</span></h3>${badgeList(ids)}</div>`;
+  }).join('');
+  return `
+<section class="board">
+  <div class="rec-head"><span class="player-no">${esc(me.sid)}</span><h1 class="rec-title">${esc(me.name)} 선수의 기록실</h1></div>
+  <div class="plates four">
+    <div class="plate"><span class="lbl">경기</span><span class="led val">${me.finished}</span></div>
+    <div class="plate"><span class="lbl">홈런</span><span class="led val">${me.wins}</span></div>
+    <div class="plate"><span class="lbl">최다 연속 홈런</span><span class="led val">${me.bestStreak}</span></div>
+    <div class="plate"><span class="lbl">모은 기록</span><span class="led val">${me.badges.length}/${BADGES.length}</span></div>
+  </div>
+</section>
+<div class="records-grid">
+  <section class="panel">
+    <h2>난이도별 기록</h2>
+    <div class="table-wrap"><table class="rec-table">
+      <thead><tr><th scope="col">난이도</th><th scope="col">경기</th><th scope="col">홈런</th><th scope="col">최소 타석</th><th scope="col">평균 타석</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <p class="muted small">평균 타석은 홈런을 친 경기만 따져요.</p>
+  </section>
+  <section class="panel">
+    <h2>최근 경기</h2>
+    ${recent ? `<ol class="recent">${recent}</ol>` : '<p class="muted">아직 마친 경기가 없어요. 첫 경기를 시작해 보세요.</p>'}
+  </section>
+</div>
+<section class="panel records-badges">
+  <h2>기록</h2>
+  <p class="muted small">숨은 기록은 얻기 전까지 이름이 보이지 않아요.</p>
+  ${groups}
+</section>
+<div class="actions page-actions"><button type="button" class="btn primary" data-act="home">처음으로</button></div>`;
+}
+
+/* ===== 문제 내기 ===== */
+function createHTML() {
+  const C = create, made = C.seed != null;
+  const grid = candidates(C.levelId).map(n => {
+    const sel = !made && C.selected === n;
+    return `<button type="button" class="num${sel ? ' sel' : ''}" data-pick="${n}" aria-pressed="${sel}">${n}</button>`;
+  }).join('');
+  const codeBoard = made
+    ? `<section class="board code-board" aria-live="polite">
+  <p class="lbl">경기 코드</p>
+  <p class="led code-big">${formatCode(C.levelId, C.seed)}</p>
+  <p class="board-sub">친구가 첫 화면의 ‘경기 코드로 도전’에 이 코드를 넣으면, 내가 고른 비밀 수로 경기가 시작돼요.</p>
+  <div class="peek-row">
+    <button type="button" class="board-link" data-act="peek" aria-pressed="${C.peek}">${C.peek ? '비밀 수 가리기' : '비밀 수 확인하기'}</button>
+    ${C.peek ? `<span class="led peek-val">${C.selected}</span>` : ''}
+  </div>
+  <button type="button" class="btn on-board" data-act="reroll">같은 비밀 수로 다른 코드</button>
+</section>`
+    : `<section class="board code-board empty"><p class="board-sub">${C.selected
+      ? `비밀 수로 ${C.selected}${josa(C.selected, '을', '를')} 골랐어요. ‘경기 코드 만들기’를 누르면 여기에 코드가 나와요.`
+      : '비밀 수를 고르고 ‘경기 코드 만들기’를 누르면 여기에 코드가 나와요.'}</p></section>`;
+  return `
+<div class="create-grid">
+  <section class="panel">
+    <h1 class="page-title">문제 내기</h1>
+    <p class="muted">비밀 수를 하나 고르면 그 수로 경기하는 코드를 만들어요. 친구가 오래 헤맬 만한 수를 골라 보세요.</p>
+    ${levelSeg(C.levelId, 'create')}
+    ${ruleList(C.levelId)}
+    <div class="numgrid">${grid}</div>
+    ${made ? '<p class="muted small">코드를 만든 뒤에는 비밀 수를 가려 두었어요. 다른 수를 누르면 새 문제를 만들 수 있어요.</p>' : ''}
+    <div class="actions">
+      <button type="button" class="btn" data-act="pickRandom">무작위로 고르기</button>
+      <button type="button" class="btn primary" data-act="makeCode"${C.selected && !made ? '' : ' disabled'}>경기 코드 만들기</button>
+    </div>
+    ${C.note ? `<p class="note">${C.note}</p>` : ''}
+  </section>
+  ${codeBoard}
+</div>`;
+}
+
+function makeCode() {
+  if (!create.selected || !me) return;
+  const seed = seedForSecret(create.levelId, create.selected);
+  if (seed == null) { create.note = '코드를 만들지 못했어요. 한 번 더 눌러 보세요.'; render(); return; }
+  create.seed = seed;
+  create.peek = false;
+  me.made += 1;
+  if (!me.badges.includes('maker')) {
+    me.badges.push('maker');
+    create.note = '기록실에 ‘출제 위원’이 생겼어요.';
+  } else {
+    create.note = '';
+  }
+  saveProfile();
+  render();
+}
+
+/* ===== 이동과 입력 ===== */
+function join() {
+  const inp = $('#codeIn'), err = $('#joinErr');
+  if (!inp) return;
+  const digits = inp.value.replace(/\D/g, '');
+  if (!digits) { err.textContent = '경기 코드를 입력하세요. 예: 2-4821'; inp.focus(); return; }
+  const p = parseCode(inp.value);
+  if (!p) {
+    err.textContent = digits.length !== 5 ? '경기 코드는 숫자 다섯 자리예요. 예: 2-4821' : '경기 코드는 1, 2, 3 중 하나로 시작해요.';
+    inp.focus();
+    inp.select();
+    return;
+  }
+  startGame(p.levelId, p.seed, 'code');
+}
+
+function onLevel(btn) {
+  const id = Number(btn.dataset.level);
+  if (btn.dataset.scope === 'home') {
+    homeLevel = id;
+    const panel = $('#practice');
+    if (panel) {
+      panel.innerHTML = practiceInner();
+      const nb = panel.querySelector(`[data-level="${id}"]`);
+      if (nb) nb.focus();
+    }
+  } else {
+    create = { levelId: id, selected: null, seed: null, peek: false, note: '' };
+    render();
+    const nb = document.querySelector(`[data-scope="create"][data-level="${id}"]`);
+    if (nb) nb.focus();
+  }
+}
+
+function applyBig() {
+  document.documentElement.classList.toggle('big', big);
+  const b = $('#bigBtn');
+  b.setAttribute('aria-pressed', String(big));
+  b.textContent = big ? '원래 크기로' : '화면 크게';
+}
+
+/* ===== 아래쪽 정보 줄과 수업 현황 ===== */
+function updateFoot() {
+  const f = $('#foot');
+  if (!f) return;
+  if (view === 'teacher') {
+    const [cls, text] = Net.mode === 'firebase' ? ['on', '기록 저장: 학급 서버']
+      : Net.mode === 'local' ? ['local', '기록 저장: 이 노트북'] : ['', '학급 서버 확인 중'];
+    f.innerHTML = `<span class="sync ${cls}">${text}</span>${syncNote ? `<span class="sync-note">${esc(syncNote)}</span>` : ''}`
+      + '<button type="button" class="text-btn" data-act="home">학생 화면으로</button>';
+    return;
+  }
+  f.innerHTML = window.CLASS_GAMES_HUB ? '<a class="text-btn hub-link" href="../">게임 목록</a>' : '';
+}
+function liveData() {
+  const d = { sid: me.sid, name: me.name, state: view === 'teacher' ? 'home' : view, levelId: null, code: null, attempts: null, won: null };
+  if (view === 'game' && game) Object.assign(d, { levelId: game.levelId, code: formatCode(game.levelId, game.seed), attempts: game.plays.length + game.hints });
+  else if (view === 'result' && lastResult) Object.assign(d, { levelId: lastResult.levelId, code: formatCode(lastResult.levelId, lastResult.seed), attempts: lastResult.attempts, won: lastResult.won });
+  return d;
+}
+function pushLive() { if (me && view !== 'teacher') Net.live(me.key, liveData()); }
+
+function render() {
+  clearTimers();
+  giveupArmed = false;
+  if (!me && view !== 'home' && view !== 'teacher') view = 'home';
+  if (view === 'game' && !game) view = 'home';
+  if (view === 'result' && !lastResult) view = 'home';
+  const closed = closedByTeacher() && (view === 'home' || view === 'create' || view === 'records');
+  const html = closed ? closedHTML()
+    : view === 'home' ? homeHTML()
+    : view === 'game' ? gameHTML()
+    : view === 'result' ? resultHTML()
+    : view === 'records' ? recordsHTML()
+    : view === 'teacher' ? teacherHTML()
+    : createHTML();
+  $('#view').innerHTML = html;
+  const homeBtn = $('#homeBtn');
+  homeBtn.hidden = view === 'home';
+  homeBtn.textContent = view === 'teacher' ? '학생 화면으로' : '처음으로';
+  const chip = $('#meChip');
+  chip.hidden = !me || view === 'home' || view === 'teacher';
+  chip.innerHTML = me ? `<span class="no">${esc(me.sid)}</span>${esc(me.name)}` : '';
+  updateFoot();
+  pushLive();
+  if (closed) return;
+  if (view === 'home') runDemo();
+  else if (view === 'game') { const roll = pendingRoll; pendingRoll = false; afterGame(roll); }
+  else if (view === 'result') {
+    revealLatest(document.querySelector('.result-board .ls-wrap'));
+    const b = document.querySelector('[data-act="again"]');
+    if (b && !coarse()) b.focus({ preventScroll: true });
+  }
+}
+function go(v) { view = v; render(); window.scrollTo(0, 0); }
+
+document.addEventListener('click', e => {
+  const pick = e.target.closest('[data-pick]');
+  if (pick) {
+    create.selected = Number(pick.dataset.pick);
+    create.seed = null; create.peek = false; create.note = '';
+    render();
+    return;
+  }
+  const num = e.target.closest('[data-n]');
+  if (num) { toggleMark(Number(num.dataset.n)); return; }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  switch (a.dataset.act) {
+    case 'home': if (view === 'teacher') leaveTeacher(); else go('home'); break;
+    case 'teacher': openTeacher(); break;
+    case 'toggleBig': big = !big; store.set(KEY.big, big); applyBig(); break;
+    case 'login': doLogin(); break;
+    case 'logout': doLogout(); break;
+    case 'records': if (me) go('records'); break;
+    case 'level': onLevel(a); break;
+    case 'practice': startGame(homeLevel, randomSeed(), 'practice'); break;
+    case 'join': join(); break;
+    case 'create': create = { levelId: homeLevel, selected: null, seed: null, peek: false, note: '' }; go('create'); break;
+    case 'resume': { const s = loadSavedGame(); if (s) { game = s; go('game'); } else render(); break; }
+    case 'nextDemo': demoIndex = (demoIndex + 1) % DEMOS.length; clearTimers(); runDemo(); break;
+    case 'guess': submitGuess(); break;
+    case 'analyze': analyze(); break;
+    case 'clearMarks': clearMarks(); break;
+    case 'giveup': onGiveup(a); break;
+    case 'again': {
+      const lv = Number(a.dataset.level) || (lastResult && lastResult.levelId) || 1;
+      homeLevel = lv;
+      startGame(lv, randomSeed(), 'practice');
+      break;
+    }
+    case 'pickRandom': {
+      const c = candidates(create.levelId);
+      create.selected = c[Math.floor(Math.random() * c.length)];
+      create.seed = null; create.peek = false; create.note = '';
+      render();
+      break;
+    }
+    case 'makeCode': makeCode(); break;
+    case 'reroll': makeCode(); break;
+    case 'peek': create.peek = !create.peek; render(); break;
+    default: onTeacherAct(a);
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.isComposing) return;
+  const id = e.target.id;
+  if (id === 'guessIn') { e.preventDefault(); submitGuess(); }
+  else if (id === 'codeIn') { e.preventDefault(); join(); }
+  else if (id === 'sidIn') {
+    e.preventDefault();
+    const n = $('#nameIn');
+    if (n && !n.value.trim()) n.focus(); else doLogin();
+  }
+  else if (id === 'nameIn') { e.preventDefault(); doLogin(); }
+  else if (id === 'tcodeIn') { e.preventDefault(); showCode(e.target.value); }
+});
+
+/* ===== 선생님 화면 ===== */
+const T = {
+  tab: 'live', cls: 'all', sort: { col: 'sid', dir: 1 }, open: null,
+  code: '', genLevel: 2, reveal: {}, players: {}, live: {}, games: {},
+  err: '', note: '', busy: false, armed: null, armTimer: null,
+  unsub: [], codeUnsub: null, tick: null,
+};
+const TTABS = [['live', '수업 현황'], ['code', '경기 코드'], ['students', '학생 기록'], ['manage', '관리']];
+
+const groupOf = sid => (typeof sid === 'string' && sid.length >= 4 ? sid.slice(0, sid.length - 2) : '');
+const groupLabel = g => (g.length >= 2 ? `${g[0]}학년 ${Number(g.slice(1))}반` : g);
+const inCls = sid => T.cls === 'all' || groupOf(sid) === T.cls;
+function groupsFrom(sids) {
+  const set = new Set();
+  sids.forEach(sid => { const g = groupOf(sid); if (g) set.add(g); });
+  return [...set].sort();
+}
+function clock(t) {
+  const d = new Date(Number(t));
+  if (Number.isNaN(d.getTime())) return '';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+function rel(t) {
+  const n = Number(t);
+  if (!n) return '';
+  const s = Math.max(0, Math.round((Date.now() - n) / 1000));
+  if (s < 60) return '방금';
+  if (s < 3600) return `${Math.floor(s / 60)}분 전`;
+  return clock(n);
+}
+
+function teacherCodes() {
+  const a = store.get(KEY.tcodes, []);
+  return (Array.isArray(a) ? a : []).filter(x => x && typeof x.code === 'string' && parseCode(x.code));
+}
+function addTeacherCode(levelId) {
+  const code = formatCode(levelId, randomSeed());
+  const list = teacherCodes().filter(x => x.code !== code);
+  list.unshift({ code, t: Date.now() });
+  store.set(KEY.tcodes, list.slice(0, 20));
+  return code;
+}
+
+/* ----- 들어가고 나오기, 자료 받기 ----- */
+function openTeacher() {
+  view = 'teacher';
+  try { history.replaceState(null, '', '#teacher'); } catch (e) { /* 무시 */ }
+  render();
+  window.scrollTo(0, 0);
+  startTeacherData();
+}
+function leaveTeacher() {
+  stopTeacherData();
+  Net.teacherSignOut().catch(() => {});
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* 무시 */ }
+  T.err = '';
+  T.note = '';
+  go('home');
+  if (me) Net.startPresence(me.key, liveData());
+}
+function startTeacherData() {
+  stopTeacherData();
+  if (view !== 'teacher') return;
+  if (Net.mode === 'pending') {
+    Net.ready.then(() => { if (view === 'teacher') { render(); startTeacherData(); } });
+    return;
+  }
+  if (Net.mode === 'firebase' && !Net.teacher()) return;
+  const denied = () => {
+    T.err = '이 계정으로는 기록을 볼 수 없어요. 규칙 파일에 적은 선생님 Google 계정으로 로그인했는지 확인하세요.';
+    renderTeacherBody();
+  };
+  T.unsub.push(Net.watch('players', v => { T.players = v || {}; onTeacherData('players'); }, denied));
+  T.unsub.push(Net.watch('live', v => { T.live = v || {}; onTeacherData('live'); }, denied));
+  if (T.code) watchCode(T.code);
+  T.tick = setInterval(() => { if (view === 'teacher' && T.tab === 'live') renderTeacherBody(); }, 20000);
+}
+function stopTeacherData() {
+  T.unsub.forEach(f => { try { f(); } catch (e) { /* 무시 */ } });
+  T.unsub = [];
+  if (T.codeUnsub) { try { T.codeUnsub(); } catch (e) { /* 무시 */ } T.codeUnsub = null; }
+  if (T.tick) { clearInterval(T.tick); T.tick = null; }
+}
+function watchCode(code) {
+  if (T.codeUnsub) { try { T.codeUnsub(); } catch (e) { /* 무시 */ } T.codeUnsub = null; }
+  T.games = {};
+  if (Net.mode === 'pending' || (Net.mode === 'firebase' && !Net.teacher())) return;
+  T.codeUnsub = Net.watch({ code }, v => { T.games = v || {}; onTeacherData('games'); }, () => {
+    T.err = '경기 기록을 불러오지 못했어요. 선생님 계정과 규칙 파일을 확인하세요.';
+    renderTeacherBody();
+  });
+}
+function onTeacherData(kind) {
+  if (view !== 'teacher') return;
+  if (kind === 'games') { if (T.tab === 'code') renderCodeResults(); return; }
+  if (kind === 'live' && T.tab !== 'live') return;
+  if (kind === 'players' && T.tab === 'code') return;
+  renderTeacherBody();
+}
+function renderTeacherBody() { const b = $('#tbody'); if (b) b.innerHTML = teacherBodyHTML(); }
+function renderCodeResults() { const b = $('#codeResults'); if (b) b.innerHTML = codeResultsHTML(); }
+
+async function teacherSignIn() {
+  T.busy = true;
+  T.err = '';
+  render();
+  try {
+    await Net.teacherSignIn();
+  } catch (e) {
+    const c = e && e.code;
+    T.err = c === 'auth/popup-blocked' ? '팝업이 막혔어요. 주소창에서 팝업을 허용한 뒤 다시 눌러 주세요.'
+      : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? '로그인 창이 닫혔어요. 다시 눌러 주세요.'
+      : c === 'auth/unauthorized-domain' ? '이 주소에서는 로그인할 수 없어요. Authentication 설정의 승인된 도메인에 이 주소를 추가하세요.'
+      : c === 'auth/operation-not-allowed' ? 'Google 로그인이 꺼져 있어요. Authentication에서 Google 로그인을 사용 설정하세요.'
+      : '로그인하지 못했어요. 다시 시도해 주세요.';
+  }
+  T.busy = false;
+  render();
+  startTeacherData();
+}
+
+/* ----- 화면 ----- */
+function teacherHTML() {
+  const user = Net.teacher();
+  let body;
+  if (Net.mode === 'pending') {
+    body = '<section class="panel t-gate"><p>학급 서버를 확인하고 있어요.</p></section>';
+  } else if (Net.mode === 'firebase' && !user) {
+    body = `<section class="panel t-gate">
+  <h2>선생님 로그인</h2>
+  <p class="muted">규칙 파일에 적어 둔 선생님 Google 계정으로 로그인해야 학생 기록을 볼 수 있어요.</p>
+  <button type="button" class="btn primary" data-act="tsignin"${T.busy ? ' disabled' : ''}>${T.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
+  ${T.err ? `<p class="err">${esc(T.err)}</p>` : ''}
+</section>`;
+  } else {
+    body = `<div class="t-tabs"><div class="seg" role="tablist" aria-label="선생님 화면 메뉴">${TTABS.map(([id, label]) =>
+      `<button type="button" role="tab" aria-selected="${T.tab === id}" data-act="ttab" data-tab="${id}">${label}</button>`).join('')}</div></div>
+<div id="tbody">${teacherBodyHTML()}</div>`;
+  }
+  return `<div class="t-head">
+  <h1 class="t-title">선생님 화면</h1>
+  ${user ? `<span class="t-account">${esc(user.email || '')}<button type="button" class="text-btn" data-act="tsignout">로그아웃</button></span>` : ''}
+</div>
+${Net.mode === 'local' ? '<p class="t-note">학급 서버에 연결되어 있지 않아서 이 노트북에 저장된 기록만 보여요. 학급 서버 연결 방법은 함께 드린 설정 안내를 따라 주세요.</p>' : ''}
+${body}`;
+}
+
+function teacherBodyHTML() {
+  const err = T.err ? `<p class="err t-err">${esc(T.err)}</p>` : '';
+  if (T.tab === 'live') return err + liveTabHTML();
+  if (T.tab === 'code') return err + codeTabHTML();
+  if (T.tab === 'students') return err + studentsTabHTML();
+  return err + manageTabHTML();
+}
+
+function classFilter(groups) {
+  return `<label class="filter"><span>반</span><select id="tcls">
+  <option value="all"${T.cls === 'all' ? ' selected' : ''}>전체</option>
+  ${groups.map(g => `<option value="${esc(g)}"${T.cls === g ? ' selected' : ''}>${esc(groupLabel(g))}</option>`).join('')}
+</select></label>`;
+}
+
+function liveState(r) {
+  const lv = LEVELS[r.levelId];
+  const code = r.code ? ` <span class="muted-inline">${esc(r.code)}</span>` : '';
+  if (r.state === 'game' && lv) return `<span class="lvl-chip lv${r.levelId}">${lv.name}</span> 경기 중, ${Number(r.attempts) || 0}타석${code}`;
+  if (r.state === 'result' && lv) return `<span class="lvl-chip lv${r.levelId}">${lv.name}</span> ${r.won ? `<span class="ok">${Number(r.attempts)}타석 홈런</span>` : '기권'}${code}`;
+  return { create: '문제 만드는 중', records: '기록실 보는 중', out: '나감' }[r.state] || '처음 화면';
+}
+
+function liveTabHTML() {
+  const now = Date.now();
+  const rows = Object.entries(T.live).map(([key, v]) => Object.assign({ key }, v)).filter(r => typeof r.sid === 'string');
+  const groups = groupsFrom([...rows.map(r => r.sid), ...Object.values(T.players).map(p => p && p.sid)]);
+  const shown = rows.filter(r => inCls(r.sid)).sort((a, b) => a.sid.localeCompare(b.sid) || String(a.name).localeCompare(String(b.name)));
+  const isOn = r => r.online === true && now - (Number(r.t) || 0) < 15 * 60 * 1000;
+  const on = shown.filter(isOn);
+  const playing = on.filter(r => r.state === 'game').length;
+  const today = new Date().toDateString();
+  let doneToday = 0;
+  Object.values(T.players).forEach(p => {
+    if (p && inCls(p.sid)) toArr(p.recent).forEach(g => { if (g && new Date(Number(g.t)).toDateString() === today) doneToday += 1; });
+  });
+  const list = shown.length
+    ? `<ul class="live-list">${shown.map(r => `<li class="${isOn(r) ? 'on' : 'off'}">
+  <span class="dot${isOn(r) ? ' on' : ''}" aria-hidden="true"></span>
+  <span class="lv-sid">${esc(r.sid)}</span>
+  <span class="lv-name">${esc(r.name || '')}</span>
+  <span class="lv-state">${liveState(r)}</span>
+  <span class="lv-time">${isOn(r) ? rel(r.t) : '접속 끊김'}</span>
+</li>`).join('')}</ul>`
+    : '<p class="muted">아직 들어온 학생이 없어요. 학생들이 학번과 이름으로 입장하면 여기에 나타나요.</p>';
+  return `<div class="filters">${classFilter(groups)}<span class="spacer"></span>
+  <button type="button" class="text-btn" data-act="tclearLive">${T.armed === 'live' ? '한 번 더 누르면 현황을 비워요' : '현황 비우기'}</button></div>
+<section class="board t-board">
+  <div class="plates">
+    <div class="plate"><span class="lbl">접속 중</span><span class="led val">${on.length}</span></div>
+    <div class="plate"><span class="lbl">경기 중</span><span class="led val">${playing}</span></div>
+    <div class="plate"><span class="lbl">오늘 끝낸 경기</span><span class="led val">${doneToday}</span></div>
+  </div>
+</section>
+<section class="panel t-section"><h2>학생별 현황</h2>${list}</section>`;
+}
+
+function codeTabHTML() {
+  const codes = teacherCodes();
+  const made = codes.length
+    ? `<ul class="code-list">${codes.map(c => {
+        const p = parseCode(c.code), shown = !!T.reveal[c.code];
+        return `<li><span class="lvl-chip lv${p.levelId}">${LEVELS[p.levelId].name}</span><span class="cl-code">${c.code}</span>
+  <button type="button" class="text-btn" data-act="treveal" data-code="${c.code}" aria-pressed="${shown}">${shown ? `정답 ${secretFor(p.levelId, p.seed)}` : '정답 보기'}</button>
+  <button type="button" class="btn" data-act="tshow" data-code="${c.code}">결과 보기</button></li>`;
+      }).join('')}</ul>`
+    : '<p class="muted small">만든 코드는 이 노트북에 남아서 다음에도 볼 수 있어요.</p>';
+  return `<div class="t-grid">
+  <section class="panel">
+    <h2>수업용 코드 만들기</h2>
+    <p class="muted small">난이도를 고르고 코드를 만들면 칠판에 적을 코드와 정답이 함께 나와요.</p>
+    <div class="seg" role="radiogroup" aria-label="난이도">${[1, 2, 3].map(id =>
+      `<button type="button" role="radio" aria-checked="${T.genLevel === id}" data-act="tgenlv" data-level="${id}">${LEVELS[id].name}</button>`).join('')}</div>
+    <div class="actions"><button type="button" class="btn primary" data-act="tgen">새 코드 만들기</button></div>
+    ${made}
+  </section>
+  <section class="panel">
+    <h2><label for="tcodeIn">경기 코드 결과 보기</label></h2>
+    <p class="muted small">학생들이 알려 준 코드나 직접 만든 코드를 넣으면, 그 코드로 끝낸 경기가 실시간으로 모여요.</p>
+    <div class="inline-row"><input id="tcodeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="7" placeholder="예: 2-4821" value="${esc(T.code)}"><button type="button" class="btn" data-act="tshow">보기</button></div>
+    <p class="err" id="tcodeErr" role="alert"></p>
+  </section>
+</div>
+<div id="codeResults">${codeResultsHTML()}</div>`;
+}
+
+function codeResultsHTML() {
+  if (!T.code) return '';
+  const p = parseCode(T.code);
+  if (!p) return '';
+  const all = Object.values(T.games).filter(g => g && g.code === T.code && typeof g.sid === 'string');
+  const first = new Map();
+  all.slice().sort((a, b) => (Number(a.t) || 0) - (Number(b.t) || 0)).forEach(g => {
+    const k = g.key || keyOf(g.sid, g.name || '');
+    if (!first.has(k)) first.set(k, g);
+  });
+  const groups = groupsFrom([...first.values()].map(g => g.sid));
+  const rows = [...first.values()].filter(g => inCls(g.sid));
+  const wins = rows.filter(g => g.won);
+  const avg = wins.length ? (wins.reduce((s, g) => s + (Number(g.attempts) || 0), 0) / wins.length).toFixed(1) : '-';
+  const buckets = Array(10).fill(0);
+  wins.forEach(g => { const a = Math.max(1, Number(g.attempts) || 1); buckets[Math.min(a, 10) - 1] += 1; });
+  const top = Math.max(1, ...buckets);
+  const hist = buckets.map((n, i) => `<div class="hbar"><span class="hcnt led">${n || ''}</span><span class="track"><span class="bar" style="height:${n ? Math.max(4, Math.round(n / top * 100)) : 0}%"></span></span><span class="htick">${i === 9 ? '10+' : i + 1}</span></div>`).join('');
+  const ranked = rows.slice().sort((a, b) => (Number(b.won) - Number(a.won)) || ((Number(a.attempts) || 0) - (Number(b.attempts) || 0)) || ((Number(a.t) || 0) - (Number(b.t) || 0)));
+  let place = 0;
+  const list = ranked.length
+    ? `<ol class="rank">${ranked.map(g => `<li><span class="rk">${g.won ? ++place : '-'}</span><span class="lv-sid">${esc(g.sid)}</span><span class="lv-name">${esc(g.name || '')}</span><span class="${g.won ? 'ok' : 'muted-inline'}">${g.won ? `${Number(g.attempts)}타석 홈런` : '기권'}</span><span class="lv-time">${clock(g.t)}</span></li>`).join('')}</ol>`
+    : '<p class="muted">아직 이 코드로 끝낸 경기가 없어요.</p>';
+  const shown = !!T.reveal[T.code];
+  return `<section class="board t-board">
+  <div class="rec-head"><span class="lvl-chip lv${p.levelId}">${LEVELS[p.levelId].name}</span><h2 class="code-title led">${T.code}</h2>
+    <button type="button" class="board-link" data-act="treveal" data-code="${T.code}" aria-pressed="${shown}">${shown ? `정답 ${secretFor(p.levelId, p.seed)}` : '정답 보기'}</button></div>
+  <div class="plates four">
+    <div class="plate"><span class="lbl">참가</span><span class="led val">${rows.length}</span></div>
+    <div class="plate"><span class="lbl">홈런</span><span class="led val">${wins.length}</span></div>
+    <div class="plate"><span class="lbl">기권</span><span class="led val">${rows.length - wins.length}</span></div>
+    <div class="plate"><span class="lbl">평균 타석</span><span class="led val">${avg}</span></div>
+  </div>
+  <p class="hist-cap">몇 타석 만에 홈런을 쳤는지</p>
+  <div class="hist" role="img" aria-label="타석 수별 홈런 인원">${hist}</div>
+</section>
+<section class="panel t-section">
+  <div class="filters"><h2>학생별 결과</h2><span class="spacer"></span>${classFilter(groups)}</div>
+  <p class="muted small">같은 코드로 여러 번 한 학생은 첫 경기만 셉니다.</p>
+  ${list}
+</section>`;
+}
+
+const SCOLS = [
+  ['sid', '학번', 'l'], ['name', '이름', 'l'], ['finished', '경기'], ['wins', '홈런'],
+  ['b1', '입문 최소'], ['b2', '기본 최소'], ['b3', '도전 최소'], ['avg2', '기본 평균'], ['badges', '모은 기록'], ['last', '마지막 경기'],
+];
+function studentRows() {
+  return Object.values(T.players).filter(p => p && typeof p.sid === 'string').map(p => {
+    const lv = k => (p.lv && p.lv[k]) || {};
+    const best = k => (Number.isFinite(Number(lv(k).best)) && lv(k).best != null ? Number(lv(k).best) : null);
+    const w2 = Number(lv(2).w) || 0;
+    const last = toArr(p.recent).reduce((m, g) => Math.max(m, Number(g && g.t) || 0), 0);
+    return {
+      key: p.key || keyOf(p.sid, String(p.name || '')), sid: p.sid, name: String(p.name || ''),
+      finished: Number(p.finished) || 0, wins: Number(p.wins) || 0, giveups: Number(p.giveups) || 0,
+      b1: best(1), b2: best(2), b3: best(3), avg2: w2 ? (Number(lv(2).sum) || 0) / w2 : null,
+      badges: toArr(p.badges).length, last: last || null, raw: p,
+    };
+  });
+}
+function sortedStudents() {
+  const rows = studentRows().filter(r => inCls(r.sid));
+  const { col, dir } = T.sort;
+  return rows.sort((a, b) => {
+    const va = a[col], vb = b[col];
+    if (va == null && vb == null) return a.sid.localeCompare(b.sid);
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    const c = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return c * dir || a.sid.localeCompare(b.sid);
+  });
+}
+function studentDetail(p) {
+  const earned = BADGES.filter(b => toArr(p.badges).includes(b.id)).map(b => b.name);
+  const rec = toArr(p.recent).slice(0, 8);
+  return `<div class="detail-grid">
+  <div><h3>모은 기록</h3><p>${earned.length ? earned.map(esc).join(', ') : '아직 없어요'}</p></div>
+  <div><h3>최근 경기</h3>${rec.length ? `<ul class="mini-recent">${rec.map(g => `<li><span class="lvl-chip lv${g.levelId}">${(LEVELS[g.levelId] || {}).name || ''}</span>${esc(g.code || '')} ${g.won ? `<span class="ok">${Number(g.attempts)}타석 홈런</span>` : '기권'} <span class="muted-inline">${when(g.t)}</span></li>`).join('')}</ul>` : '<p>아직 없어요</p>'}</div>
+</div>`;
+}
+function studentsTabHTML() {
+  const all = studentRows();
+  const groups = groupsFrom(all.map(r => r.sid));
+  const rows = sortedStudents();
+  const { col, dir } = T.sort;
+  const head = SCOLS.map(([k, label, al]) => `<th scope="col" class="${al || ''}" aria-sort="${col === k ? (dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-act="tsort" data-col="${k}">${label}${col === k ? (dir > 0 ? ' ▲' : ' ▼') : ''}</button></th>`).join('');
+  const body = rows.map(r => {
+    const open = T.open === r.key;
+    const cells = [esc(r.sid), esc(r.name), r.finished, r.wins, r.b1 ?? '-', r.b2 ?? '-', r.b3 ?? '-', r.avg2 == null ? '-' : r.avg2.toFixed(1), `${r.badges}/${BADGES.length}`, r.last ? when(r.last) : '-'];
+    return `<tr class="row${open ? ' open' : ''}" data-act="trow" data-key="${esc(r.key)}" tabindex="0" aria-expanded="${open}">${cells.map((c, i) => `<td class="${SCOLS[i][2] || ''}">${c}</td>`).join('')}</tr>`
+      + (open ? `<tr class="t-detail"><td colspan="${SCOLS.length}">${studentDetail(r.raw)}</td></tr>` : '');
+  }).join('');
+  return `<div class="filters">${classFilter(groups)}<span class="count-inline">${rows.length}명</span><span class="spacer"></span>
+  <button type="button" class="btn" data-act="tcsv"${rows.length ? '' : ' disabled'}>CSV로 내려받기</button></div>
+${rows.length
+    ? `<section class="panel t-section table-panel"><div class="table-wrap"><table class="t-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></section>
+<p class="muted small t-section">줄을 누르면 모은 기록과 최근 경기가 펼쳐져요.</p>`
+    : '<p class="muted t-section">아직 기록이 있는 학생이 없어요.</p>'}`;
+}
+
+function manageTabHTML() {
+  const n = Object.keys(T.players).length;
+  return `<div class="t-grid">
+  <section class="panel">
+    <h2>수업 현황 비우기</h2>
+    <p class="muted">‘수업 현황’ 목록만 비워요. 학생 기록은 그대로 남아요. 새 수업을 시작할 때 쓰세요.</p>
+    <button type="button" class="btn" data-act="tclearLive">${T.armed === 'live' ? '한 번 더 누르면 현황을 비워요' : '현황 비우기'}</button>
+  </section>
+  <section class="panel">
+    <h2>이 게임의 기록 모두 지우기</h2>
+    <p class="muted">최대공약수 숫자야구에 쌓인 학생 ${n}명의 기록과 경기 기록, 수업 현황을 모두 지워요. 다른 게임의 기록은 그대로예요. 되돌릴 수 없으니 학년 말에 정리할 때 쓰세요.</p>
+    <div class="field"><label for="tdelIn">확인하려면 ‘삭제’라고 입력하세요</label><input id="tdelIn" autocomplete="off" spellcheck="false"></div>
+    <button type="button" class="btn danger" data-act="tclearAll">이 게임의 기록 모두 지우기</button>
+    <p class="err" id="tdelErr" role="alert"></p>
+    ${T.note ? `<p class="note">${esc(T.note)}</p>` : ''}
+  </section>
+</div>
+<section class="panel t-section">
+  <h2>저장 위치</h2>
+  <p class="muted">${Net.mode === 'firebase' ? '학급 서버(Firebase)에 저장하고 있어요. 어느 노트북에서 한 경기든 여기로 모여요.' : '이 노트북의 브라우저에 저장하고 있어요. 학급 서버를 연결하면 모든 노트북의 기록이 여기로 모여요.'}</p>
+</section>`;
+}
+
+/* ----- 동작 ----- */
+function showCode(text) {
+  const p = parseCode(text || '');
+  if (!p) {
+    const e = $('#tcodeErr');
+    if (e) e.textContent = '경기 코드는 숫자 다섯 자리예요. 예: 2-4821';
+    return;
+  }
+  T.code = formatCode(p.levelId, p.seed);
+  T.tab = 'code';
+  render();
+  watchCode(T.code);
+  const r = $('#codeResults');
+  if (r && r.scrollIntoView) r.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+}
+function armOrRun(kind, run) {
+  if (T.armed !== kind) {
+    T.armed = kind;
+    clearTimeout(T.armTimer);
+    T.armTimer = setTimeout(() => { T.armed = null; if (view === 'teacher') renderTeacherBody(); }, 3000);
+    renderTeacherBody();
+    return;
+  }
+  T.armed = null;
+  clearTimeout(T.armTimer);
+  run().then(() => renderTeacherBody()).catch(() => { T.err = '지우지 못했어요. 다시 시도해 주세요.'; renderTeacherBody(); });
+}
+async function clearEverything() {
+  const inp = $('#tdelIn'), err = $('#tdelErr');
+  if (!inp || inp.value.trim() !== '삭제') { if (err) err.textContent = '‘삭제’라고 정확히 입력해야 지울 수 있어요.'; return; }
+  try {
+    await Net.clearAll();
+    T.players = {}; T.live = {}; T.games = {}; T.open = null;
+    T.note = '모든 기록을 지웠어요.';
+    if (Net.mode === 'local') { Net.stopPresence(false); me = null; game = null; lastResult = null; store.del(KEY.current); }
+    renderTeacherBody();
+  } catch (e) {
+    if (err) err.textContent = '지우지 못했어요. 선생님 계정과 권한을 확인하고 다시 시도해 주세요.';
+  }
+}
+function downloadCSV() {
+  const rows = sortedStudents();
+  const head = ['학번', '이름', '경기', '홈런', '기권', '입문 최소 타석', '기본 최소 타석', '도전 최소 타석', '기본 평균 타석', '모은 기록', '마지막 경기'];
+  const cell = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const lines = [head, ...rows.map(r => [
+    r.sid, r.name, r.finished, r.wins, r.giveups, r.b1, r.b2, r.b3, r.avg2 == null ? '' : r.avg2.toFixed(1),
+    toArr(r.raw.badges).length, r.last ? new Date(r.last).toLocaleString('ko-KR') : '',
+  ])].map(r => r.map(cell).join(','));
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const d = new Date();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `최대공약수숫자야구_기록_${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function onTeacherAct(a) {
+  switch (a.dataset.act) {
+    case 'tsignin': teacherSignIn(); break;
+    case 'tsignout':
+      stopTeacherData();
+      Net.teacherSignOut().catch(() => {}).then(() => { T.players = {}; T.live = {}; T.games = {}; render(); });
+      break;
+    case 'ttab': T.tab = a.dataset.tab; T.err = ''; T.note = ''; T.armed = null; render(); break;
+    case 'tgenlv': T.genLevel = Number(a.dataset.level); renderTeacherBody(); break;
+    case 'tgen': { const code = addTeacherCode(T.genLevel); T.reveal[code] = true; showCode(code); break; }
+    case 'treveal': { const c = a.dataset.code; T.reveal[c] = !T.reveal[c]; renderTeacherBody(); break; }
+    case 'tshow': showCode(a.dataset.code || ($('#tcodeIn') ? $('#tcodeIn').value : '')); break;
+    case 'tsort': {
+      const c = a.dataset.col;
+      T.sort = T.sort.col === c ? { col: c, dir: -T.sort.dir } : { col: c, dir: 1 };
+      renderTeacherBody();
+      break;
+    }
+    case 'trow': { const k = a.dataset.key; T.open = T.open === k ? null : k; renderTeacherBody(); break; }
+    case 'tcsv': downloadCSV(); break;
+    case 'tclearLive': armOrRun('live', () => Net.clearLive()); break;
+    case 'tclearAll': clearEverything(); break;
+    default: break;
+  }
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id !== 'tcls') return;
+  T.cls = e.target.value;
+  T.open = null;
+  if (T.tab === 'code') renderCodeResults(); else renderTeacherBody();
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('tr[data-act="trow"]')) {
+    e.preventDefault();
+    onTeacherAct(e.target);
+  }
+});
+
+/* ===== 시작 ===== */
+function boot() {
+  restorePlayer();
+  if (location.hash === '#teacher') view = 'teacher';
+  applyBig();
+  render();
+  Net.onStatus(() => {
+    updateFoot();
+    if (view === 'teacher') { render(); startTeacherData(); }
+  });
+  window.addEventListener('pagehide', () => { if (me && Net.mode === 'local') Net.stopPresence(true); });
+  window.addEventListener('hashchange', () => { if (location.hash === '#teacher' && view !== 'teacher') openTeacher(); });
+  Net.boot();
+  syncAfterBoot();
+  Net.ready.then(() => Net.watchHub(v => {
+    const before = closedByTeacher();
+    hubState = v;
+    if (closedByTeacher() !== before && view !== 'teacher') render();
+  }));
+  if (view === 'teacher') startTeacherData();
+}
+boot();
+</script>
+</body>
+</html>
