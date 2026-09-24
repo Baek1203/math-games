@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>파리 잡기 좌표게임</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
   :root{
     --wood-1:#7a5334;
@@ -590,6 +590,102 @@
   .lb-period-note{ text-align:center; font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--chalk-blue); margin: 0 0 8px; opacity:0.85; }
   .lb-update-note{ text-align:center; font-size:10px; color: var(--chalk-white); opacity:0.55; margin: 0 0 6px; line-height:1.5; }
 </style>
+<style>
+/* ===================================================================
+   게임 목록과 같은 모양 (교실 칠판 테마)
+   나무틀 칠판, 분필 좌표평면, 파리는 그대로 두고 글꼴, 테두리, 단추를 게임 목록에 맞춘다
+   =================================================================== */
+:root { --ink: #2b2140; --gold-a: #ffd966; --gold-b: #ffc02e;
+  --fl-font: 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  --fl-display: 'Black Han Sans', 'Jua', 'Malgun Gothic', sans-serif; }
+body { font-family: var(--fl-font); justify-content: flex-start;
+  background: radial-gradient(36rem 9rem at 14% 3rem, rgba(255, 255, 255, .6), transparent 70%),
+    radial-gradient(30rem 8rem at 86% 10rem, rgba(255, 255, 255, .5), transparent 70%),
+    linear-gradient(180deg, #7cc6ff 0%, #bfe4ff 55%, #e2f3ff 100%); background-attachment: fixed; }
+
+/* 윗줄 */
+.back-bar { font-family: var(--fl-font); margin-bottom: 14px; }
+@media (min-width: 768px) { .back-bar { max-width: 1060px !important; } }
+.back-btn { font-family: var(--fl-font) !important; font-weight: 400 !important; font-size: 1rem !important; color: var(--ink) !important; background: #fff !important; border: 3px solid var(--ink) !important; border-radius: 999px !important; padding: .4rem 1rem !important; box-shadow: 0 4px 0 var(--ink) !important; }
+.back-btn:hover { background: #fff4c7 !important; }
+.back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink) !important; }
+.player-badge { display: inline-flex !important; align-items: center; gap: .45rem; font-family: var(--fl-font) !important; font-size: .98rem !important; color: var(--ink) !important; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: .25rem .9rem .25rem .3rem; box-shadow: 0 4px 0 var(--ink); }
+.player-badge:hover { background: #fff4c7; }
+.mg-no { padding: .05rem .55rem; border-radius: 999px; background: var(--ink); color: #ffd23f; }
+
+/* 칠판: 둥근 나무틀과 굵은 테두리 */
+.board { border: 16px solid transparent; border-image: none; border-radius: 28px;
+  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, .04), transparent 40%), radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, .035), transparent 45%), linear-gradient(180deg, #24463a, #17302a) padding-box,
+    linear-gradient(160deg, #b07a4a, #7a4f2c 55%, #9a6b43) border-box;
+  box-shadow: 0 0 0 4px var(--ink), 0 12px 0 4px var(--ink), inset 0 0 0 3px var(--ink), inset 0 0 40px rgba(0, 0, 0, .35); }
+.ledge { height: 18px; margin: 10px 26px 0; border-radius: 0 0 14px 14px; background: linear-gradient(180deg, #8a5a36, #6a4528); border: 3px solid var(--ink); border-top: 0; box-shadow: none; }
+
+/* 제목과 규칙 (분필 느낌은 그대로) */
+h1 { display: flex; align-items: center; justify-content: center; gap: .5rem; font-family: var(--fl-display) !important; font-weight: 400 !important; letter-spacing: .01em; color: #fdfbf2; text-shadow: 0 0 10px rgba(245, 242, 230, .25); }
+h1 .fl-ico { width: 1.25em; height: 1.25em; flex: none; }
+.subtitle { font-family: var(--fl-font) !important; color: #ffe27a !important; }
+.info-screen .fly-hero { font-size: 0; margin: 4px 0 12px; filter: none; line-height: 0; }
+.fly-hero svg { width: 170px; height: auto; display: inline-block; }
+.rules { font-family: var(--fl-font) !important; font-size: 1.05rem !important; line-height: 1.5; background: rgba(245, 242, 230, .06); border: 2px dashed rgba(245, 242, 230, .35) !important; border-radius: 16px !important; }
+.rules li b { color: #ffe27a; font-weight: 400; }
+
+/* 단추 */
+.big-btn, .swat-btn { font-family: var(--fl-font) !important; font-weight: 400 !important; color: var(--ink) !important; background: linear-gradient(var(--gold-a), var(--gold-b)) !important; border: 3px solid var(--ink) !important; border-radius: 18px !important; box-shadow: 0 6px 0 #0f1d17 !important; display: flex !important; align-items: center; justify-content: center; gap: .5rem; }
+.big-btn svg, .swat-btn svg { width: 1.35em; height: 1.35em; flex: none; }
+.big-btn:hover, .swat-btn:hover:not(:disabled) { background: linear-gradient(#ffe38a, #ffc93c) !important; }
+.big-btn:active, .swat-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #0f1d17 !important; }
+.swat-btn:disabled { opacity: .55; }
+.skip-btn { font-family: var(--fl-font) !important; font-weight: 400 !important; color: var(--ink) !important; background: #fff !important; border: 3px solid var(--ink) !important; border-radius: 14px !important; box-shadow: 0 4px 0 #0f1d17 !important; display: flex !important; align-items: center; justify-content: center; gap: .4rem; }
+.skip-btn svg { width: 1.1em; height: 1.1em; }
+.skip-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #0f1d17 !important; }
+
+/* 점수판 */
+.stats .stat, .result-stats .stat { background: #fff !important; border: 3px solid var(--ink) !important; border-radius: 16px !important; box-shadow: 0 5px 0 #0f1d17; }
+.stat-label { font-family: var(--fl-font) !important; color: #62597a !important; }
+.stat-value { font-family: var(--fl-display) !important; font-weight: 400 !important; color: var(--ink) !important; }
+.stat-value.timer-low { color: #d8344c !important; }
+.coord-readout { font-family: var(--fl-font) !important; color: #fdfbf2 !important; }
+#coordText { font-family: var(--fl-display) !important; color: #ffe27a !important; letter-spacing: .02em; }
+
+/* 슬라이더 */
+.slider-row label { font-family: var(--fl-display) !important; font-weight: 400 !important; }
+.slider-row input[type="range"] { height: 14px !important; border-radius: 999px !important; background: #f5f2e6 !important; border: 3px solid var(--ink) !important; }
+.slider-row input[type="range"]::-webkit-slider-thumb { width: 30px !important; height: 30px !important; border-radius: 50% !important; background: #8fc7e8 !important; border: 3px solid var(--ink) !important; box-shadow: 0 3px 0 var(--ink) !important; }
+.slider-row input[type="range"]::-moz-range-thumb { width: 26px !important; height: 26px !important; border-radius: 50% !important; background: #8fc7e8 !important; border: 3px solid var(--ink) !important; }
+.slider-val { font-family: var(--fl-display) !important; color: #fdfbf2 !important; }
+
+/* 알림 */
+.toast { font-family: var(--fl-font) !important; font-size: 1.05rem !important; }
+.toast.hit { color: #9dffb4 !important; } .toast.miss { color: #ffb0b8 !important; }
+
+/* 파리와 파리채 그림 */
+.fly-emoji, .paddle-emoji { transform-box: fill-box; transform-origin: center; }
+.paddle-emoji { transform-origin: 50% 27%; }
+.fly-emoji { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .45)); }
+
+/* 결과 */
+.result-card { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.result-title { font-family: var(--fl-display) !important; font-weight: 400 !important; color: #ffe27a !important; }
+.result-footer { font-family: var(--fl-font) !important; }
+
+/* 랭킹: 칠판 위의 흰 카드 */
+.leaderboard { background: #fff !important; color: var(--ink) !important; border: 3px solid var(--ink) !important; border-radius: 18px !important; box-shadow: 0 5px 0 #0f1d17 !important; font-family: var(--fl-font) !important; padding: .9rem 1rem .8rem !important; }
+.leaderboard h3 { display: flex; align-items: center; justify-content: center; gap: .4rem; font-family: var(--fl-display) !important; font-weight: 400 !important; color: var(--ink) !important; font-size: 1.2rem !important; }
+.leaderboard h3 svg { width: 1.3rem; height: 1.3rem; }
+.leaderboard ol { color: var(--ink) !important; font-size: 1rem !important; }
+.leaderboard li { align-items: center; gap: .4rem; border-bottom: 2px dashed #dcd7ea !important; }
+.leaderboard .rank { display: inline-grid !important; place-items: center; width: 1.7rem !important; height: 1.7rem; border-radius: 50%; background: #fff; border: 2px solid var(--ink); color: var(--ink) !important; font-family: var(--fl-display); font-weight: 400 !important; font-size: .9rem; }
+.leaderboard li:nth-child(1) .rank { background: #ffd23f; } .leaderboard li:nth-child(2) .rank { background: #dfe5ef; } .leaderboard li:nth-child(3) .rank { background: #ffc49a; }
+.leaderboard .lb-score { font-family: var(--fl-display) !important; color: #1f6b4a !important; }
+.leaderboard .lb-empty { display: block !important; text-align: center !important; font-family: var(--fl-font) !important; font-size: .95rem !important; color: #62597a !important; opacity: 1 !important; border-bottom: 0 !important; }
+#resultName, .result-footer { display: none !important; }
+#resultEmoji svg { width: 96px; height: 96px; display: inline-block; }
+.lb-scope-toggle { gap: 0 !important; padding: 3px; margin: 0 auto .5rem !important; width: fit-content; background: #f3f1fa; border: 2px solid var(--ink); border-radius: 999px; }
+.lb-scope-btn { font-family: var(--fl-font) !important; font-size: .95rem !important; color: #62597a !important; background: transparent !important; border: 0 !important; border-radius: 999px !important; padding: .2rem .9rem !important; opacity: 1 !important; }
+.lb-scope-btn.active { background: var(--ink) !important; color: #ffd23f !important; font-weight: 400 !important; }
+.lb-period-note { font-family: var(--fl-font) !important; color: #1f6b4a !important; }
+.lb-update-note { color: #62597a !important; opacity: 1 !important; font-family: var(--fl-font) !important; }
+</style>
 </head>
 <body>
 <div class="back-bar">
@@ -602,10 +698,10 @@
     <!-- ===== 시작 화면 ===== -->
     <div id="startScreen" class="info-screen">
       <header>
-        <h1>🪰 파리 잡기 좌표게임</h1>
+        <h1><svg class="fl-ico" viewBox="-24 -22 48 44" aria-hidden="true"><g transform="scale(1)"><ellipse cx="-10" cy="-10" rx="12" ry="7" transform="rotate(-35 -10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><ellipse cx="10" cy="-10" rx="12" ry="7" transform="rotate(35 10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><path d="M-7 7 l-7 6 M7 7 l7 6 M-8 1 l-9 1 M8 1 l9 1" stroke="#2b2140" stroke-width="2" stroke-linecap="round"/><ellipse cx="0" cy="3" rx="8.5" ry="10" fill="#3a3a3a" stroke="#2b2140" stroke-width="2.2"/><circle cx="-4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="-5.6" cy="-6" r="1.5" fill="#fff"/><circle cx="3.4" cy="-6" r="1.5" fill="#fff"/></g></svg>파리 잡기 좌표게임</h1>
         <p class="subtitle">칠판 위 좌표평면에서 파리를 찾아라!</p>
       </header>
-      <div class="fly-hero">🪰🏏</div>
+      <div class="fly-hero"><svg viewBox="0 0 200 110" aria-hidden="true"><g transform="translate(62 56) scale(1.9)"><g transform="scale(1)"><ellipse cx="-10" cy="-10" rx="12" ry="7" transform="rotate(-35 -10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><ellipse cx="10" cy="-10" rx="12" ry="7" transform="rotate(35 10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><path d="M-7 7 l-7 6 M7 7 l7 6 M-8 1 l-9 1 M8 1 l9 1" stroke="#2b2140" stroke-width="2" stroke-linecap="round"/><ellipse cx="0" cy="3" rx="8.5" ry="10" fill="#3a3a3a" stroke="#2b2140" stroke-width="2.2"/><circle cx="-4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="-5.6" cy="-6" r="1.5" fill="#fff"/><circle cx="3.4" cy="-6" r="1.5" fill="#fff"/></g></g><path d="M104 40 q14 -10 26 -6 M106 54 q12 -6 22 -2" stroke="#fdfbf2" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/><g transform="translate(160 44) rotate(24) scale(1.15)"><g transform="scale(1)"><rect x="-4" y="17" width="8" height="40" rx="3" fill="#f2c94c" stroke="#2b2140" stroke-width="2.5"/><rect x="-19" y="-19" width="38" height="38" rx="9" fill="#ff7aa2" stroke="#2b2140" stroke-width="3"/><path d="M-10 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M-2 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M6 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M14 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 -8 h34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 0 h34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 8 h34" stroke="#c9486f" stroke-width="1.5"/></g></g></svg></div>
       <ul class="rules">
         <li>파리가 좌표평면 위 임의의 정수 좌표에 앉아있어요.</li>
         <li><b>X, Y 슬라이더</b>로 파란 조준점을 파리 위치에 정확히 맞추세요.</li>
@@ -613,15 +709,15 @@
         <li>잘못 휘두르면 파리가 <b>다른 자리로 도망가요.</b></li>
         <li>제한시간 <b>1분</b> 동안 최대한 많이 잡아보세요.</li>
       </ul>
-      <button id="startBtn" class="big-btn">▶ 시작하기</button>
+      <button id="startBtn" class="big-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>시작하기</button>
       <div class="leaderboard" id="lbStart">
-        <h3>🏆 파리 잡기 랭킹 (10점 이상)</h3>
+        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" fill="none" stroke="#2b2140" stroke-width="2"/><path d="M12 13v4M8 20h8l-1-3H9z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/></svg>파리 잡기 랭킹 (10점 이상)</h3>
         <div class="lb-scope-toggle" data-target="lbStartList">
-          <button class="lb-scope-btn active" data-scope="weekly">📅 주간</button>
-          <button class="lb-scope-btn" data-scope="semester">🏫 학기</button>
-          <button class="lb-scope-btn" data-scope="all">🌟 전체</button>
+          <button class="lb-scope-btn active" data-scope="weekly">주간</button>
+          <button class="lb-scope-btn" data-scope="semester">학기</button>
+          <button class="lb-scope-btn" data-scope="all">전체</button>
         </div>
-        <p class="lb-update-note">📅 주간: 매주 월요일 오전 9시 갱신 · 🏫 학기: 3월 1일 / 8월 1일 갱신</p>
+        <p class="lb-update-note">주간은 매주 월요일 오전 9시, 학기는 3월 1일과 8월 1일에 새로 시작해요.</p>
         <p class="lb-period-note" id="lbStartPeriodNote"></p>
         <ol id="lbStartList"><li class="lb-empty">불러오는 중...</li></ol>
       </div>
@@ -636,8 +732,8 @@
           <g id="tickLabels"></g>
           <g id="guessMarker"></g>
           <g id="splatLayer"></g>
-          <text id="flyEl" class="fly-emoji">🪰</text>
-          <text id="paddleEl" class="paddle-emoji">🏏</text>
+          <image id="flyEl" class="fly-emoji" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-24 -22 48 44%22%3E%3Cg transform=%22scale(1)%22%3E%3Cellipse cx=%22-10%22 cy=%22-10%22 rx=%2212%22 ry=%227%22 transform=%22rotate(-35 -10 -10)%22 fill=%22rgba(210,235,255,.85)%22 stroke=%22%232b2140%22 stroke-width=%222%22/%3E%3Cellipse cx=%2210%22 cy=%22-10%22 rx=%2212%22 ry=%227%22 transform=%22rotate(35 10 -10)%22 fill=%22rgba(210,235,255,.85)%22 stroke=%22%232b2140%22 stroke-width=%222%22/%3E%3Cpath d=%22M-7 7 l-7 6 M7 7 l7 6 M-8 1 l-9 1 M8 1 l9 1%22 stroke=%22%232b2140%22 stroke-width=%222%22 stroke-linecap=%22round%22/%3E%3Cellipse cx=%220%22 cy=%223%22 rx=%228.5%22 ry=%2210%22 fill=%22%233a3a3a%22 stroke=%22%232b2140%22 stroke-width=%222.2%22/%3E%3Ccircle cx=%22-4.5%22 cy=%22-4.5%22 r=%224.8%22 fill=%22%23ff5a5f%22 stroke=%22%232b2140%22 stroke-width=%221.8%22/%3E%3Ccircle cx=%224.5%22 cy=%22-4.5%22 r=%224.8%22 fill=%22%23ff5a5f%22 stroke=%22%232b2140%22 stroke-width=%221.8%22/%3E%3Ccircle cx=%22-5.6%22 cy=%22-6%22 r=%221.5%22 fill=%22%23fff%22/%3E%3Ccircle cx=%223.4%22 cy=%22-6%22 r=%221.5%22 fill=%22%23fff%22/%3E%3C/g%3E%3C/svg%3E" width="30" height="27.5" x="0" y="0"/>
+          <image id="paddleEl" class="paddle-emoji" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-22 -22 44 82%22%3E%3Cg transform=%22scale(1)%22%3E%3Crect x=%22-4%22 y=%2217%22 width=%228%22 height=%2240%22 rx=%223%22 fill=%22%23f2c94c%22 stroke=%22%232b2140%22 stroke-width=%222.5%22/%3E%3Crect x=%22-19%22 y=%22-19%22 width=%2238%22 height=%2238%22 rx=%229%22 fill=%22%23ff7aa2%22 stroke=%22%232b2140%22 stroke-width=%223%22/%3E%3Cpath d=%22M-10 -17 v34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M-2 -17 v34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M6 -17 v34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M14 -17 v34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M-17 -8 h34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M-17 0 h34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M-17 8 h34%22 stroke=%22%23c9486f%22 stroke-width=%221.5%22/%3E%3C/g%3E%3C/svg%3E" width="34" height="63.4" x="0" y="0"/>
         </svg>
       </div>
 
@@ -675,8 +771,8 @@
           </div>
         </div>
 
-        <button id="swatBtn" class="swat-btn">🏏 찰싹 때리기</button>
-        <button id="skipBtn" class="skip-btn">🔄 다른 파리 부르기</button>
+        <button id="swatBtn" class="swat-btn"><svg viewBox="-24 -24 48 84" aria-hidden="true"><g transform="scale(1)"><rect x="-4" y="17" width="8" height="40" rx="3" fill="#f2c94c" stroke="#2b2140" stroke-width="2.5"/><rect x="-19" y="-19" width="38" height="38" rx="9" fill="#ff7aa2" stroke="#2b2140" stroke-width="3"/><path d="M-10 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M-2 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M6 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M14 -17 v34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 -8 h34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 0 h34" stroke="#c9486f" stroke-width="1.5"/><path d="M-17 8 h34" stroke="#c9486f" stroke-width="1.5"/></g></svg>찰싹 때리기</button>
+        <button id="skipBtn" class="skip-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M17.5 3v4.5H13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>다른 파리 부르기</button>
 
         <p id="toast" class="toast"></p>
       </div>
@@ -686,9 +782,10 @@
     <div id="resultScreen" class="info-screen hidden">
       <div id="resultCard" class="result-card">
         <header>
-          <h1>⏰ 시간 종료!</h1>
+          <h1><svg class="fl-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" fill="#fff" stroke="#2b2140" stroke-width="2.2"/><path d="M12 9v4l3 2" fill="none" stroke="#2b2140" stroke-width="2.2" stroke-linecap="round"/><path d="M9 3h6" stroke="#2b2140" stroke-width="2.2" stroke-linecap="round"/></svg>시간 종료!</h1>
         </header>
-        <div class="fly-hero" id="resultEmoji">🎉</div>
+        <div class="fly-hero" id="resultEmoji"></div>
+<script>window.MG_RESULT_ART = { trophy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" fill="none" stroke="#2b2140" stroke-width="2"/><path d="M12 13v4M8 20h8l-1-3H9z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/></svg>', star: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l6 13 14 1.5-10.5 9.5 3 14L24 35l-12.5 7 3-14L4 18.5 18 17z" fill="#ffd23f" stroke="#2b2140" stroke-width="3" stroke-linejoin="round"/><path d="M17 20l4 4M31 20l-4 4" stroke="#2b2140" stroke-width="2.4" stroke-linecap="round"/></svg>', smile: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#ffd23f" stroke="#2b2140" stroke-width="3"/><circle cx="17.5" cy="20" r="2.6" fill="#2b2140"/><circle cx="30.5" cy="20" r="2.6" fill="#2b2140"/><path d="M15 28q9 9 18 0" fill="none" stroke="#2b2140" stroke-width="3" stroke-linecap="round"/></svg>', fly: '<svg viewBox="-24 -22 48 44" aria-hidden="true"><g transform="scale(1)"><ellipse cx="-10" cy="-10" rx="12" ry="7" transform="rotate(-35 -10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><ellipse cx="10" cy="-10" rx="12" ry="7" transform="rotate(35 10 -10)" fill="rgba(210,235,255,.85)" stroke="#2b2140" stroke-width="2"/><path d="M-7 7 l-7 6 M7 7 l7 6 M-8 1 l-9 1 M8 1 l9 1" stroke="#2b2140" stroke-width="2" stroke-linecap="round"/><ellipse cx="0" cy="3" rx="8.5" ry="10" fill="#3a3a3a" stroke="#2b2140" stroke-width="2.2"/><circle cx="-4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="4.5" cy="-4.5" r="4.8" fill="#ff5a5f" stroke="#2b2140" stroke-width="1.8"/><circle cx="-5.6" cy="-6" r="1.5" fill="#fff"/><circle cx="3.4" cy="-6" r="1.5" fill="#fff"/></g></svg>' };</script>
         <span id="resultName" class="hidden"></span>
         <p class="result-title" id="resultHeadline">수고하셨어요!</p>
         <div class="result-stats">
@@ -705,25 +802,19 @@
             <span class="stat-value" id="resultAcc">-</span>
           </div>
         </div>
-        <p class="result-footer">🪰 파리 잡기 좌표게임</p>
+        <p class="result-footer">파리 잡기 좌표게임</p>
       </div>
 
-      <button id="captureBtn" class="big-btn secondary-btn">📋 결과 캡처하기</button>
-      <p id="captureMsg" class="capture-msg"></p>
-      
-      <!-- 다운로드 버튼 (미리보기 이미지 영역은 제거) -->
-      <a id="downloadBtn" class="big-btn download-btn hidden" download="파리잡기_결과.png">📥 이미지 저장하기</a>
-
-      <button id="retryBtn" class="big-btn">🔁 다시 하기</button>
+      <button id="retryBtn" class="big-btn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M17.5 3v4.5H13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>다시 하기</button>
 
       <div class="leaderboard" id="lbResult">
-        <h3>🏆 파리 잡기 랭킹 (10점 이상)</h3>
+        <h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" fill="none" stroke="#2b2140" stroke-width="2"/><path d="M12 13v4M8 20h8l-1-3H9z" fill="#ffd23f" stroke="#2b2140" stroke-width="2" stroke-linejoin="round"/></svg>파리 잡기 랭킹 (10점 이상)</h3>
         <div class="lb-scope-toggle" data-target="lbResultList">
-          <button class="lb-scope-btn active" data-scope="weekly">📅 주간</button>
-          <button class="lb-scope-btn" data-scope="semester">🏫 학기</button>
-          <button class="lb-scope-btn" data-scope="all">🌟 전체</button>
+          <button class="lb-scope-btn active" data-scope="weekly">주간</button>
+          <button class="lb-scope-btn" data-scope="semester">학기</button>
+          <button class="lb-scope-btn" data-scope="all">전체</button>
         </div>
-        <p class="lb-update-note">📅 주간: 매주 월요일 오전 9시 갱신 · 🏫 학기: 3월 1일 / 8월 1일 갱신</p>
+        <p class="lb-update-note">주간은 매주 월요일 오전 9시, 학기는 3월 1일과 8월 1일에 새로 시작해요.</p>
         <p class="lb-period-note" id="lbResultPeriodNote"></p>
         <ol id="lbResultList"><li class="lb-empty">불러오는 중...</li></ol>
       </div>
@@ -733,7 +824,6 @@
   <div class="ledge"></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script data-app="fly-coords">
 /* ===== 학급 서버 랭킹 =====
    수학 게임 목록과 같은 학급 서버(firebase-config.js의 Realtime Database)를 써요.
@@ -805,6 +895,8 @@
   window.getSemesterLabel = function (id) { var p = String(id || '').split('-'); return p.length === 2 ? p[0] + '학년도 ' + p[1] + '학기' : ''; };
 
   window.getPlayerName = function () { var s = me(); return s ? s.sid + ' ' + s.name : ''; };
+  /* 이름표: 학번 칩과 이름 */
+  window.mgBadgeHTML = function () { var s = me(); return s ? '<span class="mg-no">' + esc(s.sid) + '</span>' + esc(s.name) : ''; };
   /* 등록한 선수가 없을 때 게임 목록의 선수 등록으로 갔다가 이 게임으로 돌아오는 주소 */
   window.mgLoginURL = function () { return '../?login=1&next=' + encodeURIComponent(APP + '/'); };
 
@@ -927,9 +1019,6 @@
   const playerBadge = document.getElementById('playerBadge');
   const lbStartList = document.getElementById('lbStartList');
   const lbResultList = document.getElementById('lbResultList');
-  const captureBtn = document.getElementById('captureBtn');
-  const captureMsg = document.getElementById('captureMsg');
-  const downloadBtn = document.getElementById('downloadBtn');
   const boardWrap = document.querySelector('.board-wrap');
 
   // x는 오른쪽으로 갈수록 증가, y는 위로 갈수록 증가 (표준 좌표평면)
@@ -1024,8 +1113,8 @@
 
   function placeFly(x, y, animateIn){
     fly = {x, y};
-    flyEl.setAttribute('x', toX(x));
-    flyEl.setAttribute('y', toY(y));
+    flyEl.setAttribute('x', toX(x) - 15.0); // 그림의 가운데가 파리 자리
+    flyEl.setAttribute('y', toY(y) - 13.75);
     flyEl.classList.remove('flee','enter','squish');
     if(animateIn){
       flyEl.style.opacity = 0;
@@ -1130,8 +1219,8 @@
 
     const targetPx = toX(isHit ? fly.x : gx);
     const targetPy = toY(isHit ? fly.y : gy);
-    paddleEl.setAttribute('x', targetPx);
-    paddleEl.setAttribute('y', targetPy);
+    paddleEl.setAttribute('x', targetPx - 17); // 파리채 네모의 가운데가 때리는 자리
+    paddleEl.setAttribute('y', targetPy - 17);
     paddleEl.classList.remove('hit','miss');
     void paddleEl.offsetWidth; // reflow
     paddleEl.classList.add(isHit ? 'hit' : 'miss');
@@ -1225,15 +1314,11 @@
     } else {
       resultName.classList.add('hidden');
     }
-    if(score >= 15){ resultHeadline.textContent = '파리채의 달인이네요! 🏆'; resultEmoji.textContent = '🏆'; }
-    else if(score >= 8){ resultHeadline.textContent = '훌륭한 실력이에요! 👏'; resultEmoji.textContent = '👏'; }
-    else if(score >= 1){ resultHeadline.textContent = '좋아요, 다음엔 더 잘할 수 있어요!'; resultEmoji.textContent = '🙂'; }
-    else { resultHeadline.textContent = '다음엔 꼭 한 마리 잡아봐요!'; resultEmoji.textContent = '🪰'; }
+    if(score >= 15){ resultHeadline.textContent = '파리채의 달인이네요!'; resultEmoji.innerHTML = MG_RESULT_ART.trophy; }
+    else if(score >= 8){ resultHeadline.textContent = '훌륭한 실력이에요!'; resultEmoji.innerHTML = MG_RESULT_ART.star; }
+    else if(score >= 1){ resultHeadline.textContent = '좋아요, 다음엔 더 잘할 수 있어요!'; resultEmoji.innerHTML = MG_RESULT_ART.smile; }
+    else { resultHeadline.textContent = '다음엔 꼭 한 마리 잡아봐요!'; resultEmoji.innerHTML = MG_RESULT_ART.fly; }
     
-    captureMsg.textContent = '';
-    downloadBtn.classList.add('hidden'); // 게임 끝날 땐 일단 숨김
-    captureBtn.disabled = false;
-    captureBtn.textContent = '📋 결과 캡처하기';
     showScreen('result');
 
     const acc = attempts === 0 ? 0 : Math.round((hits/attempts)*100);
@@ -1258,9 +1343,9 @@
         return;
       }
       if(noteEl){
-        if(scope === 'weekly') noteEl.textContent = `📅 ${getWeekLabel(result.periodId || getWeekId())}`;
-        else if(scope === 'semester') noteEl.textContent = result.periodId ? `🏫 ${getSemesterLabel(result.periodId)}` : '진행 중인 학기가 설정되어 있지 않아요';
-        else noteEl.textContent = '🌟 역대 전체 기록';
+        if(scope === 'weekly') noteEl.textContent = `${getWeekLabel(result.periodId || getWeekId())}`;
+        else if(scope === 'semester') noteEl.textContent = result.periodId ? `${getSemesterLabel(result.periodId)}` : '진행 중인 학기가 설정되어 있지 않아요';
+        else noteEl.textContent = '역대 전체 기록';
       }
       // "게임+기간+이름"당 문서 1건(최고점수+횟수)만 저장돼 있음. 10점 이상만 표시
       const rows = (result.rows || []).filter(r => (Number(r.score)||0) >= 10);
@@ -1286,44 +1371,6 @@
     });
   });
 
-  async function captureResult(){
-    captureBtn.disabled = true;
-    captureBtn.textContent = '캡처 중...';
-    captureMsg.textContent = '';
-    
-    try{
-      const canvas = await html2canvas(resultCard, { backgroundColor: '#1e332a', scale: 2 });
-      
-      const dataUrl = canvas.toDataURL('image/png');
-      
-      let copied = false;
-      if(navigator.clipboard && window.ClipboardItem){
-        try{
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-          copied = true;
-        }catch(e){ copied = false; }
-      }
-      
-      // 다운로드 버튼 활성화
-      downloadBtn.href = dataUrl;
-      downloadBtn.classList.remove('hidden');
-      
-      captureMsg.textContent = copied
-        ? '✅ 클립보드에 복사됐어요! (패들렛 등에 바로 붙여넣기 가능)'
-        : '📌 아래 [이미지 저장하기] 버튼을 눌러 이미지를 다운로드 해주세요.';
-        
-      captureBtn.disabled = false;
-      captureBtn.textContent = '📋 다시 캡처하기';
-      
-    }catch(err){
-      captureMsg.textContent = '캡처에 실패했어요. 다시 시도해주세요.';
-      captureBtn.disabled = false;
-      captureBtn.textContent = '📋 결과 캡처하기';
-    }
-  }
-
   sliderX.addEventListener('input', onSliderInput);
   sliderY.addEventListener('input', onSliderInput);
   swatBtn.addEventListener('click', doSwat);
@@ -1334,17 +1381,15 @@
   });
   startBtn.addEventListener('click', startGame);
   retryBtn.addEventListener('click', startGame);
-  captureBtn.addEventListener('click', captureResult);
 
   // init
-  // 등록한 선수가 없으면 게임 목록의 선수 등록으로 보냈다가 이 게임으로 돌아오게 한다
   const storedName = getPlayerName();
   if(!storedName){
-    location.href = mgLoginURL();
+    location.href = mgLoginURL(); // 등록한 선수가 없으면 게임 목록의 선수 등록으로 갔다가 돌아온다
     return;
   }
   playerName = storedName;
-  playerBadge.textContent = '🙋 ' + storedName;
+  playerBadge.innerHTML = mgBadgeHTML();
   updateGuessMarker(0,0);
   renderLeaderboard(lbStartList);
   showScreen('start');
