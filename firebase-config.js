@@ -18,6 +18,7 @@
 window.CLASS_FIREBASE_CONFIG = {
   apiKey: "AIzaSyDiZcz7eqZ8uwfzW80UkQ0G-hvFyKjLT1I",
   authDomain: "math-games-260924.firebaseapp.com",
+  databaseURL: "https://math-games-260924-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: "math-games-260924",
   storageBucket: "math-games-260924.firebasestorage.app",
   messagingSenderId: "413496858814",
