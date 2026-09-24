@@ -55,7 +55,7 @@ body {
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { color: #f1edfb; } }
 :root[data-theme="dark"] body { color: #f1edfb; }
-body[data-screen="home"], body[data-screen="records"], body[data-screen="closed"] {
+body[data-screen="home"], body[data-screen="records"], body[data-screen="closed"], body[data-screen="dex"] {
   background: radial-gradient(60rem 14rem at 12% 6rem, rgba(255, 255, 255, .55), transparent 70%), radial-gradient(40rem 10rem at 88% 14rem, rgba(255, 255, 255, .45), transparent 70%), var(--sky);
 }
 body[data-theme="meadow"] { background: linear-gradient(180deg, #8fd0ff 0%, #c9ecff 40%, #dff3cf 100%); }
@@ -392,6 +392,101 @@ body[data-screen="teacher"] { background: var(--page); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* ===== 단계, 강화 길, 도감, 알림 창 ===== */
+.section-note { margin: -.35rem 0 .9rem; color: #2b2140; opacity: .75; }
+.map-stars { display: inline-flex; align-items: center; gap: .25rem; margin-left: auto; font-family: var(--font); font-size: .95rem; }
+.map-stars .st { width: 1.05rem; height: 1.05rem; }
+.stage-list { list-style: none; padding: 0; margin: .35rem 0 0; display: grid; gap: .4rem; }
+.sbtn { width: 100%; display: grid; grid-template-columns: 2.8rem 1fr auto; align-items: center; gap: .5rem; padding: .45rem .6rem; border-radius: 12px; border: 3px solid #2b2140; background: #fff; color: #2b2140; cursor: pointer; text-align: left; box-shadow: 0 3px 0 #2b2140; }
+.sbtn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #2b2140; }
+.sb-id { font-family: var(--display); font-size: 1.1rem; }
+.sb-title { font-size: .98rem; line-height: 1.2; }
+.sbtn .stars .st { width: 1rem; height: 1rem; }
+.sbtn.next { background: linear-gradient(#ffe680, #ffc93c); }
+.sbtn.done .sb-id { color: #1f8a4c; }
+.sbtn.boss { border-color: #b0213a; box-shadow: 0 3px 0 #b0213a; }
+.sbtn.boss .sb-title::after { content: '보스'; margin-left: .35rem; padding: 0 .4rem; border-radius: 999px; background: #d8344c; color: #fff; font-size: .72rem; vertical-align: middle; }
+.sbtn.locked { cursor: not-allowed; background: #efedf5; color: #8a82a0; box-shadow: none; border-style: dashed; }
+.sb-lock svg { width: 1.1rem; height: 1.1rem; }
+.stage-name { font-family: var(--display); font-size: 1.25rem; }
+body[data-theme="volcano"] .stage-name { color: #fff; }
+.up-title { margin: .7rem 0 .35rem; font-size: 1rem; }
+.branches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.branches.one { grid-template-columns: minmax(0, 1fr); }
+.branch { display: grid; grid-template-columns: auto 1fr; grid-template-areas: 'ic name' 'desc desc' 'cost cost'; column-gap: .45rem; row-gap: .2rem; align-items: center; padding: .5rem .55rem; border-radius: 14px; border: 3px solid #2b2140; background: linear-gradient(#fff8d6, #ffe89a); color: #2b2140; text-align: left; cursor: pointer; box-shadow: 0 3px 0 #2b2140; }
+.branches.one .branch { grid-template-areas: 'ic name' 'ic desc' 'ic cost'; }
+.branch:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #2b2140; }
+.branch:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+.branch .em { grid-area: ic; width: 1.9rem; height: 1.9rem; }
+.br-name { grid-area: name; font-family: var(--display); font-size: 1.05rem; }
+.br-desc { grid-area: desc; font-size: .82rem; line-height: 1.35; }
+.br-cost { grid-area: cost; display: inline-flex; align-items: center; gap: .25rem; font-family: var(--display); }
+.sel-extra { margin: .45rem 0 0; color: #62597a; }
+.pv-types { list-style: none; padding: 0; margin: 0 0 .5rem; display: flex; flex-wrap: wrap; gap: .35rem; }
+.pv-types li { display: inline-flex; align-items: center; gap: .3rem; padding: .1rem .55rem .1rem .2rem; border-radius: 999px; background: #f3f1fa; font-size: .85rem; }
+.pv-types li.fresh { background: #ffe680; }
+.pv-types b { font-weight: 400; font-family: var(--display); }
+.mi { width: 1.6rem; height: 1.6rem; flex: none; }
+.em { display: inline-block; width: 1.5rem; height: 1.5rem; flex: none; }
+.chip .arm { display: inline-grid; place-items: center; min-width: 1.1rem; height: 1.1rem; margin-left: .15rem; padding: 0 .2rem; border-radius: 6px 6px 50% 50%; background: #c9d2e3; border: 1.5px solid #2b2140; font-size: .72rem; line-height: 1; }
+.chips .chip.t-fast::before { background: #f5c400; }
+.chips .chip.t-armor::before { background: #9aa6bd; }
+.chips .chip.t-split::before { background: #ee7a1b; }
+.chips .chip.t-regen::before { background: #48b83c; }
+.chips .chip.t-mask::before { background: #2b2140; border-color: #ffd23f; }
+.chips .chip.t-grow::before { background: #e2559e; }
+.chips .chip.t-shadow::before { background: #3a2c5c; }
+.chips .chip.boss::before { background: #d9435a; }
+.modal-back { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 1rem; background: rgba(20, 14, 34, .6); }
+.modal { width: min(36rem, 100%); max-height: calc(100vh - 2rem); overflow: auto; background: #fff; color: #2b2140; border: 4px solid #2b2140; border-radius: 22px; padding: 1.3rem 1.3rem 1.1rem; box-shadow: 0 8px 0 #2b2140; animation: pop-in .25s cubic-bezier(.2, 1.4, .5, 1); }
+.modal.wide { width: min(70rem, 100%); background: #f4f1fb; }
+@keyframes pop-in { from { transform: scale(.85); opacity: 0; } }
+.modal-title { font-family: var(--display); font-size: 1.8rem; margin: 0 0 .7rem; color: #2b2140; }
+.modal-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .4rem; }
+.modal-head .modal-title { margin: 0; }
+.modal .wide-panel:first-of-type { margin-top: .4rem; }
+.intro-list { display: grid; gap: .7rem; }
+.intro-card { display: grid; grid-template-columns: 5.5rem 1fr; gap: .9rem; align-items: center; padding: .8rem; border-radius: 16px; background: #f3f1fa; border: 3px solid #2b2140; }
+.intro-card.boss { background: #ffe9ec; border-color: #b0213a; }
+.intro-img { width: 5.5rem; height: 5.5rem; }
+.intro-card h3 { margin: 0 0 .25rem; font-family: var(--display); font-size: 1.35rem; }
+.intro-card p { margin: 0 0 .3rem; }
+.intro-tip { color: #5b3a8c; font-size: .92rem; }
+.cnt-inline { margin-left: .5rem; font-size: .95rem; color: var(--ink-soft); }
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .7rem; margin-top: .6rem; }
+.dex-card { display: grid; grid-template-columns: 4.6rem 1fr; gap: .7rem; align-items: start; padding: .75rem; border-radius: 16px; border: 3px solid #2b2140; background: var(--panel-2); }
+.dex-card.boss { border-color: #b0213a; background: #ffe9ec; color: #2b2140; }
+.dex-card h3 { margin: 0 0 .2rem; font-family: var(--display); font-size: 1.2rem; }
+.dex-card p { margin: 0 0 .25rem; }
+.dex-img { width: 4.6rem; height: 4.6rem; }
+.dex-card.unknown { border-style: dashed; }
+.dex-card.unknown .dex-img { filter: brightness(0); opacity: .35; }
+.dex-tip { color: #5b3a8c; }
+.dex-where { display: inline-block; margin-top: .2rem; padding: 0 .55rem; border-radius: 999px; background: #2b2140; color: #ffd23f; font-size: .8rem; }
+.guard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .7rem; margin-top: .6rem; }
+.guard-card { padding: .8rem; border-radius: 16px; border: 3px solid #2b2140; background: color-mix(in srgb, var(--c) 10%, white); color: #2b2140; }
+.gc-head { display: flex; align-items: center; gap: .7rem; }
+.gc-head h3 { margin: 0; font-family: var(--display); font-size: 1.2rem; }
+.gc-head p { margin: 0; }
+.gc-branches { list-style: none; padding: 0; margin: .6rem 0 0; display: grid; gap: .45rem; }
+.gc-branches li { display: grid; grid-template-columns: auto 1fr; gap: .5rem; align-items: start; padding: .45rem .55rem; border-radius: 12px; background: rgba(255, 255, 255, .85); }
+.gc-branches .em { width: 1.8rem; height: 1.8rem; }
+.gc-branches div { display: grid; gap: .1rem; }
+.new-best.unlock { background: #6fe39a; margin-left: .4rem; }
+.rgrid { display: grid; gap: .6rem; margin-top: .5rem; }
+.rg-row { display: grid; grid-template-columns: 7rem 1fr; gap: .6rem; align-items: center; }
+@media (max-width: 40rem) { .rg-row { grid-template-columns: 1fr; } }
+.rg { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .4rem; }
+.rg-cell { display: grid; justify-items: center; gap: .1rem; padding: .4rem .2rem; border-radius: 12px; background: var(--panel-2); border: 2px solid var(--line); text-align: center; }
+.rg-cell.done { border-color: #1f8a4c; }
+.rg-cell.locked { opacity: .5; }
+.rg-id { font-family: var(--display); }
+.rg-cell .st { width: .95rem; height: .95rem; }
+.rg-best { font-size: .78rem; color: var(--ink-soft); }
+.leaks .mi { width: 1.5rem; height: 1.5rem; align-self: center; }
+.gen-stage { margin-top: .5rem; }
+.gen-stage button { font-size: .92rem; padding: .5rem .7rem; }
 </style>
 </head>
 <body data-screen="home">
@@ -424,7 +519,6 @@ const GAME_SLUG = (() => {
 const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
 
 /* ===== 소인수 타워 디펜스: 규칙과 계산 (화면 없음) ===== */
-const WAVES = 15;
 const COLS = 14, ROWS = 8;
 
 /* 지도: 난이도마다 다른 지도를 쓴다. blocks는 탑을 지을 수 없는 장식(나무, 바위, 용암...) */
@@ -482,27 +576,100 @@ Object.keys(MAP_DEFS).forEach(id => { MAPS[id] = buildMap(id, MAP_DEFS[id]); });
 const isPathCell = (map, c, r) => map.pathCells.has(c + ',' + r);
 const isBlocked = (map, c, r) => map.blocked.has(c + ',' + r);
 
+/* 지도(난이도)마다 쓰는 수호대와 표시 */
 const LEVELS = {
-  1: { id: 1, name: '입문', map: 'meadow', primes: [2, 3], unlock: { 2: 1, 3: 3 }, speed: 1.0, lives: 25, coins: 90, coinMul: 1, dots: true, omegaPlus: 0, countPlus: 0, gapMul: 1.1 },
-  2: { id: 2, name: '기본', map: 'canyon', primes: [2, 3, 5, 7], unlock: { 2: 1, 3: 1, 5: 3, 7: 5 }, speed: 1.2, lives: 20, coins: 100, coinMul: 1, dots: true, omegaPlus: 0, countPlus: 0, gapMul: 1 },
-  3: { id: 3, name: '도전', map: 'volcano', primes: [2, 3, 5, 7], unlock: { 2: 1, 3: 1, 5: 3, 7: 5 }, speed: 1.35, lives: 15, coins: 100, coinMul: 0.9, dots: false, omegaPlus: 1, countPlus: 2, gapMul: 0.9 },
+  1: { id: 1, name: '입문', map: 'meadow', primes: [2, 3], dots: true, coinMul: 1 },
+  2: { id: 2, name: '기본', map: 'canyon', primes: [2, 3, 5, 7], dots: true, coinMul: 1 },
+  3: { id: 3, name: '도전', map: 'volcano', primes: [2, 3, 5, 7], dots: false, coinMul: 0.9 },
 };
 
-/* 수호대: 탑의 수마다 다른 캐릭터와 특기 */
+/* 몬스터 도감 */
+const MONSTERS = {
+  basic: { name: '슬라임', speed: 1, desc: '수가 적힌 기본 몬스터예요. 수가 1이 될 때까지 나누면 사라져요.', tip: '몸에 적힌 수의 소인수를 보고 수호대를 불러요.' },
+  fast: { name: '날쌘 슬라임', speed: 1.75, desc: '아주 빠르게 달려와요. 대신 수가 작아요.', tip: '길 앞쪽에 수호대를 세워 두면 놓치지 않아요.' },
+  armor: { name: '갑옷 슬라임', speed: 0.85, desc: '갑옷이 남아 있는 동안에는 나눠지지 않아요. 갑옷 숫자만큼 맞아야 갑옷이 깨져요.', tip: '갑옷도 이 몬스터를 나눌 수 있는 수호대만 칠 수 있어요. 사자의 강타와 용의 화염은 갑옷을 한 번에 여러 칸 부숴요.' },
+  split: { name: '쪼개지는 슬라임', speed: 0.95, desc: '사라질 때 가장 큰 소인수가 적힌 작은 슬라임 두 마리로 나뉘어요.', tip: '84라면 가장 큰 소인수 7이 적힌 슬라임 둘이 나와요. 뒤쪽에도 그 수호대를 세워 두세요.' },
+  regen: { name: '새싹 슬라임', speed: 0.95, desc: '3초 동안 맞지 않으면 잃었던 소인수를 하나 되찾아요. 12가 6이 되었다가 다시 12가 되는 식이에요.', tip: '쉬지 않고 계속 맞히는 게 중요해요. 수호대를 모아서 세워 보세요.' },
+  mask: { name: '가면 슬라임', speed: 1, desc: '수 대신 곱셈식을 보여 줘요. 6×14라면 몸의 수는 84예요. 한 번 맞으면 가면이 벗겨져요.', tip: '곱셈식을 소인수로 쪼개 보면 어떤 수호대가 필요한지 보여요.' },
+  grow: { name: '부풀이 슬라임', speed: 0.9, desc: '4초마다 수가 2배가 돼요. 늦게 잡을수록 수가 커져요.', tip: '토끼(2)를 넉넉히 세워 두면 늘어난 2를 금방 덜어 낼 수 있어요.' },
+  shadow: { name: '그림자 슬라임', speed: 1.05, desc: '멀리서는 보이지 않아요. 수호대에게서 1.5칸 안으로 들어와야 공격받아요.', tip: '길 바로 옆에 수호대를 세우거나, 용의 눈으로 강화한 용을 부르세요.' },
+  king: { name: '왕 슬라임', boss: true, speed: 0.7, desc: '두꺼운 갑옷을 입었어요. 갑옷이 깨지면 한 번 더 새 갑옷을 입고, 4초마다 날쌘 부하를 불러내요.', tip: '갑옷을 두 번 부숴야 해요. 부하를 막을 수호대도 남겨 두세요.' },
+  golem: { name: '모래 골렘', boss: true, speed: 0.5, desc: '가장 큰 소인수로만 나눌 수 있어요. 7이 남아 있으면 7로, 7이 없으면 5로 나누는 식이에요. 갑옷도 두꺼워요.', tip: '골렘의 가장 큰 소인수부터 차례로 떨어져 나가요. 모든 수호대를 골고루 준비하세요.' },
+  lava: { name: '용암 대왕', boss: true, speed: 0.48, desc: '1이 되면 새로운 수로 두 번 되살아나요. 3초 동안 맞지 않으면 잃었던 소인수를 되찾아요.', tip: '세 번을 모두 물리쳐야 해요. 쉬지 않고 공격할 수 있게 수호대를 모아 두세요.' },
+};
+const MONSTER_ORDER = ['basic', 'fast', 'armor', 'split', 'regen', 'mask', 'grow', 'shadow', 'king', 'golem', 'lava'];
+const SHADOW_SIGHT = 1.5;
+const REGEN_DELAY = 3;
+const GROW_EVERY = 4;
+const SUMMON_EVERY = 4;
+
+/* 스테이지: 지도마다 다섯 단계. roster는 [몬스터, 비율, 처음 나오는 웨이브] */
+const STAGES = {
+  '1-1': { level: 1, no: 1, title: '첫 출전', waves: 6, lives: 20, coins: 60, speed: 1.282, gap: 1.15, count: [8, 0.8], omega: [3, 1, 0.48], armor: [2, 2], unlock: { 3: 3 }, roster: [['basic', 1, 1]] },
+  '1-2': { level: 1, no: 2, title: '날쌘 무리', waves: 7, lives: 20, coins: 60, speed: 1.35, gap: 1.05, count: [7, 1], omega: [3, 2, 0.48], armor: [2, 2], roster: [['basic', 3, 1], ['fast', 2, 2]] },
+  '1-3': { level: 1, no: 3, title: '갑옷 등장', waves: 8, lives: 20, coins: 70, speed: 1.42, gap: 1.0, count: [9, 1], omega: [3, 2, 0.56], armor: [2, 3], roster: [['basic', 3, 1], ['fast', 1, 1], ['armor', 2, 3]] },
+  '1-4': { level: 1, no: 4, title: '쪼개지는 슬라임', waves: 8, lives: 20, coins: 70, speed: 1.418, gap: 0.95, count: [8, 1], omega: [4, 2, 0.56], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 2, 1], ['split', 2, 2]] },
+  '1-5': { level: 1, no: 5, title: '왕 슬라임', waves: 9, lives: 20, coins: 80, speed: 1.418, gap: 0.95, count: [10, 1], omega: [4, 2, 0.56], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1], ['split', 1, 1]], boss: { type: 'king', omega: [10], armor: 12, leak: 6 } },
+  '2-1': { level: 2, no: 1, title: '협곡 입구', waves: 7, lives: 20, coins: 120, speed: 1.1, gap: 1.0, count: [4, 1], omega: [1, 2, 0.35], armor: [1, 2], unlock: { 5: 2, 7: 4 }, roster: [['basic', 3, 1], ['fast', 1, 2], ['armor', 1, 4]] },
+  '2-2': { level: 2, no: 2, title: '되살아나는 새싹', waves: 8, lives: 20, coins: 110, speed: 1.15, gap: 1.0, count: [5, 1], omega: [2, 2, 0.35], armor: [1, 2], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['regen', 2, 2]] },
+  '2-3': { level: 2, no: 3, title: '가면 행렬', waves: 8, lives: 20, coins: 110, speed: 1.15, gap: 0.95, count: [5, 1], omega: [2, 2, 0.35], armor: [2, 3], roster: [['basic', 1, 1], ['mask', 3, 1], ['fast', 1, 1], ['armor', 2, 1], ['regen', 1, 2]] },
+  '2-4': { level: 2, no: 4, title: '모래 폭풍', waves: 9, lives: 20, coins: 125, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 3, 1], ['regen', 2, 1], ['split', 2, 1], ['mask', 1, 1]] },
+  '2-5': { level: 2, no: 5, title: '모래 골렘', waves: 10, lives: 20, coins: 120, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1], ['regen', 1, 1], ['split', 1, 1], ['mask', 1, 1]], boss: { type: 'golem', omega: [10], armor: 10, leak: 6 } },
+  '3-1': { level: 3, no: 1, title: '뜨거운 길', waves: 8, lives: 15, coins: 110, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1]] },
+  '3-2': { level: 3, no: 2, title: '부풀이 소동', waves: 8, lives: 15, coins: 120, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['grow', 3, 2]] },
+  '3-3': { level: 3, no: 3, title: '그림자 습격', waves: 9, lives: 15, coins: 125, speed: 1.43, gap: 0.9, count: [6, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 3, 2]] },
+  '3-4': { level: 3, no: 4, title: '화산 폭발', waves: 9, lives: 15, coins: 120, speed: 1.43, gap: 0.9, count: [7, 1.1], omega: [3, 2, 0.45], armor: [3, 5], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['split', 1, 1], ['regen', 1, 1], ['mask', 1, 1], ['grow', 2, 1], ['shadow', 2, 1]] },
+  '3-5': { level: 3, no: 5, title: '용암 대왕', waves: 10, lives: 15, coins: 130, speed: 1.5, gap: 0.9, count: [7, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 1, 1], ['regen', 1, 1]], boss: { type: 'lava', omega: [7, 8, 9], armor: 8, leak: 8 } },
+};
+const STAGE_IDS = Object.keys(STAGES);
+const stageLabel = id => id;
+const unlockedAt = (stageId, p) => (STAGES[stageId].unlock && STAGES[stageId].unlock[p]) || 1;
+const starsFor = (won, lives, livesMax) => (!won ? 0 : lives >= livesMax * 0.9 ? 3 : lives >= livesMax * 0.5 ? 2 : 1);
+
+/* 수호대: 첫 강화에서 두 갈래 중 하나를 고르고, 다음 강화에서 그 길을 한 단계 더 올린다 */
 const TOWERS = {
-  2: { p: 2, name: '토끼', title: '깡총 토끼', cost: 20, interval: 0.5, range: 2.1, targets: 1, trait: '빠르게 연달아 던져요', color: '#3d7bf2' },
-  3: { p: 3, name: '여우', title: '여우불 여우', cost: 25, interval: 0.62, range: 2.2, targets: 1, trait: '여우불을 쏘아요', color: '#f07b2a' },
-  5: { p: 5, name: '사자', title: '사자왕', cost: 35, interval: 0.85, range: 2.2, targets: 2, trait: '한 번에 두 마리를 공격해요', color: '#e0a800' },
-  7: { p: 7, name: '용', title: '보라 용', cost: 40, interval: 0.82, range: 3.0, targets: 1, trait: '가장 멀리까지 쏘아요', color: '#8a55e0' },
+  2: { p: 2, name: '토끼', title: '깡총 토끼', cost: 20, interval: 0.85, range: 1.9, targets: 1, color: '#3d7bf2', trait: '빠르게 연달아 던져요',
+    branches: [
+      { id: 'rapid', name: '연사', icon: 'bolt', tiers: ['더 빠르게 던져요', '아주 빠르게 던져요'], mods: [{ speed: 0.7 }, { speed: 0.5 }] },
+      { id: 'twin', name: '쌍당근', icon: 'multi', tiers: ['두 마리를 함께 공격해요', '세 마리를 함께 공격해요'], mods: [{ targets: 2 }, { targets: 3 }] },
+    ] },
+  3: { p: 3, name: '여우', title: '여우불 여우', cost: 25, interval: 1.05, range: 2.0, targets: 1, color: '#f07b2a', trait: '여우불을 쏘아요',
+    branches: [
+      { id: 'burst', name: '여우불 폭발', icon: 'burst', tiers: ['맞은 몬스터 둘레도 함께 나눠요', '폭발이 더 넓어져요'], mods: [{ splash: 0.9 }, { splash: 1.4 }] },
+      { id: 'charm', name: '홀리기', icon: 'slow', tiers: ['맞은 몬스터가 느려져요', '더 많이, 더 오래 느려져요'], mods: [{ slow: 0.35, slowT: 1.6 }, { slow: 0.55, slowT: 2.4 }] },
+    ] },
+  5: { p: 5, name: '사자', title: '사자왕', cost: 35, interval: 1.45, range: 2.0, targets: 2, color: '#e0a800', trait: '한 번에 두 마리를 공격해요',
+    branches: [
+      { id: 'roar', name: '포효', icon: 'roar', tiers: ['세 마리를 함께 공격해요', '네 마리를 함께 공격해요'], mods: [{ targets: 3 }, { targets: 4 }] },
+      { id: 'smash', name: '강타', icon: 'fist', tiers: ['갑옷을 두 칸씩 부숴요', '갑옷 세 칸, 5로 두 번까지 나눠요'], mods: [{ armor: 2 }, { armor: 3, power: 2 }] },
+    ] },
+  7: { p: 7, name: '용', title: '보라 용', cost: 40, interval: 1.4, range: 2.8, targets: 1, color: '#8a55e0', trait: '가장 멀리까지 쏘아요',
+    branches: [
+      { id: 'flame', name: '화염', icon: 'flame', tiers: ['갑옷을 세 칸씩 녹여요', '갑옷 네 칸, 7로 두 번까지 나눠요'], mods: [{ armor: 3 }, { armor: 4, power: 2 }] },
+      { id: 'eye', name: '용의 눈', icon: 'eye', tiers: ['그림자 몬스터도 멀리서 찾아내요', '아주 멀리까지 쏘아요'], mods: [{ detect: true, range: 0.5 }, { detect: true, range: 1.3 }] },
+    ] },
 };
 const MAX_LEVEL = 3;
-const LEVEL_SPEED = [1, 0.78, 0.6];
-const LEVEL_RANGE = [0, 0.3, 0.6];
 const SELL_RATE = 0.6;
-const upgradeCost = (p, level) => Math.round(TOWERS[p].cost * (level <= 1 ? 1 : 1.6));
-const REWARD = { hit: 0, kill: 2, perOmega: 1, boss: 20, waveBase: 10, bossLeak: 3 };
-const unlockedAt = (levelId, p) => LEVELS[levelId].unlock[p] || 99;
-const starsFor = (won, lives, levelId) => (!won ? 0 : lives >= LEVELS[levelId].lives * 0.9 ? 3 : lives >= LEVELS[levelId].lives * 0.5 ? 2 : 1);
+const upgradeCost = (p, level) => Math.round(TOWERS[p].cost * (level <= 1 ? 0.9 : 1.4));
+const COST_STEP = 0.12;
+const REWARD = { kill: 3, perOmega: 0.5, boss: 30, waveBase: 6, coinArmor: 0.5 };
+function towerStats(t) {
+  const T = TOWERS[t.p];
+  const s = { interval: T.interval * [1, 0.85, 0.72][t.level - 1], range: T.range + [0, 0.2, 0.4][t.level - 1], targets: T.targets, power: 1, armor: 1, splash: 0, slow: 0, slowT: 0, detect: false };
+  if (t.level >= 2 && t.branch != null && T.branches[t.branch]) {
+    const m = T.branches[t.branch].mods[t.level - 2];
+    if (m.speed) s.interval *= m.speed;
+    if (m.targets) s.targets = Math.max(s.targets, m.targets);
+    if (m.range) s.range += m.range;
+    if (m.power) s.power = m.power;
+    if (m.armor) s.armor = m.armor;
+    if (m.splash) s.splash = m.splash;
+    if (m.slow) { s.slow = m.slow; s.slowT = m.slowT; }
+    if (m.detect) s.detect = true;
+  }
+  return s;
+}
 
 /* 수 */
 function factorize(n) {
@@ -517,7 +684,16 @@ function factorize(n) {
 const omega = n => factorize(n).reduce((s, [, e]) => s + e, 0);
 function primeList(n) { const out = []; factorize(n).forEach(([p, e]) => { for (let i = 0; i < e; i++) out.push(p); }); return out; }
 
-/* 경기 코드: 앞자리는 난이도, 뒤 네 자리는 판 번호 */
+const largestPrime = n => { const f = factorize(n); return f.length ? f[f.length - 1][0] : 1; };
+function maskText(n) {
+  const ps = primeList(n);
+  if (ps.length < 2) return '';
+  let a = 1, b = 1;
+  ps.forEach((p, i) => { if (i % 2) b *= p; else a *= p; });
+  return a + '×' + b;
+}
+
+/* 경기 코드: 지도-단계-판 번호 (예: 2-3-4821) */
 function hash32(str) {
   let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
@@ -535,17 +711,17 @@ function mulberry32(a) {
   };
 }
 const pad4 = seed => String(seed).padStart(4, '0');
-const formatCode = (levelId, seed) => levelId + '-' + pad4(seed);
+const formatCode = (stageId, seed) => stageId + '-' + pad4(seed);
 function parseCode(text) {
   const d = String(text || '').replace(/\D/g, '');
-  if (d.length !== 5) return null;
-  const levelId = Number(d[0]);
-  if (!LEVELS[levelId]) return null;
-  return { levelId, seed: Number(d.slice(1)) };
+  if (d.length !== 6) return null;
+  const stageId = d[0] + '-' + d[1];
+  if (!STAGES[stageId]) return null;
+  return { stageId, levelId: STAGES[stageId].level, seed: Number(d.slice(2)) };
 }
 const randomSeed = () => Math.floor(Math.random() * 10000);
 
-/* 웨이브: 판 번호가 같으면 모두 같은 몬스터가 같은 순서로 나온다 */
+/* 웨이브: 코드가 같으면 모두 같은 몬스터가 같은 순서로 나온다 */
 const THEMES4 = [
   { 2: 4, 3: 3, 5: 2, 7: 1 },
   { 2: 9, 3: 1, 5: 1, 7: 0.5 },
@@ -570,77 +746,101 @@ function makeNumber(rng, weights, k, cap) {
   for (let i = 0; i < k; i++) n *= 2;
   return Math.min(n, cap);
 }
-function makeWaves(levelId, seed) {
-  const L = LEVELS[levelId];
-  const rng = mulberry32(hash32('ptd:v1:' + levelId + ':' + pad4(seed)));
+function makeWaves(stageId, seed) {
+  const S = STAGES[stageId], L = LEVELS[S.level];
+  const rng = mulberry32(hash32('ptd:v2:' + stageId + ':' + pad4(seed)));
   const themes = L.primes.length === 2 ? THEMES2 : THEMES4;
   const waves = [];
-  for (let w = 1; w <= WAVES; w++) {
-    const pick = w <= 2 ? themes[0] : themes[Math.floor(rng() * themes.length)];
-    const open = L.primes.filter(p => L.unlock[p] <= w);
-    let weights = {};
-    open.forEach(p => { weights[p] = pick[p]; });
-    if (open.length > 1 && open.some(p => L.unlock[p] === w)) {
-      open.forEach(p => { if (L.unlock[p] === w) weights[p] = Math.max(weights[p], 3); });
-    }
-    const lo = 1 + Math.floor((w - 1) / 4) + L.omegaPlus;
-    const hi = lo + 1 + Math.floor(w / 5);
-    const count = 5 + w + L.countPlus;
+  for (let w = 1; w <= S.waves; w++) {
+    const open = L.primes.filter(p => unlockedAt(stageId, p) <= w);
+    const pick = w <= 1 ? themes[0] : themes[Math.floor(rng() * themes.length)];
+    const weights = {};
+    open.forEach(p => { weights[p] = pick[p] || 1; if (unlockedAt(stageId, p) === w && w > 1) weights[p] = Math.max(weights[p], 3); });
+    const lo = S.omega[0] + Math.floor((w - 1) * S.omega[2]);
+    const hi = lo + S.omega[1];
+    const count = S.count[0] + Math.floor(S.count[1] * w);
+    const roster = S.roster.filter(r => r[2] <= w);
+    const intro = S.roster.filter(r => r[2] === w && w > 1).map(r => r[0]);
     const list = [];
     for (let i = 0; i < count; i++) {
-      const k = lo + Math.floor(rng() * (hi - lo + 1));
-      list.push({ n: makeNumber(rng, weights, k, 99999), boss: false });
+      let type;
+      if (i < intro.length * 2) type = intro[Math.floor(i / 2)];
+      else {
+        const total = roster.reduce((a, r) => a + r[1], 0);
+        let x = rng() * total;
+        type = roster[roster.length - 1][0];
+        for (const r of roster) { x -= r[1]; if (x <= 0) { type = r[0]; break; } }
+      }
+      let k = lo + Math.floor(rng() * (hi - lo + 1));
+      if (type === 'fast') k = Math.min(k, 2);
+      if (type === 'grow' || type === 'armor') k = Math.max(1, k - 1);
+      if (type === 'mask' || type === 'split') k = Math.max(2, k);
+      const n = makeNumber(rng, weights, k, 99999);
+      const armor = type === 'armor' ? S.armor[0] + Math.floor(rng() * (S.armor[1] - S.armor[0] + 1)) : 0;
+      list.push({ type, n, armor });
     }
-    if (w % 5 === 0) {
+    if (S.boss && w === S.waves) {
       const bw = {};
       open.forEach(p => { bw[p] = themes[0][p]; });
-      list.push({ n: makeNumber(rng, bw, 6 + 2 * (w / 5) + L.omegaPlus, 999999), boss: true });
+      const nums = S.boss.omega.map(o => makeNumber(rng, bw, o, 999999));
+      list.push({ type: S.boss.type, n: nums[0], nums, armor: S.boss.armor, leak: S.boss.leak, boss: true });
     }
-    waves.push({ list, gap: Math.max(0.45, 1.05 - w * 0.03) * L.gapMul, speed: L.speed * (1 + w * 0.015) });
+    waves.push({ list, gap: Math.max(0.45, S.gap - w * 0.03), speed: S.speed * (1 + w * 0.02) });
   }
   return waves;
 }
 
 /* ===== 소인수 타워 디펜스: 경기 진행 (화면 없음) ===== */
-function createGame(levelId, seed) {
-  const L = LEVELS[levelId];
+function createGame(stageId, seed) {
+  const S = STAGES[stageId], L = LEVELS[S.level];
   return {
-    levelId, seed, map: MAPS[L.map], waves: makeWaves(levelId, seed),
+    stageId, levelId: S.level, seed, map: MAPS[L.map], W: S.waves, waves: makeWaves(stageId, seed),
     wave: 0, active: false, queue: [], clock: 0,
     monsters: [], towers: [], shots: [],
-    coins: L.coins, lives: L.lives, score: 0, kills: 0, hits: 0, leaks: 0,
-    spent: 0, upgrades: 0, bossKills: 0, biggest: 0, maxTowers: 0, leaked: [],
+    coins: S.coins, lives: S.lives, livesMax: S.lives, score: 0, kills: 0, hits: 0, leaks: 0,
+    spent: 0, upgrades: 0, bossKills: 0, biggest: 0, maxTowers: 0, leaked: [], armorBroken: 0,
     over: false, won: false, time: 0, nextId: 1,
   };
 }
 const towerAt = (g, c, r) => g.towers.find(t => t.c === c && t.r === r) || null;
+const towerCost = (g, p) => TOWERS[p].cost + Math.floor(TOWERS[p].cost * COST_STEP * g.towers.filter(t => t.p === p).length);
 function canBuildAt(g, c, r) {
   return c >= 0 && c < COLS && r >= 0 && r < ROWS && !isPathCell(g.map, c, r) && !isBlocked(g.map, c, r) && !towerAt(g, c, r);
+}
+function newTower(g, p, c, r, paid) {
+  const t = { id: g.nextId++, p, c, r, x: c + 0.5, y: r + 0.5, level: 1, branch: null, cd: 0, paid: paid == null ? TOWERS[p].cost : paid, fired: 0, firedAt: -1, builtAt: g.time, upAt: -1, aimX: c + 0.5 };
+  t.s = towerStats(t);
+  return t;
 }
 function build(g, c, r, p) {
   if (g.over) return 'over';
   if (!canBuildAt(g, c, r)) return 'blocked';
   const T = TOWERS[p];
   if (!T || !LEVELS[g.levelId].primes.includes(p)) return 'type';
-  if (unlockedAt(g.levelId, p) > g.wave + 1) return 'locked';
-  if (g.coins < T.cost) return 'coins';
-  g.coins -= T.cost;
-  g.spent += T.cost;
-  const t = { id: g.nextId++, p, c, r, x: c + 0.5, y: r + 0.5, level: 1, cd: 0, paid: T.cost, fired: 0, firedAt: -1, builtAt: g.time, upAt: -1, aimX: c + 0.5 };
-  g.towers.push(t);
+  if (unlockedAt(g.stageId, p) > g.wave + 1) return 'locked';
+  const cost = towerCost(g, p);
+  if (g.coins < cost) return 'coins';
+  g.coins -= cost;
+  g.spent += cost;
+  g.towers.push(newTower(g, p, c, r, cost));
   g.maxTowers = Math.max(g.maxTowers, g.towers.length);
   return null;
 }
-function upgradeTower(g, t) {
+function upgradeTower(g, t, branch) {
   if (g.over) return 'over';
   if (t.level >= MAX_LEVEL) return 'max';
+  if (t.level === 1) {
+    if (branch !== 0 && branch !== 1) return 'branch';
+  }
   const cost = upgradeCost(t.p, t.level);
   if (g.coins < cost) return 'coins';
   g.coins -= cost;
   g.spent += cost;
   t.paid += cost;
+  if (t.level === 1) t.branch = branch;
   t.level += 1;
   t.upAt = g.time;
+  t.s = towerStats(t);
   g.upgrades += 1;
   return null;
 }
@@ -650,23 +850,131 @@ function sellTower(g, t) {
   g.towers = g.towers.filter(x => x !== t);
   return null;
 }
-const towerRange = t => TOWERS[t.p].range + LEVEL_RANGE[t.level - 1];
-const towerInterval = t => TOWERS[t.p].interval * LEVEL_SPEED[t.level - 1];
-const towerTargets = t => TOWERS[t.p].targets + (t.p === 5 && t.level === MAX_LEVEL ? 1 : 0);
-const nextWave = g => (g.wave < WAVES ? g.waves[g.wave] : null);
+const towerRange = t => t.s.range;
+const towerInterval = t => t.s.interval;
+const nextWave = g => (g.wave < g.W ? g.waves[g.wave] : null);
 
 function startWave(g) {
-  if (g.over || g.active || g.wave >= WAVES) return false;
+  if (g.over || g.active || g.wave >= g.W) return false;
   const W = g.waves[g.wave];
   let t = 0;
   g.queue = W.list.map(m => {
-    const item = { n: m.n, boss: m.boss, at: t + (m.boss ? 1.2 : 0) };
+    const item = Object.assign({}, m, { at: t + (m.boss ? 1.4 : 0) });
     t += W.gap;
     return item;
   });
   g.clock = 0;
   g.active = true;
   return true;
+}
+
+function spawnMonster(g, q, d0, emit) {
+  const M = MONSTERS[q.type];
+  const W = g.waves[Math.min(g.wave, g.W - 1)];
+  const o = omega(q.n);
+  const pt = posAt(g.map, d0 || 0);
+  const m = {
+    id: g.nextId++, type: q.type, n: q.n, n0: q.n, o0: o, o, factors: primeList(q.n), pending: 1, pendArmor: 0,
+    armor: q.armor || 0, armorMax: q.armor || 0, d: d0 || 0, x: pt.x, y: pt.y, dir: 1,
+    speed: W.speed * M.speed, boss: !!M.boss, alive: true, hitAt: -1, bornAt: g.time,
+    lost: [], lastHit: g.time, lastRegen: g.time, growAt: g.time, summonAt: g.time, slowUntil: 0, slowMul: 1,
+    mask: q.type === 'mask' ? maskText(q.n) : '', phase: 1, nums: q.nums || [q.n], leak: q.leak || 1, invulnUntil: 0,
+    regen: q.type === 'regen' || q.type === 'lava', largestFirst: q.type === 'golem', rearm: q.type === 'king' ? 1 : 0, total: 0,
+  };
+  m.total = (q.nums || [q.n]).reduce((s, n) => s + omega(n), 0) + m.armorMax * ((q.nums ? q.nums.length : 1) + m.rearm);
+  g.monsters.push(m);
+  if (m.boss && emit) emit({ type: 'boss', m });
+  return m;
+}
+function canHit(t, m, time) {
+  if (!m.alive || m.d < 0.3 || time < m.invulnUntil) return false;
+  const dist = Math.hypot(m.x - t.x, m.y - t.y);
+  if (dist > t.s.range) return false;
+  if (m.type === 'shadow' && !t.s.detect && dist > SHADOW_SIGHT) return false;
+  const rem = m.n / m.pending;
+  if (rem % t.p !== 0) return false;
+  if (m.armor - m.pendArmor > 0) return true;
+  if (m.largestFirst && largestPrime(rem) !== t.p) return false;
+  return true;
+}
+function removeFactor(m, p) {
+  const i = m.factors.indexOf(p);
+  if (i >= 0) m.factors.splice(i, 1);
+}
+function addFactor(m, p) {
+  m.factors.push(p);
+  m.factors.sort((a, b) => a - b);
+}
+/* 몬스터 한 마리에게 p로 한 번 나눈 효과를 바로 준다 (여우불 폭발용) */
+function splashHit(g, m, p, fire) {
+  if (!m.alive || g.time < m.invulnUntil) return;
+  const rem = m.n / m.pending;
+  if (rem % p !== 0) return;
+  if (m.armor - m.pendArmor > 0) {
+    m.armor -= 1;
+    m.hitAt = g.time;
+    if (m.armor === 0) armorBroke(g, m, fire);
+    else fire({ type: 'armorhit', x: m.x, y: m.y, m });
+    return;
+  }
+  if (m.largestFirst && largestPrime(rem) !== p) return;
+  divideOnce(g, m, p, fire);
+}
+function armorBroke(g, m, fire) {
+  g.armorBroken += 1;
+  fire({ type: 'armorbreak', x: m.x, y: m.y, m });
+  if (m.rearm > 0 && m.pendArmor === 0) {
+    m.rearm -= 1;
+    m.armor = m.armorMax;
+    m.invulnUntil = g.time + 0.9;
+    fire({ type: 'rearm', x: m.x, y: m.y, m });
+  }
+}
+function divideOnce(g, m, p, fire) {
+  m.n /= p;
+  m.o -= 1;
+  m.hitAt = g.time;
+  m.lastHit = g.time;
+  m.mask = '';
+  removeFactor(m, p);
+  m.lost.push(p);
+  g.hits += 1;
+  fire({ type: 'hit', x: m.x, y: m.y, p, n: m.n, m });
+  if (m.n === 1) killMonster(g, m, fire);
+}
+function killMonster(g, m, fire) {
+  if (m.boss && m.phase < m.nums.length) {
+    m.phase += 1;
+    m.n = m.nums[m.phase - 1];
+    m.o = omega(m.n);
+    m.factors = primeList(m.n);
+    m.pending = 1;
+    m.armor = m.armorMax;
+    m.pendArmor = 0;
+    m.lost = [];
+    m.lastHit = g.time;
+    m.invulnUntil = g.time + 1.2;
+    fire({ type: 'phase', m, x: m.x, y: m.y });
+    return;
+  }
+  m.alive = false;
+  g.kills += 1;
+  g.score += m.total * 10;
+  const L = LEVELS[g.levelId];
+  const gain = Math.round((m.boss ? REWARD.boss : m.child ? 1 : REWARD.kill + m.o0 * REWARD.perOmega + m.armorMax * REWARD.coinArmor) * L.coinMul);
+  g.coins += gain;
+  if (m.boss) g.bossKills += 1;
+  g.biggest = Math.max(g.biggest, ...m.nums);
+  fire({ type: 'kill', x: m.x, y: m.y, n0: m.n0, boss: m.boss, gain, m });
+  if (m.type === 'split') {
+    const q = largestPrime(m.n0);
+    [0.2, 0.5].forEach(back => {
+      const c = spawnMonster(g, { type: 'basic', n: q }, Math.max(0.35, m.d - back));
+      c.speed = m.speed;
+      c.child = true;
+    });
+    fire({ type: 'split', x: m.x, y: m.y, p: q, m });
+  }
 }
 
 function update(g, dt, emit) {
@@ -676,28 +984,18 @@ function update(g, dt, emit) {
   g.time += dt;
   if (g.active) {
     g.clock += dt;
-    const W = g.waves[g.wave];
-    while (g.queue.length && g.queue[0].at <= g.clock) {
-      const q = g.queue.shift();
-      const o = omega(q.n);
-      const start = posAt(map, 0);
-      const m = {
-        id: g.nextId++, n: q.n, n0: q.n, o0: o, o, factors: primeList(q.n), pending: 1, d: 0, x: start.x, y: start.y, dir: 1,
-        speed: W.speed * (q.boss ? 0.55 : 1), boss: q.boss, alive: true, hitAt: -1, bornAt: g.time,
-      };
-      g.monsters.push(m);
-      if (q.boss) fire({ type: 'boss', m });
-    }
+    while (g.queue.length && g.queue[0].at <= g.clock) spawnMonster(g, g.queue.shift(), 0, fire);
   }
-  for (const m of g.monsters) {
+  for (const m of g.monsters.slice()) {
     if (!m.alive) continue;
-    m.d += m.speed * dt;
+    const sp = m.speed * (g.time < m.slowUntil ? m.slowMul : 1);
+    m.d += sp * dt;
     if (m.d >= map.len) {
       m.alive = false;
-      const cost = m.boss ? REWARD.bossLeak : 1;
+      const cost = m.boss ? m.leak : 1;
       g.lives = Math.max(0, g.lives - cost);
       g.leaks += 1;
-      if (g.leaked.length < 30) g.leaked.push({ n0: m.n0, n: m.n, wave: g.wave + 1, boss: m.boss });
+      if (g.leaked.length < 30) g.leaked.push({ n0: m.n0, n: m.n, wave: g.wave + 1, boss: m.boss, type: m.type, armor: m.armor });
       fire({ type: 'leak', cost, n: m.n, boss: m.boss });
       continue;
     }
@@ -705,27 +1003,49 @@ function update(g, dt, emit) {
     if (Math.abs(pt.x - m.x) > 1e-4) m.dir = pt.x > m.x ? 1 : -1;
     m.x = pt.x;
     m.y = pt.y;
+    if (m.regen && m.lost.length && g.time - m.lastHit >= REGEN_DELAY && g.time - m.lastRegen >= REGEN_DELAY) {
+      const p = m.lost.pop();
+      m.n *= p; m.o += 1; addFactor(m, p);
+      m.lastRegen = g.time;
+      fire({ type: 'regen', x: m.x, y: m.y, p, m });
+    }
+    if (m.type === 'grow' && g.time - m.growAt >= GROW_EVERY) {
+      m.growAt = g.time;
+      if (m.n * 2 <= 999999 && m.o < 14) { m.n *= 2; m.o += 1; addFactor(m, 2); fire({ type: 'grow', x: m.x, y: m.y, m }); }
+    }
+    if (m.type === 'king' && g.time - m.summonAt >= SUMMON_EVERY) {
+      m.summonAt = g.time;
+      const pool = [2, 3, 4, 6, 8, 9];
+      const n = pool[(m.id * 7 + Math.floor(g.time)) % pool.length];
+      const c = spawnMonster(g, { type: 'fast', n }, Math.max(0.35, m.d - 0.3));
+      c.child = true;
+      fire({ type: 'summon', x: m.x, y: m.y, m });
+    }
   }
   for (const t of g.towers) {
     t.cd -= dt;
     if (t.cd > 0) continue;
-    const range = towerRange(t);
     const picked = [];
-    for (const m of g.monsters) {
-      if (!m.alive || m.d < 0.3) continue;
-      if ((m.n / m.pending) % t.p !== 0) continue;
-      if (Math.hypot(m.x - t.x, m.y - t.y) > range) continue;
-      picked.push(m);
-    }
+    for (const m of g.monsters) if (canHit(t, m, g.time)) picked.push(m);
     if (!picked.length) { t.cd = 0; continue; }
     picked.sort((a, b) => b.d - a.d);
-    const targets = picked.slice(0, towerTargets(t));
+    const targets = picked.slice(0, t.s.targets);
     for (const m of targets) {
-      m.pending *= t.p;
       const dist = Math.hypot(m.x - t.x, m.y - t.y);
-      g.shots.push({ p: t.p, level: t.level, m, sx: t.x, sy: t.y - 0.3, t: 0, dur: Math.max(0.07, dist / 8.5) });
+      const shot = { p: t.p, level: t.level, branch: t.branch, m, sx: t.x, sy: t.y - 0.3, t: 0, dur: Math.max(0.07, dist / 8.5), splash: t.s.splash, slow: t.s.slow, slowT: t.s.slowT };
+      const armorLeft = m.armor - m.pendArmor;
+      if (armorLeft > 0) {
+        shot.armorDmg = Math.min(t.s.armor, armorLeft);
+        m.pendArmor += shot.armorDmg;
+      } else {
+        let e = 0, rem = m.n / m.pending;
+        while (e < t.s.power && rem % t.p === 0 && (!m.largestFirst || largestPrime(rem) === t.p)) { rem /= t.p; e += 1; }
+        shot.divs = e;
+        m.pending *= Math.pow(t.p, e);
+      }
+      g.shots.push(shot);
     }
-    t.cd = towerInterval(t);
+    t.cd = t.s.interval;
     t.fired += 1;
     t.firedAt = g.time;
     t.aimX = targets[0].x;
@@ -737,24 +1057,31 @@ function update(g, dt, emit) {
     s.done = true;
     const m = s.m;
     if (!m.alive) continue;
-    m.n /= s.p;
-    m.pending /= s.p;
-    m.o -= 1;
-    m.hitAt = g.time;
-    const fi = m.factors.indexOf(s.p);
-    if (fi >= 0) m.factors.splice(fi, 1);
-    g.coins += REWARD.hit;
-    g.hits += 1;
-    fire({ type: 'hit', x: m.x, y: m.y, p: s.p, n: m.n, m });
-    if (m.n === 1) {
-      m.alive = false;
-      g.kills += 1;
-      g.score += m.o0 * 10;
-      const gain = Math.round((m.boss ? REWARD.boss : REWARD.kill + REWARD.perOmega * m.o0) * LEVELS[g.levelId].coinMul);
-      g.coins += gain;
-      if (m.boss) g.bossKills += 1;
-      g.biggest = Math.max(g.biggest, m.n0);
-      fire({ type: 'kill', x: m.x, y: m.y, n0: m.n0, boss: m.boss, gain, m });
+    if (s.armorDmg) {
+      m.pendArmor -= s.armorDmg;
+      m.armor = Math.max(0, m.armor - s.armorDmg);
+      m.hitAt = g.time;
+      m.mask = '';
+      if (m.armor === 0) armorBroke(g, m, fire);
+      else fire({ type: 'armorhit', x: m.x, y: m.y, m });
+    } else {
+      for (let i = 0; i < s.divs && m.alive; i++) {
+        m.pending /= s.p;
+        const before = m.phase;
+        divideOnce(g, m, s.p, fire);
+        if (m.phase !== before) break;
+      }
+    }
+    if (s.slow && m.alive) {
+      m.slowUntil = g.time + s.slowT;
+      m.slowMul = 1 - s.slow;
+    }
+    if (s.splash) {
+      fire({ type: 'burst', x: m.x, y: m.y, r: s.splash, p: s.p });
+      for (const o of g.monsters.slice()) {
+        if (o === m || !o.alive) continue;
+        if (Math.hypot(o.x - m.x, o.y - m.y) <= s.splash) splashHit(g, o, s.p, fire);
+      }
     }
   }
   g.shots = g.shots.filter(s => !s.done);
@@ -769,8 +1096,11 @@ function update(g, dt, emit) {
     g.wave += 1;
     const bonus = REWARD.waveBase + g.wave;
     g.coins += bonus;
-    fire({ type: 'wave', wave: g.wave, bonus });
-    if (g.wave >= WAVES) {
+    const joining = g.wave < g.W ? LEVELS[g.levelId].primes.filter(p => unlockedAt(g.stageId, p) === g.wave + 1) : [];
+    const joinBonus = joining.reduce((s, p) => s + TOWERS[p].cost, 0);
+    g.coins += joinBonus;
+    fire({ type: 'wave', wave: g.wave, bonus, joining, joinBonus });
+    if (g.wave >= g.W) {
       g.over = true; g.won = true;
       g.score += g.lives * 30;
       fire({ type: 'over', won: true });
@@ -970,11 +1300,83 @@ ${[[30, 50, 15.4], [70, 50, 15.4], [50, 38, 18.4]].map(([x, y, r]) => `<circle c
 <path d='M-4 26 C20 24 36 34 38 52 C40 70 26 80 -4 80 Z' fill='#1f1628' ${O}/>
 <path d='M30 12 C44 16 54 26 58 38 M48 70 C56 64 62 56 64 48' fill='none' stroke='${c2}' stroke-width='3' stroke-linecap='round'/>`);
 
+  const BODY = 'M10 80 C8 52 26 22 50 17 C74 22 92 52 90 80 C90 92 70 95 50 95 C30 95 10 92 10 80 Z';
+  const eyes = (y) => `<ellipse cx='38' cy='${y}' rx='5.2' ry='6.6' fill='${INK}'/><circle cx='39.8' cy='${y - 2.4}' r='1.9' fill='#fff'/><ellipse cx='62' cy='${y}' rx='5.2' ry='6.6' fill='${INK}'/><circle cx='63.8' cy='${y - 2.4}' r='1.9' fill='#fff'/>`;
+  const body = (a, b, extra) => `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs>
+<path d='${BODY}' fill='url(#g)' ${O}/>${extra || ''}<ellipse cx='32' cy='40' rx='9' ry='5.6' transform='rotate(-32 32 40)' fill='#fff' opacity='.55'/>`;
+  const slimeFast = svg('0 0 100 100', body('#fff08a', '#f2b400', `
+<path d='M22 36 Q50 26 78 36 L78 44 Q50 34 22 44 Z' fill='#ff5a5f' stroke='${INK}' stroke-width='2.6' stroke-linejoin='round'/>
+<path d='M22 38 L6 30 L10 40 L2 44 L20 44 Z' fill='#ff5a5f' stroke='${INK}' stroke-width='2.4' stroke-linejoin='round'/>`)
+    + `<path d='M31 50 l12 -3 M69 50 l-12 -3' stroke='${INK}' stroke-width='3' stroke-linecap='round'/>
+<ellipse cx='38' cy='54' rx='4.4' ry='5.2' fill='${INK}'/><circle cx='39.6' cy='52.4' r='1.6' fill='#fff'/><ellipse cx='62' cy='54' rx='4.4' ry='5.2' fill='${INK}'/><circle cx='63.6' cy='52.4' r='1.6' fill='#fff'/>
+<path d='M45 62 q5 3.4 10 0' fill='none' stroke='${INK}' stroke-width='2.4' stroke-linecap='round'/>`);
+  const slimeArmor = svg('0 0 100 100', body('#c9d2e3', '#8792ab', `
+<path d='M14 58 C14 30 30 14 50 13 C70 14 86 30 86 58 Z' fill='#a7b3c9' stroke='${INK}' stroke-width='3.2' stroke-linejoin='round'/>
+<path d='M14 58 H86 V66 H14 Z' fill='#7c88a3' stroke='${INK}' stroke-width='3' stroke-linejoin='round'/>
+<path d='M50 13 V56' stroke='#7c88a3' stroke-width='5'/><path d='M50 13 V56' stroke='${INK}' stroke-width='1.6' opacity='.5'/>
+<circle cx='24' cy='62' r='2.2' fill='#e8ecf4'/><circle cx='76' cy='62' r='2.2' fill='#e8ecf4'/><circle cx='50' cy='62' r='2.2' fill='#e8ecf4'/>
+<ellipse cx='34' cy='30' rx='7' ry='4' transform='rotate(-30 34 30)' fill='#fff' opacity='.7'/>`)
+    + `<rect x='28' y='67' width='44' height='9' rx='4' fill='${INK}'/><circle cx='40' cy='71.5' r='2.4' fill='#ffd23f'/><circle cx='60' cy='71.5' r='2.4' fill='#ffd23f'/>`);
+  const slimeSplit = svg('0 0 100 100', body('#ffc27a', '#ee7a1b', `
+<path d='M50 18 L44 34 L55 46 L45 60 L54 74 L48 94' fill='none' stroke='${INK}' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/>
+<rect x='60' y='26' width='16' height='7' rx='2' transform='rotate(28 68 29)' fill='#fff4e0' stroke='${INK}' stroke-width='2'/>`)
+    + eyes(52) + `<path d='M34 66 q5 -3 10 0 M56 66 q5 -3 10 0' fill='none' stroke='${INK}' stroke-width='2.2' stroke-linecap='round'/>`);
+  const slimeRegen = svg('0 0 100 100', `<path d='M50 20 C48 12 50 6 52 2' fill='none' stroke='#2f7d33' stroke-width='3.4' stroke-linecap='round'/>
+<path d='M51 8 C60 -2 76 2 78 10 C68 14 58 14 51 8 Z' fill='#6fd060' stroke='${INK}' stroke-width='2.6' stroke-linejoin='round'/>
+<path d='M50 12 C42 2 26 4 24 12 C34 17 44 17 50 12 Z' fill='#8fe07f' stroke='${INK}' stroke-width='2.6' stroke-linejoin='round'/>`
+    + body('#b8f28f', '#48b83c') + eyes(50) + `<path d='M45 60 q5 4.4 10 0' fill='none' stroke='${INK}' stroke-width='2.4' stroke-linecap='round'/>
+<ellipse cx='28' cy='60' rx='5' ry='3' fill='#ff9ecf' opacity='.7'/><ellipse cx='72' cy='60' rx='5' ry='3' fill='#ff9ecf' opacity='.7'/>`);
+  const slimeMask = svg('0 0 100 100', body('#d7b3ff', '#9b5cf0') + `
+<path d='M18 44 C24 36 40 36 50 42 C60 36 76 36 82 44 C80 56 66 60 58 54 C54 52 46 52 42 54 C34 60 20 56 18 44 Z' fill='#2b2140' stroke='#ffd23f' stroke-width='2.6' stroke-linejoin='round'/>
+<ellipse cx='36' cy='47' rx='6' ry='4.4' fill='#fff'/><circle cx='37' cy='47' r='2.4' fill='${INK}'/><ellipse cx='64' cy='47' rx='6' ry='4.4' fill='#fff'/><circle cx='65' cy='47' r='2.4' fill='${INK}'/>
+<path d='M82 44 l8 -6 M18 44 l-8 -6' stroke='#ffd23f' stroke-width='2.6' stroke-linecap='round'/>`);
+  const slimeGrow = svg('0 0 100 100', `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#ffc2e3'/><stop offset='1' stop-color='#e2559e'/></linearGradient></defs>
+<path d='M6 70 C4 36 26 14 50 14 C74 14 96 36 94 70 C94 90 74 96 50 96 C26 96 6 90 6 70 Z' fill='url(#g)' ${O}/>
+<ellipse cx='30' cy='36' rx='10' ry='6' transform='rotate(-30 30 36)' fill='#fff' opacity='.6'/>` + eyes(48)
+    + `<ellipse cx='24' cy='62' rx='8' ry='6' fill='#ff8fc2'/><ellipse cx='76' cy='62' rx='8' ry='6' fill='#ff8fc2'/><circle cx='50' cy='60' r='4' fill='${INK}'/>`);
+  const slimeShadow = svg('0 0 100 100', `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#6a5a9a'/><stop offset='1' stop-color='#241a3c'/></linearGradient></defs>
+<path d='M10 80 C8 52 26 22 50 17 C74 22 92 52 90 80 L84 94 L74 86 L64 96 L54 86 L44 96 L34 86 L24 96 L16 86 Z' fill='url(#g)' ${O}/>
+<ellipse cx='32' cy='40' rx='9' ry='5.6' transform='rotate(-32 32 40)' fill='#fff' opacity='.25'/>
+<path d='M30 50 Q38 42 46 50 Q38 54 30 50 Z M54 50 Q62 42 70 50 Q62 54 54 50 Z' fill='#ffe45c' stroke='#fff6b0' stroke-width='1.2'/>`);
+  const golem = svg('0 0 100 100', `
+<path d='M8 90 L6 58 L14 34 L30 20 L50 14 L70 20 L86 34 L94 58 L92 90 Q70 97 50 97 Q30 97 8 90 Z' fill='#d9a066' ${O}/>
+<path d='M14 34 L30 20 L50 14 L70 20 L86 34 L70 38 L50 34 L30 38 Z' fill='#e9bd86'/>
+<path d='M6 58 L14 34 L30 38 L28 60 Z M94 58 L86 34 L70 38 L72 60 Z' fill='#c78a4e'/>
+<path d='M8 90 L6 58 L14 34 L30 20 L50 14 L70 20 L86 34 L94 58 L92 90 Q70 97 50 97 Q30 97 8 90 Z' fill='none' ${O}/>
+<path d='M30 38 L28 60 M70 38 L72 60 M50 34 V44 M22 76 L34 70 M66 84 L78 74' stroke='${INK}' stroke-width='2.2' stroke-linecap='round' opacity='.55'/>
+<rect x='28' y='44' width='16' height='10' rx='3' fill='${INK}'/><rect x='56' y='44' width='16' height='10' rx='3' fill='${INK}'/>
+<rect x='32' y='46' width='8' height='5' rx='2' fill='#7ef0ff'/><rect x='60' y='46' width='8' height='5' rx='2' fill='#7ef0ff'/>
+<path d='M38 64 H62' stroke='${INK}' stroke-width='3.4' stroke-linecap='round'/>
+<path d='M42 12 L50 2 L58 12' fill='#c78a4e' stroke='${INK}' stroke-width='2.6' stroke-linejoin='round'/>`);
+  const lavaKing = svg('0 0 100 100', `<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#5a4050'/><stop offset='1' stop-color='#2c1e2a'/></linearGradient></defs>
+<path d='M28 22 C26 12 32 6 36 2 C36 10 40 14 44 16 C44 8 50 3 54 1 C54 8 58 12 62 16 C64 10 68 7 72 6 C70 12 72 18 72 22 Z' fill='#ff7a1a' stroke='${INK}' stroke-width='2.6' stroke-linejoin='round'/>
+<path d='M36 20 C36 14 40 10 42 8 C42 14 46 18 50 19 C52 13 56 10 58 9 C58 14 60 18 64 20 Z' fill='#ffd23f'/>
+<path d='M9 80 C7 50 25 21 50 18 C75 21 93 50 91 80 C91 93 71 96 50 96 C29 96 9 93 9 80 Z' fill='url(#g)' ${O}/>
+<path d='M20 52 L32 58 L28 70 L40 78 M80 50 L68 60 L74 72 L62 80 M46 86 L54 76 L50 66' fill='none' stroke='#ff7a1a' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M20 52 L32 58 L28 70 L40 78 M80 50 L68 60 L74 72 L62 80 M46 86 L54 76 L50 66' fill='none' stroke='#ffd23f' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M28 40 l15 6 M72 40 l-15 6' stroke='${INK}' stroke-width='4' stroke-linecap='round'/>
+<ellipse cx='38' cy='50' rx='6' ry='5' fill='#ffd23f' stroke='${INK}' stroke-width='2.2'/><circle cx='39.5' cy='51' r='2.6' fill='#c2255c'/>
+<ellipse cx='62' cy='50' rx='6' ry='5' fill='#ffd23f' stroke='${INK}' stroke-width='2.2'/><circle cx='60.5' cy='51' r='2.6' fill='#c2255c'/>
+<path d='M39 60 h22 l-3 5 l-3 -3.4 l-2.5 3.4 l-2.5 -3.4 l-2.5 3.4 l-2.5 -3.4 l-3 3.4 z' fill='#ffb13b' stroke='${INK}' stroke-width='2' stroke-linejoin='round'/>`);
+  const em = (bg, body) => svg('0 0 24 24', `<circle cx='12' cy='12' r='11' fill='${bg}' stroke='${INK}' stroke-width='1.8'/>${body}`);
+  const EMB = {
+    em_bolt: em('#ffe066', `<path d='M13.5 3.5 L6.5 13 H11 L9.5 20.5 L17.5 10.5 H12.8 Z' fill='#fff' stroke='${INK}' stroke-width='1.4' stroke-linejoin='round'/>`),
+    em_multi: em('#bfe0ff', `<path d='M4.5 9 H14 M11 5.8 L14.5 9 L11 12.2 M4.5 15 H17 M14 11.8 L17.5 15 L14 18.2' fill='none' stroke='${INK}' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/>`),
+    em_burst: em('#ffc2a1', `<path d='M12 3.5 L13.8 9 L19.5 8 L15.2 12 L19.5 16 L13.8 15 L12 20.5 L10.2 15 L4.5 16 L8.8 12 L4.5 8 L10.2 9 Z' fill='#ff7a1a' stroke='${INK}' stroke-width='1.3' stroke-linejoin='round'/>`),
+    em_slow: em('#d7f0ff', `<path d='M12 4 V20 M5 8 L19 16 M19 8 L5 16' stroke='#3d7bf2' stroke-width='2' stroke-linecap='round'/><circle cx='12' cy='12' r='2' fill='#fff' stroke='${INK}' stroke-width='1.2'/>`),
+    em_roar: em('#ffe9a3', `<path d='M6 12 H9 M11.5 7.5 Q14.5 12 11.5 16.5 M14.8 5.5 Q19 12 14.8 18.5' fill='none' stroke='${INK}' stroke-width='1.9' stroke-linecap='round'/>`),
+    em_fist: em('#ffd9b3', `<rect x='6' y='8' width='12' height='9' rx='3' fill='#f7cf55' stroke='${INK}' stroke-width='1.5'/><path d='M9 8 V13 M12 8 V13 M15 8 V13' stroke='${INK}' stroke-width='1.2'/><path d='M6.5 16 L4 19.5 M17.5 16 L20 19.5' stroke='${INK}' stroke-width='1.5' stroke-linecap='round'/>`),
+    em_flame: em('#ffd0c2', `<path d='M12 3.5 C14 7 18 9 17.5 14 C17 18 14.5 20.5 12 20.5 C9.5 20.5 6.5 18 6.8 14 C7 11 9.5 10 9.5 7.5 C11 9 11.5 10 11.8 11.5 C13 9 12.8 6 12 3.5 Z' fill='#ff6a13' stroke='${INK}' stroke-width='1.4' stroke-linejoin='round'/><path d='M12 13 C13.6 14.5 14.4 16 13.8 17.6 C13.2 19 10.8 19 10.2 17.6 C9.8 16.2 11 15 12 13 Z' fill='#ffd23f'/>`),
+    em_eye: em('#e3d4ff', `<path d='M3.8 12 C6.5 7.5 17.5 7.5 20.2 12 C17.5 16.5 6.5 16.5 3.8 12 Z' fill='#fff' stroke='${INK}' stroke-width='1.5' stroke-linejoin='round'/><circle cx='12' cy='12' r='3.2' fill='#8a55e0' stroke='${INK}' stroke-width='1.2'/><circle cx='12' cy='12' r='1.2' fill='${INK}'/>`),
+  };
+
   const DEFS = {
     t2: rabbit, t3: fox, t5: lion, t7: dragon,
     p2: pedestal(TOWERS[2].color), p3: pedestal(TOWERS[3].color), p5: pedestal(TOWERS[5].color), p7: pedestal(TOWERS[7].color),
     slime_meadow: slime('#8b5cf0', '#c8b0ff'), slime_canyon: slime('#1f9e92', '#8ae6da'), slime_volcano: slime('#6fbf2f', '#cbf590'),
-    boss, crown, starGold: star('#ffd23f'), starSilver: star('#e3e8f2'),
+    boss, boss_golem: golem, boss_lava: lavaKing, crown, starGold: star('#ffd23f'), starSilver: star('#e3e8f2'),
+    slime_fast: slimeFast, slime_armor: slimeArmor, slime_split: slimeSplit, slime_regen: slimeRegen, slime_mask: slimeMask, slime_grow: slimeGrow, slime_shadow: slimeShadow,
+    ...EMB,
     tree, bush, rock: rock('#c4cad8', '#9aa3b5', '#7c8599'), mesa: rock('#f0a36a', '#d0703c', '#a9542a'), darkrock: rock('#857d92', '#655d72', '#4b4457'),
     cactus, lava, crystal,
     castle_meadow: castle('#3d7bf2'), castle_canyon: castle('#e0673a'), castle_volcano: castle('#7a2e3b'),
@@ -1026,7 +1428,22 @@ const HEAD_TOP = { 2: 0.36, 3: 0.3, 5: 0.26, 7: 0.34 };
 const FONT = "Jua, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
 const NUMFONT = "'Black Han Sans', Jua, 'Malgun Gothic', sans-serif";
 const primeColor = p => (TOWERS[p] ? TOWERS[p].color : '#888');
-const radiusOf = m => (m.boss ? 0.4 : 0.22) + 0.028 * Math.min(m.o, 8);
+const radiusOf = m => (m.boss ? 0.42 : m.type === 'fast' ? 0.2 : 0.22) + 0.028 * Math.min(m.o, 8);
+const BOSS_SPRITE = { king: 'boss', golem: 'boss_golem', lava: 'boss_lava' };
+function spriteKeyFor(m, th) {
+  if (m.boss) return BOSS_SPRITE[m.type] || 'boss';
+  if (m.type === 'armor') return m.armor > 0 ? 'slime_armor' : th.slime;
+  if (m.type === 'mask') return m.mask ? 'slime_mask' : th.slime;
+  if (m.type === 'basic') return th.slime;
+  return 'slime_' + m.type;
+}
+function shadowSeen(g, m) {
+  for (const t of g.towers) {
+    const d = Math.hypot(m.x - t.x, m.y - t.y);
+    if (d <= SHADOW_SIGHT || (t.s && t.s.detect && d <= t.s.range)) return true;
+  }
+  return false;
+}
 const TOPM = 0.42;
 
 function createBoard(canvas, opts) {
@@ -1214,27 +1631,57 @@ function createBoard(canvas, opts) {
     if (t.level >= 2) {
       const ss = cell * 0.2;
       for (let i = 0; i < t.level - 1; i++) sprite(ctx, 'starGold', pw / 2 - ss * 0.9 - i * ss * 0.75, -ph - ss * 0.1, ss, ss);
+      const B = t.branch != null && TOWERS[t.p].branches[t.branch];
+      if (B) { const es = cell * 0.3; sprite(ctx, 'em_' + B.icon, -pw / 2 - es * 0.18, -ph * 0.62, es, es); }
     }
     ctx.restore();
   }
 
-  function drawMonster(m, now, dots, th) {
+  function shield(x, y, size, n, spare) {
+    const draw = (ox, oy, sz, fill) => {
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - sz * 0.55);
+      ctx.quadraticCurveTo(ox + sz * 0.5, oy - sz * 0.5, ox + sz * 0.5, oy - sz * 0.35);
+      ctx.quadraticCurveTo(ox + sz * 0.48, oy + sz * 0.25, ox, oy + sz * 0.58);
+      ctx.quadraticCurveTo(ox - sz * 0.48, oy + sz * 0.25, ox - sz * 0.5, oy - sz * 0.35);
+      ctx.quadraticCurveTo(ox - sz * 0.5, oy - sz * 0.5, ox, oy - sz * 0.55);
+      ctx.closePath();
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.lineWidth = Math.max(1.2, cell * 0.03); ctx.strokeStyle = INK; ctx.stroke();
+    };
+    if (spare) draw(x + size * 0.28, y - size * 0.1, size * 0.9, '#8792ab');
+    draw(x, y, size, '#c9d2e3');
+    const fs = Math.max(8, size * 0.62);
+    ctx.font = `${fs}px ${NUMFONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = fs * 0.22; ctx.strokeStyle = '#fff'; ctx.strokeText(String(n), x, y + size * 0.02);
+    ctx.fillStyle = INK; ctx.fillText(String(n), x, y + size * 0.02);
+  }
+  function drawMonster(m, g, dots, th) {
+    const now = g.time;
     const R = radiusOf(m) * cell;
     const age = now - m.bornAt;
     const phase = m.d * 4.4 + m.id * 1.7;
-    const hopH = Math.abs(Math.sin(phase)) * R * (m.boss ? 0.08 : 0.2);
+    const hopH = Math.abs(Math.sin(phase)) * R * (m.boss ? 0.08 : m.type === 'fast' ? 0.12 : 0.2);
     let sx = 1 + 0.05 * Math.cos(phase * 2), sy = 1 - 0.06 * Math.cos(phase * 2);
     const hit = now - m.hitAt;
     if (hit >= 0 && hit < 0.14) { const u = 1 - hit / 0.14; sx *= 1 + 0.14 * u; sy *= 1 - 0.16 * u; }
+    if (m.type === 'grow') { const gu = Math.max(0, 1 - (now - m.growAt) / 0.35); sx *= 1 + 0.12 * gu; sy *= 1 + 0.12 * gu; }
     const w = R * 2.15 * sx, h = R * 2.15 * sy;
     const x = m.x * cell, foot = m.y * cell + R * 0.8;
+    const hidden = m.type === 'shadow' && !shadowSeen(g, m);
+    const baseAlpha = Math.min(1, Math.max(0, age / 0.3)) * (hidden ? 0.32 : 1);
     ctx.save();
-    ctx.globalAlpha = Math.min(1, Math.max(0, age / 0.3));
-    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.globalAlpha = baseAlpha;
+    const slowed = now < m.slowUntil;
+    ctx.fillStyle = slowed ? 'rgba(90,170,255,.45)' : 'rgba(0,0,0,.22)';
     ctx.beginPath(); ctx.ellipse(x, foot - R * 0.05, R * (0.85 - hopH / R * 0.4), R * 0.22, 0, 0, 7); ctx.fill();
+    if (m.type === 'fast' && !hidden) {
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(1.5, cell * 0.035); ctx.lineCap = 'round';
+      for (let i = 0; i < 3; i++) { const yy = foot - R * (0.5 + i * 0.35); ctx.beginPath(); ctx.moveTo(x - m.dir * R * 1.1, yy); ctx.lineTo(x - m.dir * R * (1.6 + i * 0.15), yy); ctx.stroke(); }
+    }
     const top = foot - h - hopH;
     const base = Math.max(8, Math.round(R * 2.15 * dpr / 6) * 6);
-    const spr = Sprites.get(m.boss ? 'boss' : th.slime, base, base);
+    const spr = Sprites.get(spriteKeyFor(m, th), base, base);
     if (spr) {
       ctx.save();
       ctx.translate(x, 0);
@@ -1242,34 +1689,63 @@ function createBoard(canvas, opts) {
       ctx.drawImage(spr, -w / 2, top, w, h);
       ctx.restore();
     }
+    if (slowed) {
+      ctx.globalAlpha = baseAlpha * 0.35; ctx.fillStyle = '#9fd4ff';
+      ctx.beginPath(); ctx.ellipse(x, top + h * 0.62, w * 0.44, h * 0.36, 0, 0, 7); ctx.fill();
+      ctx.globalAlpha = baseAlpha;
+    }
     if (hit >= 0 && hit < 0.1) {
-      ctx.globalAlpha *= 0.55 * (1 - hit / 0.1);
+      ctx.globalAlpha = baseAlpha * 0.55 * (1 - hit / 0.1);
       ctx.fillStyle = '#fff';
       ctx.beginPath(); ctx.ellipse(x, top + h * 0.6, w * 0.42, h * 0.36, 0, 0, 7); ctx.fill();
-      ctx.globalAlpha = Math.min(1, Math.max(0, age / 0.3));
+      ctx.globalAlpha = baseAlpha;
     }
-    const str = String(m.n);
+    if (now < m.invulnUntil) {
+      ctx.globalAlpha = baseAlpha * (0.5 + 0.4 * Math.sin(now * 30));
+      ctx.strokeStyle = '#fff6b0'; ctx.lineWidth = Math.max(2, cell * 0.07);
+      ctx.beginPath(); ctx.ellipse(x, top + h * 0.55, w * 0.62, h * 0.58, 0, 0, 7); ctx.stroke();
+      ctx.globalAlpha = baseAlpha;
+    }
+    const str = m.mask || String(m.n);
     const fs = Math.max(9, Math.min(R * (m.boss ? 0.78 : 0.9), (w * 0.94) / (str.length * 0.6)));
     ctx.font = `${fs}px ${NUMFONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineJoin = 'round';
     ctx.lineWidth = Math.max(2, fs * 0.26);
-    ctx.strokeStyle = INK;
+    ctx.strokeStyle = m.mask ? '#4a1a7a' : INK;
     const ty = top + h * (m.boss ? 0.8 : 0.74);
     ctx.strokeText(str, x, ty);
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = m.mask ? '#ffe680' : '#fff';
     ctx.fillText(str, x, ty);
-    if (dots && m.factors.length) {
+    if (m.armor > 0) shield(x + w * 0.42, top + h * 0.32, Math.max(12, cell * (m.boss ? 0.36 : 0.28)), m.armor, m.rearm > 0);
+    if (m.type === 'golem' && m.armor === 0 && m.n > 1) {
+      const lp = largestPrime(m.n / m.pending > 1 ? m.n / m.pending : m.n);
+      const bx = x - w * 0.46, by = top + h * 0.3, br = Math.max(9, cell * 0.17);
+      ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fillStyle = primeColor(lp); ctx.fill();
+      ctx.lineWidth = Math.max(1.5, cell * 0.035); ctx.strokeStyle = INK; ctx.stroke();
+      ctx.font = `${Math.round(br * 1.25)}px ${NUMFONT}`; ctx.fillStyle = '#fff'; ctx.fillText(String(lp), bx, by + br * 0.05);
+    }
+    if (m.boss && m.nums.length > 1) {
+      const k = m.nums.length, gs = Math.max(6, cell * 0.12);
+      for (let i = 0; i < k; i++) {
+        const gx = x + (i - (k - 1) / 2) * gs * 2.1, gy = top - gs * 0.4;
+        ctx.beginPath(); ctx.arc(gx, gy, gs, 0, 7);
+        ctx.fillStyle = i < k - m.phase + 1 ? '#ff7a1a' : '#5a4a58'; ctx.fill();
+        ctx.lineWidth = Math.max(1, cell * 0.025); ctx.strokeStyle = INK; ctx.stroke();
+      }
+    }
+    if (dots && m.factors.length && !m.mask && !hidden) {
       const k = m.factors.length;
       const dr = Math.max(2.2, cell * (k > 8 ? 0.048 : 0.062));
       const gap = dr * 2.3;
       const rowMax = m.boss ? 8 : 6;
       const rows = Math.ceil(k / rowMax);
+      const lift = m.boss && m.nums.length > 1 ? cell * 0.28 : 0;
       for (let i = 0; i < k; i++) {
         const row = Math.floor(i / rowMax), inRow = Math.min(rowMax, k - row * rowMax), col = i % rowMax;
         const dx = x + (col - (inRow - 1) / 2) * gap;
-        const dy = top - dr * 1.4 - (rows - 1 - row) * gap * 0.9 + (m.boss ? h * 0.14 : h * 0.08);
+        const dy = top - dr * 1.4 - (rows - 1 - row) * gap * 0.9 + (m.boss ? h * 0.14 : h * 0.08) - lift;
         ctx.beginPath(); ctx.arc(dx, dy, dr, 0, 7);
         ctx.fillStyle = primeColor(m.factors[i]); ctx.fill();
         ctx.lineWidth = Math.max(1, cell * 0.02); ctx.strokeStyle = INK; ctx.stroke();
@@ -1366,8 +1842,27 @@ function createBoard(canvas, opts) {
     } else if (e.type === 'leak') {
       shake = Math.max(shake, e.boss ? 0.5 : 0.3);
       fx.push({ kind: 'flash', t: 0, dur: 0.5 });
+    } else if (e.type === 'armorhit') {
+      for (let i = 0; i < 4; i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4; fx.push({ kind: 'spark', x: e.x + 0.15, y: e.y - 0.25, vx: Math.cos(a) * 2.2, vy: Math.sin(a) * 2.2, color: '#e8ecf4', t: 0, dur: 0.28 }); }
+    } else if (e.type === 'armorbreak' || e.type === 'rearm') {
+      for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2; fx.push({ kind: 'shard', x: e.x, y: e.y - 0.25, vx: Math.cos(a) * 2.4, vy: Math.sin(a) * 2.4 - 1, rot: Math.random() * 6, t: 0, dur: 0.6 }); }
+      fx.push({ kind: 'text', x: e.x, y: e.y - 0.6, text: e.type === 'rearm' ? '새 갑옷!' : '갑옷 깨짐!', color: e.type === 'rearm' ? '#c9d2e3' : '#ffffff', t: 0, dur: 1.0 });
+    } else if (e.type === 'regen') {
+      for (let i = 0; i < 6; i++) fx.push({ kind: 'plus', x: e.x + (Math.random() - 0.5) * 0.6, y: e.y - 0.2, t: -i * 0.04, dur: 0.7 });
+      fx.push({ kind: 'text', x: e.x, y: e.y - 0.55, text: '×' + e.p, color: '#7ee07f', t: 0, dur: 0.9 });
+    } else if (e.type === 'grow') {
+      fx.push({ kind: 'text', x: e.x, y: e.y - 0.55, text: '×2', color: '#ff8fc7', t: 0, dur: 0.9 });
+    } else if (e.type === 'burst') {
+      fx.push({ kind: 'wave', x: e.x, y: e.y, r: e.r, color: 'rgba(92,184,255,', t: 0, dur: 0.35 });
+    } else if (e.type === 'summon' || e.type === 'split') {
+      for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; fx.push({ kind: 'dust', x: e.x + Math.cos(a) * 0.2, y: e.y, vx: Math.cos(a) * 1.2, vy: Math.sin(a) * 0.6 - 0.3, t: 0, dur: 0.45 }); }
+    } else if (e.type === 'phase') {
+      shake = Math.max(shake, 0.4);
+      fx.push({ kind: 'pop', x: e.x, y: e.y, t: 0, dur: 0.6, boss: true });
+      fx.push({ kind: 'text', x: e.x, y: e.y - 0.8, text: fmtN(e.m.n), color: '#ff9a3c', t: 0, dur: 1.3 });
     }
   }
+  const fmtN = n => String(n);
   function puff(c, r) {
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
@@ -1403,7 +1898,7 @@ function createBoard(canvas, opts) {
         ctx.font = `${fs}px ${NUMFONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
         ctx.lineWidth = fs * 0.22; ctx.strokeStyle = INK;
         const yy = (f.y - 0.55 * k) * cell;
-        ctx.strokeText(f.text, f.x * cell, yy); ctx.fillStyle = '#ffd23f'; ctx.fillText(f.text, f.x * cell, yy); ctx.globalAlpha = 1;
+        ctx.strokeText(f.text, f.x * cell, yy); ctx.fillStyle = f.color || '#ffd23f'; ctx.fillText(f.text, f.x * cell, yy); ctx.globalAlpha = 1;
       } else if (f.kind === 'coin') {
         if (!coinTarget) { f.t = f.dur; continue; }
         const u = k * k, a = 1 - u, tyy = coinTarget.y - TOPM * cell;
@@ -1420,6 +1915,19 @@ function createBoard(canvas, opts) {
         const x = f.x * cell, y = (f.y - 0.4 * k) * cell;
         ctx.fillStyle = '#ffe680'; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1, cell * 0.018);
         ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.3, y - s * 0.3); ctx.lineTo(x + s, y); ctx.lineTo(x + s * 0.3, y + s * 0.3); ctx.lineTo(x, y + s); ctx.lineTo(x - s * 0.3, y + s * 0.3); ctx.lineTo(x - s, y); ctx.lineTo(x - s * 0.3, y - s * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
+      } else if (f.kind === 'shard') {
+        ctx.save(); ctx.globalAlpha = 1 - k;
+        ctx.translate((f.x + f.vx * f.t) * cell, (f.y + f.vy * f.t + 3 * f.t * f.t) * cell); ctx.rotate(f.rot + f.t * 8);
+        ctx.fillStyle = '#c9d2e3'; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1, cell * 0.018);
+        ctx.beginPath(); ctx.moveTo(0, -cell * 0.08); ctx.lineTo(cell * 0.07, cell * 0.06); ctx.lineTo(-cell * 0.06, cell * 0.05); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
+      } else if (f.kind === 'plus') {
+        const x = f.x * cell, y = (f.y - 0.6 * k) * cell, sz = cell * 0.08;
+        ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#2f9e44'; ctx.lineWidth = Math.max(2, cell * 0.04); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x - sz, y); ctx.lineTo(x + sz, y); ctx.moveTo(x, y - sz); ctx.lineTo(x, y + sz); ctx.stroke(); ctx.globalAlpha = 1;
+      } else if (f.kind === 'wave') {
+        ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.color + '0.9)'; ctx.fillStyle = f.color + '0.18)'; ctx.lineWidth = Math.max(2, cell * 0.05);
+        ctx.beginPath(); ctx.arc(f.x * cell, f.y * cell, f.r * cell * (0.4 + 0.6 * k), 0, 7); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
       } else if (f.kind === 'flash') {
         const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.7);
         gr.addColorStop(0, 'rgba(230,40,60,0)'); gr.addColorStop(1, `rgba(230,40,60,${0.45 * (1 - k)})`);
@@ -1487,7 +1995,7 @@ function createBoard(canvas, opts) {
       const { c, r } = ui.hover;
       const free = canBuildAt(g, c, r);
       if (free) {
-        ranger(c + 0.5, r + 0.5, TOWERS[ui.place].range, g.coins < TOWERS[ui.place].cost);
+        ranger(c + 0.5, r + 0.5, TOWERS[ui.place].range, g.coins < towerCost(g, ui.place));
         ghost = { p: ui.place, c, r, x: c + 0.5, y: r + 0.5, level: 1, id: 0 };
       } else if (!towerAt(g, c, r)) {
         ctx.strokeStyle = 'rgba(220,40,60,.85)'; ctx.lineWidth = Math.max(2, cell * 0.06); ctx.lineCap = 'round';
@@ -1510,7 +2018,7 @@ function createBoard(canvas, opts) {
     for (const t of g.towers) items.push({ y: t.r + 0.94, draw: () => drawTower(t, now, !!ui && ui.sel === t, false) });
     if (ghost) items.push({ y: ghost.r + 0.94, draw: () => drawTower(ghost, now, false, true) });
     const L = LEVELS[g.levelId];
-    for (const m of g.monsters) items.push({ y: m.y + radiusOf(m) * 0.8, draw: () => drawMonster(m, now, L.dots, th) });
+    for (const m of g.monsters) items.push({ y: m.y + radiusOf(m) * 0.8, draw: () => drawMonster(m, g, L.dots, th) });
     const cs = map.castle;
     items.push({ y: cs.y + cs.s * 0.5, draw: () => {
       const s = cs.s * cell;
@@ -1607,6 +2115,13 @@ const Sound = (() => {
     win: () => [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', 0.08, 0, i * 0.12)),
     lose: () => [392, 349, 311, 262].forEach((f, i) => tone(f, 0.3, 'sawtooth', 0.045, -10, i * 0.22)),
     click: () => tone(880, 0.03, 'square', 0.02),
+    clank: () => { tone(1800, 0.04, 'square', 0.025, -600); tone(2600, 0.03, 'triangle', 0.02, 0, 0.02); },
+    shatter: () => { [1500, 1200, 900].forEach((f, i) => tone(f, 0.08, 'square', 0.03, -500, i * 0.03)); },
+    regen: () => [523, 784].forEach((f, i) => tone(f, 0.1, 'sine', 0.05, 200, i * 0.06)),
+    grow: () => tone(300, 0.18, 'sine', 0.06, 300),
+    phase: () => { tone(90, 0.7, 'sawtooth', 0.08, 60); tone(180, 0.5, 'square', 0.04, -60, 0.1); },
+    summon: () => tone(420, 0.14, 'triangle', 0.05, -200),
+    discover: () => [659, 880, 1175, 1568].forEach((f, i) => tone(f, 0.12, 'triangle', 0.06, 0, i * 0.08)),
     no: () => tone(180, 0.12, 'square', 0.04, -40),
   };
   return {
@@ -1871,7 +2386,7 @@ const KEY = {
   big: 'ptd.v1.big',
   sound: 'ptd.v1.sound',
   save: key => LOCAL.save(key),
-  tcodes: 'ptd.v1.tcodes',
+  tcodes: 'ptd.v2.tcodes',
 };
 
 const BADGE_GROUPS = [
@@ -1882,35 +2397,40 @@ const BADGE_GROUPS = [
 ];
 const BADGES = [
   { id: 'debut', g: 'play', name: '첫 방어전', desc: '첫 경기를 마쳤어요' },
-  { id: 'g5', g: 'play', name: '5경기 출전', desc: '경기를 5번 마쳤어요' },
+  { id: 'g10', g: 'play', name: '10경기 출전', desc: '경기를 10번 마쳤어요' },
   { id: 'rival', g: 'play', name: '원정 방어', desc: '경기 코드로 도전해서 방어 성공' },
-  { id: 'clear1', g: 'def', name: '입문 방어', desc: '입문 15웨이브를 모두 막았어요' },
-  { id: 'clear2', g: 'def', name: '기본 방어', desc: '기본 15웨이브를 모두 막았어요' },
-  { id: 'clear3', g: 'def', name: '도전 방어', desc: '도전 15웨이브를 모두 막았어요' },
+  { id: 'dex', g: 'play', name: '몬스터 박사', desc: '도감의 몬스터를 모두 만났어요' },
+  { id: 'clear1', g: 'def', name: '들판 정복', desc: '1-5에서 왕 슬라임을 물리쳤어요' },
+  { id: 'clear2', g: 'def', name: '협곡 정복', desc: '2-5에서 모래 골렘을 물리쳤어요' },
+  { id: 'clear3', g: 'def', name: '화산 정복', desc: '3-5에서 용암 대왕을 물리쳤어요' },
   { id: 'perfect', g: 'def', name: '철벽 방어', desc: '목숨을 하나도 잃지 않고 방어 성공' },
   { id: 'star3', g: 'def', name: '별 세 개', desc: '별 3개를 받으며 방어 성공' },
-  { id: 'allstars', g: 'def', name: '모든 지도 정복', desc: '세 지도에서 모두 별 3개를 받았어요' },
-  { id: 'boss', g: 'skill', name: '보스 사냥꾼', desc: '보스를 물리쳤어요' },
-  { id: 'frugal', g: 'skill', name: '알뜰 지휘관', desc: '수호대 20명 이하로 기본이나 도전 방어 성공' },
-  { id: 'upgrader', g: 'skill', name: '강화 전문가', desc: '한 경기에서 수호대를 5번 강화했어요' },
-  { id: 'k300', g: 'skill', name: '몬스터 300마리', desc: '모두 합쳐 몬스터 300마리를 물리쳤어요' },
+  { id: 'stars30', g: 'def', name: '별 30개', desc: '별을 모두 합쳐 30개 모았어요' },
+  { id: 'armor50', g: 'skill', name: '갑옷 부수기', desc: '갑옷을 모두 합쳐 50번 깨뜨렸어요' },
+  { id: 'maxed', g: 'skill', name: '최고 단계', desc: '수호대를 3단계까지 강화했어요' },
+  { id: 'frugal', g: 'skill', name: '알뜰 지휘관', desc: '수호대 8명 이하로 4, 5단계 방어 성공' },
+  { id: 'k500', g: 'skill', name: '몬스터 500마리', desc: '모두 합쳐 몬스터 500마리를 물리쳤어요' },
   { id: 'lastlife', g: 'hidden', hidden: true, name: '구사일생', desc: '목숨 1개만 남기고 방어 성공' },
   { id: 'giant', g: 'hidden', hidden: true, name: '거대 숫자 사냥', desc: '100000보다 큰 몬스터를 물리쳤어요' },
 ];
 const TIPS = [
   { id: 't1', need: s => s.finished >= 1, text: '수호대는 자기 수로 나누어떨어지는 몬스터만 공격해요. 60은 토끼(2), 여우(3), 사자(5)가 모두 공격할 수 있지만 용(7)은 그냥 지나쳐요.' },
   { id: 't2', need: s => s.finished >= 2, text: '몬스터를 없애려면 몇 번 맞혀야 할까요? 72 = 2×2×2×3×3이라면 토끼에게 세 번, 여우에게 두 번 맞아야 사라져요.' },
+  { id: 't5', need: s => s.seen.includes('armor'), text: '갑옷 슬라임은 갑옷 숫자만큼 먼저 맞아야 나눠지기 시작해요. 사자의 강타, 용의 화염으로 강화하면 갑옷을 여러 칸씩 부숴요.' },
   { id: 't3', need: s => s.finished >= 3, text: '다음 웨이브에 나올 수들을 보고 어떤 소인수가 많은지 세어 보세요. 어떤 수호대를 부를지 보여요.' },
-  { id: 't4', need: s => s.finished >= 4, text: '길이 꺾이는 곳 옆에 세운 수호대는 몬스터를 더 오래 공격할 수 있어요.' },
-  { id: 't6', need: s => s.finished >= 5, text: '사자(5)는 한 번에 두 마리를, 용(7)은 가장 먼 곳까지 공격해요. 강화 3단계가 되면 왕관을 써요.' },
-  { id: 't5', need: s => s.lv[3].f >= 1, text: '화산 요새에서는 몬스터 머리 위의 점이 보이지 않아요. 수만 보고 소인수분해해서 필요한 수호대를 불러 보세요.' },
+  { id: 't6', need: s => s.finished >= 4, text: '같은 수호대를 많이 부를수록 값이 올라요. 이미 세운 수호대를 강화하는 것도 좋은 방법이에요.' },
+  { id: 't8', need: s => s.seen.includes('regen'), text: '새싹 슬라임은 3초 동안 맞지 않으면 잃었던 소인수를 되찾아요. 수호대를 모아 세워서 쉬지 않고 맞혀 보세요.' },
+  { id: 't4', need: s => s.finished >= 5, text: '길이 꺾이는 곳 옆에 세운 수호대는 몬스터를 더 오래 공격할 수 있어요.' },
+  { id: 't7', need: s => s.seen.includes('shadow'), text: '그림자 슬라임은 수호대 1.5칸 안으로 들어와야 보여요. 길 바로 옆에 세우거나 용의 눈으로 강화해 보세요.' },
+  { id: 't9', need: s => s.seen.includes('golem'), text: '모래 골렘은 가장 큰 소인수로만 나눠져요. 골렘 옆의 색 동그라미가 지금 공격할 수 있는 수호대를 알려 줘요.' },
 ];
-const STAGE_BLURB = {
-  1: '토끼(2)와 여우(3)만 나와요. 규칙을 익히기 좋아요.',
-  2: '길이 지그재그로 꺾여요. 사자(5)와 용(7)이 차례로 합류해요.',
-  3: '길이 요새를 휘감아요. 몬스터가 빠르고, 머리 위의 점도 보이지 않아요.',
+const MAP_BLURB = {
+  1: '토끼(2)와 여우(3)가 지키는 첫 지도예요. 날쌘 슬라임, 갑옷 슬라임, 쪼개지는 슬라임이 차례로 나와요.',
+  2: '사자(5)와 용(7)이 합류해요. 되살아나는 새싹 슬라임과 곱셈식 가면 슬라임이 나와요.',
+  3: '빠르고 단단한 몬스터가 몰려와요. 부풀이, 그림자 슬라임이 나오고 머리 위의 점도 보이지 않아요.',
 };
-const stageName = id => MAPS[LEVELS[id].map].name;
+const stageTitle = id => `${id} ${STAGES[id].title}`;
+const mapOf = id => MAPS[LEVELS[STAGES[id].level].map];
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const validSid = s => /^\d{4,6}$/.test(s);
@@ -1942,25 +2462,25 @@ function factorHTML(n) {
 }
 
 /* ===== 선수 기록 ===== */
-function lvFresh() { return { f: 0, w: 0, bestScore: null, bestWave: 0, stars: 0 }; }
+function stFresh() { return { f: 0, w: 0, stars: 0, best: null, bestWave: 0 }; }
 function freshProfile(sid, name) {
-  return {
-    key: keyOf(sid, name), sid, name, finished: 0, wins: 0, kills: 0, codeWins: 0,
-    lv: { 1: lvFresh(), 2: lvFresh(), 3: lvFresh() }, badges: [], tipsSeen: [], recent: [],
-  };
+  return { key: keyOf(sid, name), sid, name, finished: 0, wins: 0, kills: 0, codeWins: 0, armor: 0, st: {}, seen: [], badges: [], tipsSeen: [], recent: [] };
 }
 function normalizeProfile(s, sid, name) {
   const base = freshProfile(sid, name);
   if (!s || typeof s !== 'object') return base;
   const num = v => (Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0);
-  ['finished', 'wins', 'kills', 'codeWins'].forEach(k => { base[k] = num(s[k]); });
-  for (const k of [1, 2, 3]) {
-    const v = s.lv && s.lv[k];
-    if (v) base.lv[k] = { f: num(v.f), w: num(v.w), bestScore: Number.isFinite(Number(v.bestScore)) && v.bestScore != null ? Number(v.bestScore) : null, bestWave: num(v.bestWave), stars: Math.min(3, num(v.stars)) };
+  ['finished', 'wins', 'kills', 'codeWins', 'armor'].forEach(k => { base[k] = num(s[k]); });
+  if (s.st && typeof s.st === 'object') {
+    STAGE_IDS.forEach(id => {
+      const v = s.st[id];
+      if (v && typeof v === 'object') base.st[id] = { f: num(v.f), w: num(v.w), stars: Math.min(3, num(v.stars)), best: v.best != null && Number.isFinite(Number(v.best)) ? Number(v.best) : null, bestWave: num(v.bestWave) };
+    });
   }
+  base.seen = toArr(s.seen).filter(x => MONSTER_ORDER.includes(x));
   base.badges = toArr(s.badges).filter(x => BADGES.some(b => b.id === x));
   base.tipsSeen = toArr(s.tipsSeen).filter(x => typeof x === 'string');
-  base.recent = toArr(s.recent).filter(r => r && LEVELS[r.levelId] && typeof r.code === 'string')
+  base.recent = toArr(s.recent).filter(r => r && STAGES[r.stageId] && typeof r.code === 'string')
     .sort((a, b) => (Number(b.t) || 0) - (Number(a.t) || 0)).slice(0, 20);
   return base;
 }
@@ -1969,20 +2489,33 @@ function mergeProfiles(a, b) {
   const base = b.finished >= a.finished ? b : a;
   const other = base === a ? b : a;
   const out = JSON.parse(JSON.stringify(base));
-  [1, 2, 3].forEach(k => { out.lv[k].stars = Math.max(base.lv[k].stars || 0, other.lv[k].stars || 0); });
+  STAGE_IDS.forEach(id => {
+    const x = base.st[id], y = other.st[id];
+    if (!x && y) out.st[id] = JSON.parse(JSON.stringify(y));
+    else if (x && y) { out.st[id].stars = Math.max(x.stars, y.stars); out.st[id].w = Math.max(x.w, y.w); }
+  });
   out.badges = BADGES.map(x => x.id).filter(id => base.badges.includes(id) || other.badges.includes(id));
   out.tipsSeen = [...new Set([...base.tipsSeen, ...other.tipsSeen])];
+  out.seen = MONSTER_ORDER.filter(t => base.seen.includes(t) || other.seen.includes(t));
   return out;
 }
 function saveProfile() { if (me) Net.saveProfile(me); }
+const stOf = id => (me && me.st[id]) || stFresh();
+const starSum = () => STAGE_IDS.reduce((s, id) => s + stOf(id).stars, 0);
+const clearedCount = () => STAGE_IDS.filter(id => stOf(id).w > 0).length;
+function stageOpen(id) {
+  const S = STAGES[id];
+  if (S.no === 1) return true;
+  return stOf(S.level + '-' + (S.no - 1)).w > 0;
+}
 
 /* ===== 하던 경기 (웨이브 사이의 모습을 저장) ===== */
 function snapshot(g) {
   return {
-    levelId: g.levelId, seed: g.seed, via: G.via, wave: g.wave, coins: g.coins, lives: g.lives, score: g.score,
+    stageId: g.stageId, seed: g.seed, via: G.via, wave: g.wave, coins: g.coins, lives: g.lives, score: g.score,
     kills: g.kills, hits: g.hits, leaks: g.leaks, spent: g.spent, upgrades: g.upgrades, bossKills: g.bossKills,
-    biggest: g.biggest, maxTowers: g.maxTowers, leaked: g.leaked.slice(0, 30),
-    towers: g.towers.map(t => ({ p: t.p, c: t.c, r: t.r, level: t.level, paid: t.paid, fired: t.fired })),
+    biggest: g.biggest, maxTowers: g.maxTowers, armorBroken: g.armorBroken, leaked: g.leaked.slice(0, 30),
+    towers: g.towers.map(t => ({ p: t.p, c: t.c, r: t.r, level: t.level, branch: t.branch, paid: t.paid, fired: t.fired })),
   };
 }
 function saveRun() {
@@ -1992,20 +2525,27 @@ function saveRun() {
 function loadSavedRun() {
   if (!me) return null;
   const s = store.get(KEY.save(me.key), null);
-  if (!s || !LEVELS[s.levelId] || !Number.isInteger(s.seed) || s.seed < 0 || s.seed > 9999) return null;
-  if (!Number.isInteger(s.wave) || s.wave < 0 || s.wave >= WAVES) return null;
+  if (!s || !STAGES[s.stageId] || !Number.isInteger(s.seed) || s.seed < 0 || s.seed > 9999) return null;
+  if (!Number.isInteger(s.wave) || s.wave < 0 || s.wave >= STAGES[s.stageId].waves) return null;
   return s;
 }
 function applySaved(g, s) {
   const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
-  ['wave', 'coins', 'lives', 'score', 'kills', 'hits', 'leaks', 'spent', 'upgrades', 'bossKills', 'biggest', 'maxTowers']
+  ['wave', 'coins', 'lives', 'score', 'kills', 'hits', 'leaks', 'spent', 'upgrades', 'bossKills', 'biggest', 'maxTowers', 'armorBroken']
     .forEach(k => { g[k] = num(s[k]); });
   if (g.lives <= 0) g.lives = 1;
   g.leaked = toArr(s.leaked).filter(x => x && Number.isFinite(x.n)).slice(0, 30);
   g.towers = [];
   toArr(s.towers).forEach(t => {
     if (!t || !TOWERS[t.p] || !canBuildAt(g, t.c, t.r)) return;
-    g.towers.push({ id: g.nextId++, p: t.p, c: t.c, r: t.r, x: t.c + 0.5, y: t.r + 0.5, level: Math.max(1, Math.min(MAX_LEVEL, Math.round(num(t.level)) || 1)), cd: 0, paid: num(t.paid), fired: num(t.fired), firedAt: -1, builtAt: -9, upAt: -9, aimX: t.c + 0.5 });
+    const nt = newTower(g, t.p, t.c, t.r, num(t.paid));
+    nt.level = Math.max(1, Math.min(MAX_LEVEL, Math.round(num(t.level)) || 1));
+    nt.branch = nt.level >= 2 && (t.branch === 0 || t.branch === 1) ? t.branch : null;
+    if (nt.level >= 2 && nt.branch == null) nt.level = 1;
+    nt.fired = num(t.fired);
+    nt.builtAt = -9;
+    nt.s = towerStats(nt);
+    g.towers.push(nt);
   });
 }
 
@@ -2013,15 +2553,12 @@ function applySaved(g, s) {
 let me = null;
 let view = 'home';
 let lastResult = null;
-let homeLevel = 1;
 let big = store.get(KEY.big, false) === true;
 let syncNote = '';
 let hubState = null;
 let giveupArmed = false;
-const G = { g: null, board: null, raf: 0, last: 0, speed: 1, paused: false, place: null, sel: null, hover: null, via: 'practice', ending: false, snap: null, hud: {}, toastTimer: 0 };
+const G = { g: null, board: null, raf: 0, last: 0, speed: 1, paused: false, place: null, sel: null, hover: null, via: 'practice', ending: false, snap: null, hud: {}, toastTimer: 0, modal: null, wasPaused: false };
 const D = { g: null, board: null, raf: 0, last: 0 };
-
-const defaultLevel = () => (me && me.lv[1].w >= 1 ? 2 : 1);
 
 function restorePlayer() {
   const cur = store.get(KEY.current, null);
@@ -2029,7 +2566,6 @@ function restorePlayer() {
     const sid = cur.sid, name = normName(cur.name);
     if (validSid(sid) && validName(name)) me = normalizeProfile(Net.localProfile(keyOf(sid, name)), sid, name);
   }
-  homeLevel = defaultLevel();
 }
 async function syncAfterBoot() {
   await Net.ready;
@@ -2072,14 +2608,13 @@ function updateFoot() {
   f.innerHTML = window.CLASS_GAMES_HUB ? '<a class="text-btn hub-link" href="../">게임 목록</a>' : '';
 }
 function liveData() {
-  const d = { sid: me.sid, name: me.name, state: view === 'teacher' ? 'home' : view, levelId: null, code: null, wave: null, lives: null, score: null, won: null };
-  if (view === 'game' && G.g) Object.assign(d, { levelId: G.g.levelId, code: formatCode(G.g.levelId, G.g.seed), wave: Math.min(WAVES, G.g.wave + 1), lives: G.g.lives, score: G.g.score });
-  else if (view === 'result' && lastResult) Object.assign(d, { levelId: lastResult.levelId, code: formatCode(lastResult.levelId, lastResult.seed), wave: lastResult.wave, lives: lastResult.lives, score: lastResult.score, won: lastResult.won });
+  const d = { sid: me.sid, name: me.name, state: view === 'teacher' || view === 'dex' ? 'home' : view, stageId: null, levelId: null, code: null, wave: null, waves: null, lives: null, score: null, won: null };
+  if (view === 'game' && G.g) Object.assign(d, { stageId: G.g.stageId, levelId: G.g.levelId, code: formatCode(G.g.stageId, G.g.seed), wave: Math.min(G.g.W, G.g.wave + 1), waves: G.g.W, lives: G.g.lives, score: G.g.score });
+  else if (view === 'result' && lastResult) Object.assign(d, { stageId: lastResult.stageId, levelId: lastResult.levelId, code: formatCode(lastResult.stageId, lastResult.seed), wave: lastResult.wave, waves: lastResult.W, lives: lastResult.lives, score: lastResult.score, won: lastResult.won });
   return d;
 }
 function pushLive() { if (me && view !== 'teacher') Net.live(me.key, liveData()); }
 
-/* ===== 공통 조각 ===== */
 const ICON = {
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>',
   ff: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5v13l8.5-6.5zM12.5 5.5v13l8.5-6.5z" fill="currentColor"/></svg>',
@@ -2096,6 +2631,16 @@ function starsHTML(n, max, cls) {
   return `<span class="stars${cls ? ' ' + cls : ''}" role="img" aria-label="별 ${m}개 중 ${n}개">${Array.from({ length: m }, (_, i) => `<span class="st${i < n ? ' on' : ''}"></span>`).join('')}</span>`;
 }
 const guardImg = (p, cls) => `<img${cls ? ` class="${cls}"` : ''} src="${Sprites.url('t' + p)}" alt="" draggable="false">`;
+const MON_SPRITE = { basic: 'slime_meadow', fast: 'slime_fast', armor: 'slime_armor', split: 'slime_split', regen: 'slime_regen', mask: 'slime_mask', grow: 'slime_grow', shadow: 'slime_shadow', king: 'boss', golem: 'boss_golem', lava: 'boss_lava' };
+const monImg = (type, cls) => `<img${cls ? ` class="${cls}"` : ''} src="${Sprites.url(MON_SPRITE[type])}" alt="" draggable="false">`;
+const emImg = icon => `<img class="em" src="${Sprites.url('em_' + icon)}" alt="" draggable="false">`;
+function firstStageOf(type) {
+  for (const id of STAGE_IDS) {
+    const S = STAGES[id];
+    if (S.roster.some(r => r[0] === type) || (S.boss && S.boss.type === type)) return id;
+  }
+  return '';
+}
 function badgeList(ids) {
   const list = ids.map(id => BADGES.find(b => b.id === id)).filter(Boolean);
   return `<ul class="badges">${list.map(b => {
@@ -2107,8 +2652,8 @@ function badgeList(ids) {
 const RULES = `<ol class="steps">
     <li>몬스터에는 수가 적혀 있어요. 수호대는 자기 수로 나누어떨어지는 몬스터만 공격해요.</li>
     <li>맞을 때마다 몬스터의 수가 수호대의 수로 나누어지고, 1이 되면 사라져요.</li>
-    <li>몬스터를 물리치면 코인이 생겨요. 코인으로 수호대를 부르고 강화해요.</li>
-    <li>몬스터가 성에 닿으면 목숨이 줄어요. 15웨이브를 버티면 방어 성공이에요.</li>
+    <li>몬스터를 물리치면 코인이 생겨요. 코인으로 수호대를 부르고, 강화할 길을 골라요.</li>
+    <li>몬스터가 성에 닿으면 목숨이 줄어요. 마지막 웨이브까지 버티면 방어 성공이에요.</li>
   </ol>`;
 
 /* ===== 첫 화면 ===== */
@@ -2137,15 +2682,24 @@ function signinHTML() {
   <section class="panel"><h2>이렇게 막아요</h2>${RULES}</section>
 </section>`;
 }
-function stageCard(id) {
-  const L = LEVELS[id], v = me.lv[id], map = MAPS[L.map];
+function stageButton(id, next) {
+  const S = STAGES[id], v = stOf(id), open = stageOpen(id);
+  const boss = S.boss ? ' boss' : '';
+  if (!open) return `<li><button type="button" class="sbtn locked${boss}" disabled aria-label="${stageTitle(id)} 잠김, 앞 단계를 깨면 열려요"><span class="sb-id">${id}</span><span class="sb-title">${S.title}</span><span class="sb-lock">${ICON.lock}</span></button></li>`;
+  return `<li><button type="button" class="sbtn${boss}${next ? ' next' : ''}${v.w ? ' done' : ''}" data-act="play" data-stage="${id}" aria-label="${stageTitle(id)}, 별 ${v.stars}개">
+  <span class="sb-id">${id}</span><span class="sb-title">${S.title}</span>${starsHTML(v.stars)}</button></li>`;
+}
+function mapCard(lv) {
+  const L = LEVELS[lv], map = MAPS[L.map];
+  const ids = STAGE_IDS.filter(id => STAGES[id].level === lv);
+  const next = ids.find(id => stageOpen(id) && !stOf(id).w);
+  const stars = ids.reduce((s, id) => s + stOf(id).stars, 0);
   return `<article class="stage s-${map.theme}">
-  <div class="stage-thumb"><canvas data-thumb="${map.id}" aria-hidden="true"></canvas><span class="stage-no">${id}</span></div>
+  <div class="stage-thumb"><canvas data-thumb="${map.id}" aria-hidden="true"></canvas><span class="stage-no">${lv}</span></div>
   <div class="stage-body">
-    <h3>${map.name}<span class="lvl-chip lv${id}">${L.name}</span></h3>
-    <p class="small">${STAGE_BLURB[id]}</p>
-    <div class="stage-meta">${starsHTML(v.stars || 0)}<span class="muted-inline">${v.bestScore == null ? '아직 기록 없음' : `최고 ${fmt(v.bestScore)}점`}</span></div>
-    <button type="button" class="btn primary" data-act="practice" data-level="${id}">출전하기</button>
+    <h3>${map.name}<span class="lvl-chip lv${lv}">${L.name}</span><span class="map-stars">${starsHTML(1, 1)}${stars}/15</span></h3>
+    <p class="small">${MAP_BLURB[lv]}</p>
+    <ol class="stage-list">${ids.map(id => stageButton(id, id === next)).join('')}</ol>
   </div>
 </article>`;
 }
@@ -2153,25 +2707,26 @@ function homeHTML() {
   if (!me) return signinHTML();
   const saved = loadSavedRun();
   const resume = saved ? `<section class="resume">
-<p><b>하던 경기가 있어요.</b> ${stageName(saved.levelId)}(${LEVELS[saved.levelId].name}), 경기 코드 ${formatCode(saved.levelId, saved.seed)}에서 ${saved.wave}웨이브까지 막았어요.</p>
+<p><b>하던 경기가 있어요.</b> ${stageTitle(saved.stageId)}, 경기 코드 ${formatCode(saved.stageId, saved.seed)}에서 ${saved.wave}웨이브까지 막았어요.</p>
 <button type="button" class="btn" data-act="resume">이어서 하기</button>
 </section>` : '';
   return `${heroHTML()}
 <section class="player" aria-label="선수 정보">
   <span class="player-no">${esc(me.sid)}</span>
   <span class="player-name">${esc(me.name)} 선수</span>
-  <span class="player-stats"><span>경기<b>${me.finished}</b></span><span>방어 성공<b>${me.wins}</b></span><span>별<b>${[1, 2, 3].reduce((s, k) => s + (me.lv[k].stars || 0), 0)}/9</b></span><span>모은 기록<b>${me.badges.length}/${BADGES.length}</b></span></span>
+  <span class="player-stats"><span>깬 단계<b>${clearedCount()}/15</b></span><span>별<b>${starSum()}/45</b></span><span>모은 기록<b>${me.badges.length}/${BADGES.length}</b></span></span>
   <span class="spacer"></span>
-  <span class="player-actions"><button type="button" class="btn" data-act="records">기록실</button><button type="button" class="text-btn" data-act="logout">선수 바꾸기</button></span>
+  <span class="player-actions"><button type="button" class="btn" data-act="dex">몬스터 도감</button><button type="button" class="btn" data-act="records">기록실</button><button type="button" class="text-btn" data-act="logout">선수 바꾸기</button></span>
 </section>
 ${resume}
-<h2 class="section-title">지도를 골라 출전하세요</h2>
-<section class="stages">${[1, 2, 3].map(stageCard).join('')}</section>
+<h2 class="section-title">지도와 단계를 골라 출전하세요</h2>
+<p class="section-note">앞 단계를 깨면 다음 단계가 열려요. 단계마다 새로운 몬스터가 나오고, 5단계에서는 보스가 기다려요.</p>
+<section class="stages">${[1, 2, 3].map(mapCard).join('')}</section>
 <section class="grid2">
   <div class="panel ticket">
     <h2><label for="codeIn">경기 코드로 도전</label></h2>
-    <p class="muted">선생님이나 친구가 알려 준 코드를 넣으면 모두 같은 몬스터가 같은 순서로 나와요.</p>
-    <div class="inline-row"><input id="codeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="7" placeholder="예: 2-4821"><button type="button" class="btn primary" data-act="join">입장</button></div>
+    <p class="muted">선생님이나 친구가 알려 준 코드를 넣으면 모두 같은 몬스터가 같은 순서로 나와요. 코드로는 잠긴 단계도 할 수 있어요.</p>
+    <div class="inline-row"><input id="codeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="8" placeholder="예: 2-3-4821"><button type="button" class="btn primary" data-act="join">입장</button></div>
     <p class="err" id="joinErr" role="alert"></p>
   </div>
   <section class="panel"><h2>이렇게 막아요</h2>${RULES}</section>
@@ -2181,12 +2736,13 @@ function drawThumbs() {
   document.querySelectorAll('canvas[data-thumb]').forEach(c => { if (c.isConnected) drawMapThumb(c, c.dataset.thumb); });
 }
 
-/* 첫 화면의 예시 판: 미리 세운 수호대가 몬스터를 나누는 모습을 계속 보여 준다 */
-const DEMO_TOWERS = [[3, 2, 2, 2], [4, 3, 3, 1], [6, 5, 5, 1], [7, 2, 7, 3], [9, 3, 2, 1], [10, 2, 3, 2], [1, 5, 5, 1], [12, 3, 7, 1], [6, 2, 2, 1]];
-const DEMO_LIST = [12, 45, 60, 49, 18, 75, 8, 90, 35, 27, 84, 20, 210, 98];
+/* 첫 화면의 예시 판: 미리 세운 수호대가 여러 몬스터를 나누는 모습을 계속 보여 준다 */
+const DEMO_TOWERS = [[3, 2, 2, 2, 1], [4, 3, 3, 1], [6, 5, 5, 3, 1], [7, 2, 7, 3, 0], [9, 3, 2, 1], [10, 2, 3, 2, 0], [1, 5, 5, 1], [12, 3, 7, 1], [6, 2, 2, 1], [9, 5, 3, 2, 1]];
+const DEMO_LIST = [['basic', 12], ['armor', 45, 2], ['fast', 6], ['regen', 60], ['mask', 84], ['basic', 49], ['armor', 90, 3], ['split', 42], ['basic', 75], ['fast', 10], ['grow', 9], ['basic', 210]];
 function demoWave(g) {
-  g.wave = 10;
-  g.waves[10] = { list: DEMO_LIST.map(n => ({ n, boss: false })), gap: 1.15, speed: 1.1 };
+  g.wave = 0;
+  g.W = 99;
+  g.waves[0] = { list: DEMO_LIST.map(([type, n, armor]) => ({ type, n, armor: armor || 0 })), gap: 1.15, speed: 1.1 };
   g.lives = 999;
   startWave(g);
 }
@@ -2194,13 +2750,12 @@ function startDemo() {
   stopDemo();
   const canvas = $('#demoCanvas');
   if (!canvas) return;
-  const g = createGame(2, 0);
-  g.wave = 10;
+  const g = createGame('2-3', 0);
   g.coins = 99999;
-  DEMO_TOWERS.forEach(([c, r, p, lv]) => {
+  DEMO_TOWERS.forEach(([c, r, p, lv, br]) => {
     if (build(g, c, r, p)) return;
     const t = towerAt(g, c, r);
-    while (t.level < lv) upgradeTower(g, t);
+    while (t.level < lv) upgradeTower(g, t, br || 0);
     t.builtAt = -9; t.upAt = -9;
   });
   demoWave(g);
@@ -2253,7 +2808,6 @@ async function doLogin() {
   Net.saveProfile(me);
   store.set(KEY.current, { sid, name });
   lastResult = null;
-  homeLevel = defaultLevel();
   Net.startPresence(me.key, liveData());
   go('home');
 }
@@ -2263,16 +2817,21 @@ function doLogout() {
   me = null;
   lastResult = null;
   store.del(KEY.current);
-  homeLevel = 1;
   go('home');
 }
 
 /* ===== 경기 ===== */
-function startGame(levelId, seed, via, saved) {
-  if (!me) { go('home'); return; }
-  const g = createGame(levelId, seed);
+ICON.book = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5z M13 4h5.5c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5H13z" fill="currentColor"/></svg>';
+function nextStageId(id) {
+  const S = STAGES[id];
+  if (S.no < 5) return S.level + '-' + (S.no + 1);
+  return S.level < 3 ? (S.level + 1) + '-1' : null;
+}
+function startGame(stageId, seed, via, saved) {
+  if (!me || !STAGES[stageId]) { go('home'); return; }
+  const g = createGame(stageId, seed);
   if (saved) applySaved(g, saved);
-  Object.assign(G, { g, via, speed: 1, paused: false, place: null, sel: null, hover: null, ending: false, snap: null, hud: {}, hintText: null });
+  Object.assign(G, { g, via, speed: 1, paused: false, place: null, sel: null, hover: null, ending: false, snap: null, hud: {}, hintText: null, modal: null });
   saveRun();
   go('game');
 }
@@ -2280,54 +2839,79 @@ function startGame(levelId, seed, via, saved) {
 function shopHTML() {
   const g = G.g, L = LEVELS[g.levelId];
   return L.primes.map(p => {
-    const T = TOWERS[p], at = unlockedAt(g.levelId, p), locked = at > g.wave + 1;
-    const poor = !locked && g.coins < T.cost;
-    return `<button type="button" class="guard${poor ? ' poor' : ''}${locked ? ' locked' : ''}" data-act="place" data-p="${p}" style="--c:${T.color}" aria-pressed="${G.place === p}"${locked ? ' disabled' : ''} aria-label="${T.name} ${p}, ${locked ? `${at}웨이브부터` : `${T.cost}코인`}">
+    const T = TOWERS[p], at = unlockedAt(g.stageId, p), locked = at > g.wave + 1, cost = towerCost(g, p);
+    const poor = !locked && g.coins < cost;
+    return `<button type="button" class="guard${poor ? ' poor' : ''}${locked ? ' locked' : ''}" data-act="place" data-p="${p}" style="--c:${T.color}" aria-pressed="${G.place === p}"${locked ? ' disabled' : ''} aria-label="${T.name} ${p}, ${locked ? `${at}웨이브부터` : `${cost}코인`}">
   <span class="g-face">${guardImg(p)}<span class="g-num">${p}</span></span>
   <span class="g-name">${T.name}</span>
-  <span class="g-cost">${locked ? `${ICON.lock}${at}웨이브` : `<span class="ico ico-coin" aria-hidden="true"></span>${T.cost}`}</span>
+  <span class="g-cost">${locked ? `${ICON.lock}${at}웨이브` : `<span class="ico ico-coin" aria-hidden="true"></span><span class="g-price">${cost}</span>`}</span>
 </button>`;
   }).join('');
 }
 function selHTML() {
   const t = G.sel;
   if (!t || !G.g.towers.includes(t)) return '<h2>선택한 수호대</h2><p class="muted small">판 위의 수호대를 누르면 강화하거나 돌려보낼 수 있어요.</p>';
-  const T = TOWERS[t.p], up = t.level < MAX_LEVEL ? upgradeCost(t.p, t.level) : null, refund = Math.floor(t.paid * SELL_RATE);
+  const T = TOWERS[t.p], s = t.s, refund = Math.floor(t.paid * SELL_RATE);
+  const B = t.branch != null ? T.branches[t.branch] : null;
+  let up;
+  if (t.level === 1) {
+    const cost = upgradeCost(t.p, 1);
+    up = `<p class="up-title">강화할 길을 고르세요</p>
+<div class="branches">${T.branches.map((b, i) => `<button type="button" class="branch" data-act="upgrade" data-branch="${i}" data-cost="${cost}"${G.g.coins < cost ? ' disabled' : ''}>${emImg(b.icon)}<span class="br-name">${b.name}</span><span class="br-desc">${b.tiers[0]}</span><span class="br-cost"><span class="ico ico-coin" aria-hidden="true"></span>${cost}</span></button>`).join('')}</div>
+<p class="muted small">한 번 고른 길은 바꿀 수 없어요. 다음 강화에서는 그 길이 더 강해져요.</p>`;
+  } else if (t.level < MAX_LEVEL) {
+    const cost = upgradeCost(t.p, t.level);
+    up = `<p class="up-title">${B.name} 길 다음 단계</p>
+<div class="branches one"><button type="button" class="branch" data-act="upgrade" data-cost="${cost}"${G.g.coins < cost ? ' disabled' : ''}>${emImg(B.icon)}<span class="br-name">${B.name} 2단계</span><span class="br-desc">${B.tiers[1]}</span><span class="br-cost"><span class="ico ico-coin" aria-hidden="true"></span>${cost}</span></button></div>`;
+  } else {
+    up = `<p class="maxed">최고 단계예요. ${B ? `${B.name} 길을 끝까지 올렸어요.` : ''}</p>`;
+  }
+  const extra = [];
+  if (s.targets > 1) extra.push(`한 번에 ${s.targets}마리`);
+  if (s.armor > 1) extra.push(`갑옷 ${s.armor}칸씩`);
+  if (s.power > 1) extra.push(`${t.p}로 ${s.power}번까지 나눔`);
+  if (s.splash) extra.push('둘레 폭발');
+  if (s.slow) extra.push('맞으면 느려짐');
+  if (s.detect) extra.push('그림자 찾기');
   return `<h2>선택한 수호대</h2>
 <div class="sel-card" style="--c:${T.color}">
   <span class="sel-face">${guardImg(t.p)}<span class="g-num">${t.p}</span></span>
   <div class="sel-info">
     <p class="sel-title">${T.title}</p>
     ${starsHTML(t.level, MAX_LEVEL, 'lv-stars')}
-    <p class="small muted">${T.trait}</p>
+    <p class="small muted">${B ? `${B.name}: ${B.tiers[t.level - 2]}` : T.trait}</p>
   </div>
 </div>
 <dl class="stats">
-  <div><dt>공격 간격</dt><dd>${towerInterval(t).toFixed(2)}초</dd></div>
-  <div><dt>사거리</dt><dd>${towerRange(t).toFixed(1)}칸</dd></div>
+  <div><dt>공격 간격</dt><dd>${s.interval.toFixed(2)}초</dd></div>
+  <div><dt>사거리</dt><dd>${s.range.toFixed(1)}칸</dd></div>
   <div><dt>쏜 횟수</dt><dd>${fmt(t.fired)}번</dd></div>
 </dl>
-<div class="actions">
-  ${up != null ? `<button type="button" class="btn up" data-act="upgrade"${G.g.coins < up ? ' disabled' : ''}>강화 <span class="ico ico-coin" aria-hidden="true"></span>${up}</button>` : '<span class="maxed">최고 단계예요</span>'}
-  <button type="button" class="btn" data-act="sell">돌려보내기 +${refund}</button>
-</div>`;
+${extra.length ? `<p class="small sel-extra">${extra.join(', ')}</p>` : ''}
+${up}
+<div class="actions"><button type="button" class="btn" data-act="sell">돌려보내기 +${refund}</button></div>`;
 }
 function previewHTML() {
   const g = G.g;
   if (g.over) return '<p class="muted">경기가 끝났어요.</p>';
   const idx = g.active ? g.wave + 1 : g.wave;
-  if (idx >= WAVES) return '<p class="muted">마지막 웨이브예요. 끝까지 막아 보세요.</p>';
+  if (idx >= g.W) return '<p class="muted">마지막 웨이브예요. 끝까지 막아 보세요.</p>';
   const W = g.waves[idx];
-  const opening = LEVELS[g.levelId].primes.filter(p => idx + 1 > 1 && unlockedAt(g.levelId, p) === idx + 1);
+  const opening = LEVELS[g.levelId].primes.filter(p => idx + 1 > 1 && unlockedAt(g.stageId, p) === idx + 1);
+  const counts = {};
+  W.list.forEach(m => { counts[m.type] = (counts[m.type] || 0) + 1; });
+  const types = MONSTER_ORDER.filter(t => counts[t]);
   return `<p class="pv-title">${idx + 1}웨이브 몬스터 ${W.list.length}마리${W.list.some(m => m.boss) ? ' <span class="boss-tag">보스</span>' : ''}</p>
-${opening.length ? `<p class="pv-new">${opening.map(p => `${TOWERS[p].name}(${p})`).join(', ')} 합류! 이 웨이브부터 부를 수 있어요.</p>` : ''}
-<ul class="chips">${W.list.map(m => `<li class="chip${m.boss ? ' boss' : ''}">${fmt(m.n)}</li>`).join('')}</ul>`;
+${opening.length ? `<p class="pv-new">${opening.map(p => `${TOWERS[p].name}(${p})`).join(', ')} 합류! 이 웨이브 전에 부를 수 있어요.</p>` : ''}
+<ul class="pv-types">${types.map(t => `<li class="${me.seen.includes(t) ? '' : 'fresh'}">${monImg(t, 'mi')}<span>${me.seen.includes(t) ? MONSTERS[t].name : '처음 보는 몬스터'}</span><b>${counts[t]}</b></li>`).join('')}</ul>
+<ul class="chips">${W.list.map(m => `<li class="chip t-${m.type}${m.boss ? ' boss' : ''}">${m.type === 'mask' && maskText(m.n) ? maskText(m.n) : fmt(m.n)}${m.armor ? `<span class="arm" title="갑옷">${m.armor}</span>` : ''}</li>`).join('')}</ul>`;
 }
 function gameHTML() {
-  const g = G.g, L = LEVELS[g.levelId], map = g.map;
+  const g = G.g, map = g.map, S = STAGES[g.stageId];
   return `<div class="game-head">
-  <span class="stage-chip s-${map.theme}">${map.name}</span><span class="lvl-chip lv${g.levelId}">${L.name}</span>
-  <span class="code-chip">경기 코드 <b>${formatCode(g.levelId, g.seed)}</b></span>
+  <span class="stage-chip s-${map.theme}">${g.stageId}</span><span class="stage-name">${S.title}</span>
+  <span class="lvl-chip lv${g.levelId}">${map.name}</span>
+  <span class="code-chip">경기 코드 <b>${formatCode(g.stageId, g.seed)}</b></span>
 </div>
 <div class="play">
   <div class="stage-col">
@@ -2349,6 +2933,7 @@ function gameHTML() {
       <button type="button" class="btn icon" data-act="speed" id="speedBtn" aria-pressed="${G.speed === 2}">${ICON.ff}<span>2배속</span></button>
       <button type="button" class="btn icon" data-act="pause" id="pauseBtn" aria-pressed="${G.paused}">${ICON.pause}<span>${G.paused ? '계속하기' : '일시정지'}</span></button>
       <button type="button" class="btn icon" data-act="sound" id="soundBtn" aria-pressed="${Sound.on}">${Sound.on ? ICON.sound : ICON.mute}<span>소리</span></button>
+      <button type="button" class="btn icon" data-act="dex">${ICON.book}<span>도감</span></button>
       <span class="spacer"></span>
       <button type="button" class="text-btn danger" data-act="giveup">기권하기</button>
     </div>
@@ -2357,7 +2942,7 @@ function gameHTML() {
     <section class="panel shop">
       <h2>수호대 부르기</h2>
       <div class="guards" id="palette">${shopHTML()}</div>
-      <p class="muted small">수호대를 고르고 빈 칸을 누르세요. 숫자 키 2, 3, 5, 7로 고르고 Esc로 멈춰요.</p>
+      <p class="muted small">같은 수호대를 부를수록 값이 올라요. 숫자 키 2, 3, 5, 7로 고르고 Esc로 멈춰요.</p>
     </section>
     <section class="panel" id="selPanel">${selHTML()}</section>
     <section class="panel"><h2>다음 웨이브</h2><div id="preview">${previewHTML()}</div></section>
@@ -2376,21 +2961,26 @@ function hintText() {
   if (!g.towers.length) return G.place ? '밝게 보이는 빈 칸을 누르면 수호대가 서요. 길 가까이에 세우세요.' : '오른쪽에서 토끼(2)를 고른 뒤, 길 옆 빈 칸을 눌러 세워 보세요.';
   if (!g.active && g.wave === 0) return '준비가 되면 1웨이브 시작을 누르세요. 몬스터가 동굴에서 나와요.';
   if (g.active && g.wave === 0) return '수호대는 자기 수로 나누어떨어지는 몬스터만 공격해요. 몬스터의 수가 1이 되면 사라져요!';
-  if (!g.active && g.wave === 1) return '오른쪽 아래의 다음 웨이브 수를 보고 수호대를 더 불러요. 코인은 몬스터를 물리치면 생겨요.';
+  if (!g.active && g.wave === 1) return '세운 수호대를 누르면 강화할 길을 고를 수 있어요. 다음 웨이브의 수도 확인해 보세요.';
   return '';
 }
 function updateHUD() {
   const g = G.g;
   if (!g) return;
-  const vals = { hWave: `${Math.min(WAVES, g.wave + 1)}/${WAVES}`, hLives: String(g.lives), hCoins: fmt(g.coins), hScore: fmt(g.score) };
+  const vals = { hWave: `${Math.min(g.W, g.wave + 1)}/${g.W}`, hLives: String(g.lives), hCoins: fmt(g.coins), hScore: fmt(g.score) };
   for (const k in vals) {
     if (G.hud[k] !== vals[k]) { G.hud[k] = vals[k]; const el = document.getElementById(k); if (el) el.textContent = vals[k]; }
   }
   if (G.hud.coinsRaw !== g.coins) {
     G.hud.coinsRaw = g.coins;
-    document.querySelectorAll('.guard[data-p]').forEach(b => { if (!b.disabled) b.classList.toggle('poor', g.coins < TOWERS[Number(b.dataset.p)].cost); });
-    const up = document.querySelector('[data-act="upgrade"]');
-    if (up && G.sel && G.sel.level < MAX_LEVEL) up.disabled = g.coins < upgradeCost(G.sel.p, G.sel.level);
+    document.querySelectorAll('.guard[data-p]').forEach(b => {
+      if (b.disabled) return;
+      const cost = towerCost(g, Number(b.dataset.p));
+      b.classList.toggle('poor', g.coins < cost);
+      const pr = b.querySelector('.g-price');
+      if (pr && pr.textContent !== String(cost)) pr.textContent = String(cost);
+    });
+    document.querySelectorAll('[data-act="upgrade"][data-cost]').forEach(b => { b.disabled = g.coins < Number(b.dataset.cost); });
   }
   const state = g.over ? 'over' : g.active ? 'active' : 'idle';
   if (G.hud.state !== state || G.hud.waveNo !== g.wave) {
@@ -2418,29 +3008,102 @@ function toast(text) {
   el.textContent = text;
   el.classList.add('on');
   clearTimeout(G.toastTimer);
-  G.toastTimer = setTimeout(() => el.classList.remove('on'), 1900);
+  G.toastTimer = setTimeout(() => el.classList.remove('on'), 2100);
+}
+/* 창 띄우기: 게임을 멈추고 안내나 도감을 보여 준다 */
+function openModal(html, onClose, label) {
+  closeModal(true);
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.id = 'modal';
+  back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-label="${esc(label || '안내')}">${html}</div>`;
+  document.body.appendChild(back);
+  G.modal = { onClose };
+  G.wasPaused = G.paused;
+  G.paused = true;
+  const f = back.querySelector('[data-act="modalClose"]');
+  if (f) f.focus({ preventScroll: true });
+}
+function closeModal(silent) {
+  const el = $('#modal');
+  if (el) el.remove();
+  if (!G.modal) return;
+  const cb = G.modal.onClose;
+  G.modal = null;
+  G.paused = G.wasPaused;
+  if (!silent && cb) cb();
+}
+function introHTML(types) {
+  const boss = types.some(t => MONSTERS[t].boss);
+  return `<h2 class="modal-title">${boss ? '보스가 나타나요!' : '새 몬스터 발견!'}</h2>
+<div class="intro-list">${types.map(t => `<article class="intro-card${MONSTERS[t].boss ? ' boss' : ''}">
+  ${monImg(t, 'intro-img')}
+  <div><h3>${MONSTERS[t].name}${MONSTERS[t].boss ? ' <span class="boss-tag">보스</span>' : ''}</h3><p>${MONSTERS[t].desc}</p><p class="intro-tip">${MONSTERS[t].tip}</p></div>
+</article>`).join('')}</div>
+<p class="muted small">몬스터 도감에 기록했어요.</p>
+<div class="actions"><button type="button" class="btn go" data-act="modalClose">알겠어요, 웨이브 시작!</button></div>`;
+}
+function tryStartWave() {
+  const g = G.g;
+  if (!g || g.active || g.over || G.modal) return;
+  const W = g.waves[g.wave];
+  const fresh = [...new Set(W.list.map(m => m.type))].filter(t => !me.seen.includes(t));
+  if (fresh.length) {
+    fresh.forEach(t => { if (!me.seen.includes(t)) me.seen.push(t); });
+    saveProfile();
+    Sound.play('discover');
+    openModal(introHTML(MONSTER_ORDER.filter(t => fresh.includes(t))), doStartWave, '새 몬스터');
+    return;
+  }
+  doStartWave();
+}
+function doStartWave() {
+  const g = G.g;
+  if (!g || g.active || g.over) return;
+  G.snap = snapshot(g);
+  const W = g.waves[g.wave];
+  startWave(g);
+  const boss = W.list.find(m => m.boss);
+  if (G.board) G.board.showBanner(`${g.wave + 1}웨이브`, '', boss ? `${MONSTERS[boss.type].name}${iGa(MONSTERS[boss.type].name)} 기다려요` : `몬스터 ${W.list.length}마리`);
+  Sound.play('wave');
+  saveRun();
+  renderSide();
+  pushLive();
 }
 function onEngineEvent(e) {
   if (G.board) G.board.event(e);
-  if (e.type === 'fire') Sound.play('shot' + e.tower.p);
-  else if (e.type === 'kill') Sound.play(e.boss ? 'clear' : 'pop');
-  else if (e.type === 'boss') { if (G.board) G.board.showBanner('보스 등장!', 'boss', fmt(e.m.n0)); Sound.play('boss'); }
-  else if (e.type === 'wave') {
-    if (e.wave < WAVES) {
-      Sound.play('clear');
-      if (G.board) G.board.showBanner(`${e.wave}웨이브 성공!`, 'good', `코인 +${e.bonus}`);
-      const opening = LEVELS[G.g.levelId].primes.filter(p => unlockedAt(G.g.levelId, p) === e.wave + 1);
-      if (opening.length) later(() => toast(`${opening.map(p => `${TOWERS[p].name}(${p})`).join(', ')}${iGa(TOWERS[opening[opening.length - 1]].name)} 합류했어요!`), 1500);
-    }
-    G.snap = null;
-    renderSide();
-    saveRun();
-    pushLive();
-  } else if (e.type === 'leak') {
-    Sound.play('leak');
-    bump('#livesPill', 'hurt');
-    toast(`몬스터가 성에 닿았어요. 목숨 -${e.cost}`);
-    pushLive();
+  switch (e.type) {
+    case 'fire': Sound.play('shot' + e.tower.p); break;
+    case 'kill': Sound.play(e.boss ? 'clear' : 'pop'); break;
+    case 'armorhit': Sound.play('clank'); break;
+    case 'armorbreak': Sound.play('shatter'); break;
+    case 'rearm': toast(`${MONSTERS[e.m.type].name}${iGa(MONSTERS[e.m.type].name)} 새 갑옷을 입었어요!`); break;
+    case 'regen': Sound.play('regen'); break;
+    case 'grow': Sound.play('grow'); break;
+    case 'summon': Sound.play('summon'); break;
+    case 'boss': if (G.board) G.board.showBanner('보스 등장!', 'boss', MONSTERS[e.m.type].name); Sound.play('boss'); break;
+    case 'phase':
+      if (G.board) G.board.showBanner(`${MONSTERS[e.m.type].name} ${e.m.phase}단계!`, 'boss', `새로운 수 ${fmt(e.m.n)}`);
+      Sound.play('phase');
+      break;
+    case 'wave':
+      if (e.wave < G.g.W) {
+        Sound.play('clear');
+        if (G.board) G.board.showBanner(`${e.wave}웨이브 성공!`, 'good', `코인 +${e.bonus}`);
+        if (e.joining && e.joining.length) later(() => toast(`${e.joining.map(p => `${TOWERS[p].name}(${p})`).join(', ')}${iGa(TOWERS[e.joining[e.joining.length - 1]].name)} 합류했어요! 환영 코인 +${e.joinBonus}`), 1500);
+      }
+      G.snap = null;
+      renderSide();
+      saveRun();
+      pushLive();
+      break;
+    case 'leak':
+      Sound.play('leak');
+      bump('#livesPill', 'hurt');
+      toast(`몬스터가 성에 닿았어요. 목숨 -${e.cost}`);
+      pushLive();
+      break;
+    default:
   }
 }
 function gameLoop(ts) {
@@ -2483,7 +3146,7 @@ function afterGame() {
 }
 function onBoardClick(cell) {
   const g = G.g;
-  if (!g || !cell || g.over) return;
+  if (!g || !cell || g.over || G.modal) return;
   const t = towerAt(g, cell.c, cell.r);
   if (G.place) {
     if (t) { G.place = null; G.sel = t; Sound.play('click'); renderSide(); return; }
@@ -2499,8 +3162,8 @@ function onBoardClick(cell) {
   renderSide();
 }
 function choosePlace(p) {
-  if (!G.g || G.g.over) return;
-  if (unlockedAt(G.g.levelId, p) > G.g.wave + 1 || !LEVELS[G.g.levelId].primes.includes(p)) return;
+  if (!G.g || G.g.over || G.modal) return;
+  if (unlockedAt(G.g.stageId, p) > G.g.wave + 1 || !LEVELS[G.g.levelId].primes.includes(p)) return;
   G.place = G.place === p ? null : p;
   G.sel = null;
   Sound.play('click');
@@ -2521,7 +3184,6 @@ function onGiveup(btn) {
   g.won = false;
   finishGame(false);
 }
-
 function pickTip() {
   const open = TIPS.filter(t => t.need(me));
   if (!open.length) return '';
@@ -2533,32 +3195,35 @@ function finishGame(won) {
   const g = G.g;
   if (!g || !me) return;
   cancelAnimationFrame(G.raf);
-  const lv = me.lv[g.levelId];
-  const stars = starsFor(won, g.lives, g.levelId);
-  const prevStars = lv.stars || 0;
+  closeModal(true);
+  const st = me.st[g.stageId] || (me.st[g.stageId] = stFresh());
+  const stars = starsFor(won, g.lives, g.livesMax);
+  const prevStars = st.stars || 0;
   me.finished += 1;
-  lv.f += 1;
   me.kills += g.kills;
-  lv.bestWave = Math.max(lv.bestWave, g.wave);
-  lv.stars = Math.max(prevStars, stars);
-  if (lv.bestScore == null || g.score > lv.bestScore) lv.bestScore = g.score;
-  if (won) { me.wins += 1; lv.w += 1; if (G.via === 'code') me.codeWins += 1; }
-  const code = formatCode(g.levelId, g.seed);
-  me.recent.unshift({ t: Date.now(), levelId: g.levelId, code, won, wave: g.wave, lives: g.lives, score: g.score, stars, via: G.via });
+  me.armor += g.armorBroken;
+  st.f += 1;
+  st.bestWave = Math.max(st.bestWave, g.wave);
+  st.stars = Math.max(prevStars, stars);
+  if (st.best == null || g.score > st.best) st.best = g.score;
+  if (won) { me.wins += 1; st.w += 1; if (G.via === 'code') me.codeWins += 1; }
+  const code = formatCode(g.stageId, g.seed);
+  me.recent.unshift({ t: Date.now(), stageId: g.stageId, levelId: g.levelId, code, won, wave: g.wave, waves: g.W, lives: g.lives, score: g.score, stars, via: G.via });
   me.recent = me.recent.slice(0, 20);
   const newly = [];
   const award = id => { if (!me.badges.includes(id)) { me.badges.push(id); newly.push(id); } };
   award('debut');
-  if (me.finished >= 5) award('g5');
+  if (me.finished >= 10) award('g10');
   if (won && G.via === 'code') award('rival');
-  if (won) award('clear' + g.levelId);
+  if (MONSTER_ORDER.every(t => me.seen.includes(t))) award('dex');
+  if (won && STAGES[g.stageId].no === 5) award('clear' + g.levelId);
   if (won && g.leaks === 0) award('perfect');
   if (stars === 3) award('star3');
-  if ([1, 2, 3].every(k => (me.lv[k].stars || 0) >= 3)) award('allstars');
-  if (g.bossKills > 0) award('boss');
-  if (won && g.levelId >= 2 && g.maxTowers <= 20) award('frugal');
-  if (g.upgrades >= 5) award('upgrader');
-  if (me.kills >= 300) award('k300');
+  if (starSum() >= 30) award('stars30');
+  if (me.armor >= 50) award('armor50');
+  if (g.towers.some(t => t.level === MAX_LEVEL)) award('maxed');
+  if (won && STAGES[g.stageId].no >= 4 && g.maxTowers <= 8) award('frugal');
+  if (me.kills >= 500) award('k500');
   if (won && g.lives === 1) award('lastlife');
   if (g.biggest > 100000) award('giant');
   const tip = pickTip();
@@ -2566,11 +3231,12 @@ function finishGame(won) {
   g.towers.forEach(t => { fired[t.p] = (fired[t.p] || 0) + t.fired; });
   store.del(KEY.save(me.key));
   saveProfile();
-  Net.addGame({ key: me.key, sid: me.sid, name: me.name, levelId: g.levelId, code, won, wave: g.wave, lives: g.lives, score: g.score, stars, kills: g.kills, via: G.via, t: Date.now() });
+  Net.addGame({ key: me.key, sid: me.sid, name: me.name, stageId: g.stageId, levelId: g.levelId, code, won, wave: g.wave, waves: g.W, lives: g.lives, score: g.score, stars, kills: g.kills, via: G.via, t: Date.now() });
   Sound.play(won ? 'win' : 'lose');
   lastResult = {
-    levelId: g.levelId, seed: g.seed, won, wave: g.wave, lives: g.lives, score: g.score, kills: g.kills, biggest: g.biggest,
-    leaked: g.leaked.slice(), fired, maxTowers: g.maxTowers, newly, tip, stars, newBest: stars > prevStars,
+    stageId: g.stageId, levelId: g.levelId, seed: g.seed, W: g.W, won, wave: g.wave, lives: g.lives, livesMax: g.livesMax, score: g.score,
+    kills: g.kills, biggest: g.biggest, leaked: g.leaked.slice(), fired, maxTowers: g.maxTowers, armorBroken: g.armorBroken,
+    newly, tip, stars, newBest: stars > prevStars, next: won ? nextStageId(g.stageId) : null,
   };
   G.g = null;
   go('result');
@@ -2578,15 +3244,15 @@ function finishGame(won) {
 
 /* ===== 결과 ===== */
 function resultActions(R) {
-  const again = (lv, label, primary) => `<button type="button" class="btn${primary ? ' primary' : ''}" data-act="again" data-level="${lv}">${label}</button>`;
-  let html;
-  if (R.won && R.levelId < 3) html = again(R.levelId + 1, `다음 지도: ${stageName(R.levelId + 1)}`, true) + again(R.levelId, `${stageName(R.levelId)} 다시`, false);
-  else html = again(R.levelId, `${stageName(R.levelId)} 새 경기`, true);
+  const btn = (id, label, primary) => `<button type="button" class="btn${primary ? ' primary' : ''}" data-act="again" data-stage="${id}">${label}</button>`;
+  let html = '';
+  if (R.next) html += btn(R.next, `다음 단계: ${stageTitle(R.next)}`, true) + btn(R.stageId, `${R.stageId} 다시 하기`, false);
+  else html += btn(R.stageId, R.won ? `${R.stageId} 다시 하기` : `${R.stageId} 다시 도전`, true);
   return `<div class="actions result-actions">${html}<button type="button" class="btn" data-act="records">기록실</button><button type="button" class="btn" data-act="home">처음으로</button></div>`;
 }
 function resultHTML() {
-  const R = lastResult, L = LEVELS[R.levelId], code = formatCode(R.levelId, R.seed), map = MAPS[L.map];
-  const line = R.won ? `15웨이브를 모두 막았어요. 목숨 ${R.lives}개가 남았어요.` : `${R.wave + 1}웨이브에서 성이 무너졌어요.`;
+  const R = lastResult, S = STAGES[R.stageId], L = LEVELS[S.level], code = formatCode(R.stageId, R.seed), map = MAPS[L.map];
+  const line = R.won ? `${R.W}웨이브를 모두 막았어요. 목숨 ${R.lives}개가 남았어요.` : `${R.wave + 1}웨이브에서 성이 무너졌어요.`;
   const lack = {};
   R.leaked.forEach(l => primeList(l.n).forEach(p => { lack[p] = (lack[p] || 0) + 1; }));
   const lackList = Object.keys(lack).map(Number).sort((a, b) => lack[b] - lack[a]);
@@ -2595,9 +3261,11 @@ function resultHTML() {
   const whoText = top2.length === 2
     ? `${nm(top2[0])}(${top2[0]})${hasJong(nm(top2[0])) ? '과' : '와'} ${nm(top2[1])}(${top2[1]})${eulReul(nm(top2[1]))}`
     : top2.length ? `${nm(top2[0])}(${top2[0]})${eulReul(nm(top2[0]))}` : '';
+  const armored = R.leaked.filter(l => l.armor > 0).length;
   const leakedHTML = R.leaked.length ? `<h3>성에 닿은 몬스터 ${R.leaked.length >= 30 ? '30마리 넘게' : R.leaked.length + '마리'}</h3>
-<ul class="leaks">${R.leaked.slice(0, 6).map(l => `<li><b>${fmt(l.n0)}</b><span class="arr" aria-hidden="true">→</span><span>남은 수 ${factorHTML(l.n)}</span></li>`).join('')}</ul>
-<p class="insight">남아 있던 소인수를 모두 세면 ${lackList.map(p => `${p}${josa(p, '이', '가')} ${lack[p]}개`).join(', ')}예요. ${whoText} 더 불렀다면 막을 수 있었을 거예요.</p>`
+<ul class="leaks">${R.leaked.slice(0, 6).map(l => `<li>${MONSTERS[l.type] ? monImg(l.type, 'mi') : ''}<b>${fmt(l.n0)}</b><span class="arr" aria-hidden="true">→</span><span>남은 수 ${factorHTML(l.n)}${l.armor ? `, 갑옷 ${l.armor}` : ''}</span></li>`).join('')}</ul>
+${lackList.length ? `<p class="insight">남아 있던 소인수를 모두 세면 ${lackList.map(p => `${p}${josa(p, '이', '가')} ${lack[p]}개`).join(', ')}예요. ${whoText} 더 불렀다면 막을 수 있었을 거예요.</p>` : ''}
+${armored ? `<p class="insight">갑옷을 다 깨지 못하고 성에 닿은 몬스터가 ${armored}마리 있었어요. 사자의 강타나 용의 화염 길로 강화하면 갑옷을 여러 칸씩 부숴요.</p>` : ''}`
     : '<p class="insight">한 마리도 성에 닿지 않았어요. 완벽한 방어예요!</p>';
   const maxFired = Math.max(1, ...Object.values(R.fired));
   const firedHTML = L.primes.filter(p => R.fired[p]).map(p => `<li><span class="mini-guard" style="--c:${TOWERS[p].color}">${guardImg(p)}</span><span class="fname">${TOWERS[p].name}(${p})</span><span class="fbar"><span style="width:${Math.round(R.fired[p] / maxFired * 100)}%;background:${TOWERS[p].color}"></span></span><b>${fmt(R.fired[p])}번</b></li>`).join('');
@@ -2605,16 +3273,17 @@ function resultHTML() {
   return `<section class="banner result s-${map.theme}${R.won ? ' won' : ''}">
   <div class="result-top">
     <div>
-      <p class="kicker">${map.name}(${L.name})</p>
+      <p class="kicker">${stageTitle(R.stageId)}, ${map.name}</p>
       <h1 class="title">${R.won ? '방어 성공!' : '방어 실패'}</h1>
       <p class="lead">${line}</p>
     </div>
     ${starsHTML(R.stars, 3, 'big-stars')}
   </div>
-  ${R.newBest && R.stars ? '<p class="new-best">이 지도에서 새 별 기록이에요!</p>' : ''}
+  ${R.newBest && R.stars ? '<p class="new-best">이 단계에서 새 별 기록이에요!</p>' : ''}
+  ${R.next && R.won ? `<p class="new-best unlock">${stageTitle(R.next)} 단계가 열렸어요!</p>` : ''}
   <div class="plates">
     <div class="plate"><span class="lbl">경기 코드</span><span class="val">${code}</span></div>
-    <div class="plate"><span class="lbl">막은 웨이브</span><span class="val">${R.wave}/${WAVES}</span></div>
+    <div class="plate"><span class="lbl">막은 웨이브</span><span class="val">${R.wave}/${R.W}</span></div>
     <div class="plate"><span class="lbl">남은 목숨</span><span class="val">${R.lives}</span></div>
     <div class="plate"><span class="lbl">점수</span><span class="val">${fmt(R.score)}</span></div>
   </div>
@@ -2623,7 +3292,7 @@ function resultHTML() {
 <div class="grid2 result-grid">
   <section class="panel">
     <h2>경기 분석</h2>
-    <p>물리친 몬스터 <b>${fmt(R.kills)}마리</b>${R.biggest ? `, 가장 큰 몬스터는 <b>${factorHTML(R.biggest)}</b>` : ''}</p>
+    <p>물리친 몬스터 <b>${fmt(R.kills)}마리</b>, 깨뜨린 갑옷 <b>${fmt(R.armorBroken)}번</b>${R.biggest ? `, 가장 큰 몬스터는 <b>${factorHTML(R.biggest)}</b>` : ''}</p>
     ${leakedHTML}
     ${firedHTML ? `<h3>수호대별로 공격한 횟수</h3><ul class="fired">${firedHTML}</ul>` : ''}
   </section>
@@ -2637,37 +3306,39 @@ function resultHTML() {
 
 /* ===== 기록실 ===== */
 function recordsHTML() {
-  const rows = [1, 2, 3].map(k => {
-    const v = me.lv[k];
-    return `<tr><th scope="row"><span class="stage-chip s-${MAPS[LEVELS[k].map].theme}">${stageName(k)}</span> <span class="lvl-chip lv${k}">${LEVELS[k].name}</span></th><td>${v.f}</td><td>${v.w}</td><td>${starsHTML(v.stars || 0)}</td><td>${v.bestScore == null ? '-' : fmt(v.bestScore)}</td></tr>`;
+  const grid = [1, 2, 3].map(lv => {
+    const map = MAPS[LEVELS[lv].map];
+    const cells = STAGE_IDS.filter(id => STAGES[id].level === lv).map(id => {
+      const v = stOf(id), open = stageOpen(id);
+      return `<li class="rg-cell${v.w ? ' done' : ''}${open ? '' : ' locked'}"><span class="rg-id">${id}</span>${starsHTML(v.stars)}<span class="rg-best">${v.best == null ? (open ? '도전 전' : '잠김') : `${fmt(v.best)}점`}</span></li>`;
+    }).join('');
+    return `<div class="rg-row"><span class="stage-chip s-${map.theme}">${map.name}</span><ol class="rg">${cells}</ol></div>`;
   }).join('');
-  const recent = me.recent.slice(0, 8).map(r => `<li><span class="lvl-chip lv${r.levelId}">${stageName(r.levelId)}</span><span class="rc-code">${esc(r.code)}</span><span class="rc-res ${r.won ? 'win' : 'lose'}">${r.won ? '방어 성공' : `${Number(r.wave) + 1}웨이브에서 실패`}</span>${r.won ? starsHTML(Number(r.stars) || 0) : ''}<span class="muted-inline">${fmt(r.score)}점</span><span class="rc-time">${when(r.t)}</span></li>`).join('');
+  const recent = me.recent.slice(0, 8).map(r => `<li><span class="lvl-chip lv${r.levelId}">${esc(r.stageId)}</span><span class="rc-code">${esc(r.code)}</span><span class="rc-res ${r.won ? 'win' : 'lose'}">${r.won ? '방어 성공' : `${Number(r.wave) + 1}웨이브에서 실패`}</span>${r.won ? starsHTML(Number(r.stars) || 0) : ''}<span class="muted-inline">${fmt(r.score)}점</span><span class="rc-time">${when(r.t)}</span></li>`).join('');
   const groups = BADGE_GROUPS.map(gr => {
     const ids = BADGES.filter(b => b.g === gr.id).map(b => b.id);
     const got = ids.filter(id => me.badges.includes(id)).length;
     return `<div class="badge-group"><h3>${gr.name}<span class="cnt">${got}/${ids.length}</span></h3>${badgeList(ids)}</div>`;
   }).join('');
-  const starSum = [1, 2, 3].reduce((s, k) => s + (me.lv[k].stars || 0), 0);
   return `<section class="banner">
   <div class="rec-head"><span class="player-no">${esc(me.sid)}</span><h1 class="title">${esc(me.name)} 선수의 기록실</h1></div>
   <div class="plates">
     <div class="plate"><span class="lbl">경기</span><span class="val">${me.finished}</span></div>
-    <div class="plate"><span class="lbl">방어 성공</span><span class="val">${me.wins}</span></div>
-    <div class="plate"><span class="lbl">모은 별</span><span class="val">${starSum}/9</span></div>
-    <div class="plate"><span class="lbl">물리친 몬스터</span><span class="val">${fmt(me.kills)}</span></div>
+    <div class="plate"><span class="lbl">깬 단계</span><span class="val">${clearedCount()}/15</span></div>
+    <div class="plate"><span class="lbl">모은 별</span><span class="val">${starSum()}/45</span></div>
+    <div class="plate"><span class="lbl">깨뜨린 갑옷</span><span class="val">${fmt(me.armor)}</span></div>
   </div>
 </section>
+<section class="panel wide-panel"><h2>단계별 기록</h2><div class="rgrid">${grid}</div></section>
 <div class="grid2">
-  <section class="panel">
-    <h2>지도별 기록</h2>
-    <div class="table-wrap"><table class="rec-table">
-      <thead><tr><th scope="col">지도</th><th scope="col">경기</th><th scope="col">성공</th><th scope="col">별</th><th scope="col">최고 점수</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-  </section>
   <section class="panel">
     <h2>최근 경기</h2>
     ${recent ? `<ol class="recent">${recent}</ol>` : '<p class="muted">아직 마친 경기가 없어요. 첫 경기를 시작해 보세요.</p>'}
+  </section>
+  <section class="panel">
+    <h2>몬스터 도감</h2>
+    <p>만난 몬스터 <b>${me.seen.length}/${MONSTER_ORDER.length}</b></p>
+    <button type="button" class="btn" data-act="dex">도감 펼치기</button>
   </section>
 </div>
 <section class="panel wide-panel">
@@ -2677,16 +3348,50 @@ function recordsHTML() {
 </section>
 <div class="actions page-actions"><button type="button" class="btn primary" data-act="home">처음으로</button></div>`;
 }
+/* ===== 몬스터 도감 ===== */
+function dexBody() {
+  const seen = t => !!me && me.seen.includes(t);
+  const mons = MONSTER_ORDER.map(t => {
+    const M = MONSTERS[t], where = firstStageOf(t);
+    if (!seen(t)) return `<article class="dex-card unknown">${monImg(t, 'dex-img')}<div><h3>???</h3><p class="small muted">아직 만나지 못했어요.${where ? ` ${where} 단계에서 처음 나와요.` : ''}</p></div></article>`;
+    return `<article class="dex-card${M.boss ? ' boss' : ''}">${monImg(t, 'dex-img')}<div>
+  <h3>${M.name}${M.boss ? ' <span class="boss-tag">보스</span>' : ''}</h3>
+  <p class="small">${M.desc}</p>
+  <p class="small dex-tip">${M.tip}</p>
+  ${where ? `<p class="dex-where">처음 나오는 곳 ${where}</p>` : ''}
+</div></article>`;
+  }).join('');
+  const guards = [2, 3, 5, 7].map(p => {
+    const T = TOWERS[p];
+    return `<article class="guard-card" style="--c:${T.color}">
+  <div class="gc-head"><span class="sel-face">${guardImg(p)}<span class="g-num">${p}</span></span><div><h3>${T.title}</h3><p class="small muted">${T.trait}</p></div></div>
+  <dl class="stats"><div><dt>처음 값</dt><dd>${T.cost}코인</dd></div><div><dt>공격 간격</dt><dd>${T.interval.toFixed(2)}초</dd></div><div><dt>사거리</dt><dd>${T.range.toFixed(1)}칸</dd></div></dl>
+  <ul class="gc-branches">${T.branches.map(b => `<li>${emImg(b.icon)}<div><b>${b.name}</b><span class="small">1단계: ${b.tiers[0]}</span><span class="small">2단계: ${b.tiers[1]}</span></div></li>`).join('')}</ul>
+</article>`;
+  }).join('');
+  return `<section class="panel wide-panel"><h2>몬스터 <span class="cnt-inline">만난 몬스터 ${me ? me.seen.length : 0}/${MONSTER_ORDER.length}</span></h2><div class="dex-grid">${mons}</div></section>
+<section class="panel wide-panel"><h2>수호대와 강화 길</h2><p class="muted small">첫 강화에서 두 길 중 하나를 고르고, 다음 강화에서 그 길이 더 강해져요.</p><div class="guard-grid">${guards}</div></section>`;
+}
+function dexHTML() {
+  return `<section class="banner"><p class="kicker">수호대 작전 노트</p><h1 class="title">몬스터 도감</h1><p class="lead">경기에서 처음 만난 몬스터는 여기에 기록돼요. 수호대의 강화 길도 미리 살펴볼 수 있어요.</p></section>
+${dexBody()}
+<div class="actions page-actions"><button type="button" class="btn primary" data-act="home">처음으로</button></div>`;
+}
+function openDexModal() {
+  openModal(`<div class="modal-head"><h2 class="modal-title">몬스터 도감</h2><button type="button" class="btn" data-act="modalClose">닫고 계속하기</button></div>${dexBody()}`, null, '몬스터 도감');
+  const m = document.querySelector('.modal');
+  if (m) m.classList.add('wide');
+}
 
 /* ===== 이동 ===== */
 function join() {
   const inp = $('#codeIn'), err = $('#joinErr');
   if (!inp) return;
   const digits = inp.value.replace(/\D/g, '');
-  if (!digits) { err.textContent = '경기 코드를 입력하세요. 예: 2-4821'; inp.focus(); return; }
+  if (!digits) { err.textContent = '경기 코드를 입력하세요. 예: 2-3-4821'; inp.focus(); return; }
   const p = parseCode(inp.value);
-  if (!p) { err.textContent = digits.length !== 5 ? '경기 코드는 숫자 다섯 자리예요. 예: 2-4821' : '경기 코드는 1, 2, 3 중 하나로 시작해요.'; inp.focus(); inp.select(); return; }
-  startGame(p.levelId, p.seed, 'code');
+  if (!p) { err.textContent = digits.length !== 6 ? '경기 코드는 숫자 여섯 자리예요. 예: 2-3-4821' : '앞의 두 숫자는 지도(1~3)와 단계(1~5)예요. 예: 2-3-4821'; inp.focus(); inp.select(); return; }
+  startGame(p.stageId, p.seed, 'code');
 }
 function applyBig() {
   document.documentElement.classList.toggle('big', big);
@@ -2698,20 +3403,22 @@ function render() {
   clearTimers();
   giveupArmed = false;
   stopDemo();
+  closeModal(true);
   if (view !== 'game') cancelAnimationFrame(G.raf);
   if (!me && view !== 'home' && view !== 'teacher') view = 'home';
   if (view === 'game' && !G.g) view = 'home';
   if (view === 'result' && !lastResult) view = 'home';
-  const closed = closedByTeacher() && (view === 'home' || view === 'records');
+  const closed = closedByTeacher() && (view === 'home' || view === 'records' || view === 'dex');
   const html = closed ? closedHTML()
     : view === 'home' ? homeHTML()
     : view === 'game' ? gameHTML()
     : view === 'result' ? resultHTML()
     : view === 'records' ? recordsHTML()
+    : view === 'dex' ? dexHTML()
     : teacherHTML();
   $('#view').innerHTML = html;
   document.body.dataset.screen = closed ? 'closed' : view;
-  document.body.dataset.theme = view === 'game' && G.g ? G.g.map.theme : view === 'result' && lastResult ? MAPS[LEVELS[lastResult.levelId].map].theme : '';
+  document.body.dataset.theme = view === 'game' && G.g ? G.g.map.theme : view === 'result' && lastResult ? mapOf(lastResult.stageId).theme : '';
   const homeBtn = $('#homeBtn');
   homeBtn.hidden = view === 'home';
   homeBtn.textContent = view === 'teacher' ? '학생 화면으로' : '처음으로';
@@ -2739,34 +3446,36 @@ document.addEventListener('click', e => {
     case 'login': doLogin(); break;
     case 'logout': doLogout(); break;
     case 'records': if (me) go('records'); break;
-    case 'practice': { const lv = Number(a.dataset.level) || 1; homeLevel = lv; startGame(lv, randomSeed(), 'practice'); break; }
+    case 'dex': if (view === 'game') openDexModal(); else if (me) go('dex'); break;
+    case 'modalClose': closeModal(); break;
+    case 'play': { const id = a.dataset.stage; if (STAGES[id] && stageOpen(id)) startGame(id, randomSeed(), 'practice'); break; }
     case 'join': join(); break;
-    case 'resume': { const s = loadSavedRun(); if (s) startGame(s.levelId, s.seed, s.via === 'code' ? 'code' : 'practice', s); else render(); break; }
-    case 'again': { const lv = Number(a.dataset.level) || 1; homeLevel = lv; startGame(lv, randomSeed(), 'practice'); break; }
+    case 'resume': { const s = loadSavedRun(); if (s) startGame(s.stageId, s.seed, s.via === 'code' ? 'code' : 'practice', s); else render(); break; }
+    case 'again': { const id = a.dataset.stage; if (STAGES[id]) startGame(id, randomSeed(), 'practice'); break; }
     case 'place': choosePlace(Number(a.dataset.p)); break;
     case 'upgrade':
-      if (G.g && G.sel) {
-        const err = upgradeTower(G.g, G.sel);
+      if (G.g && G.sel && !G.modal) {
+        const t = G.sel;
+        const err = upgradeTower(G.g, t, a.dataset.branch != null ? Number(a.dataset.branch) : undefined);
         if (err === 'coins') { toast('코인이 모자라요.'); Sound.play('no'); }
-        else if (!err) { G.board.sparkle(G.sel.c, G.sel.r); Sound.play('upgrade'); if (G.sel.level === MAX_LEVEL) toast(`${TOWERS[G.sel.p].title}${iGa(TOWERS[G.sel.p].title)} 왕관을 썼어요!`); saveRun(); }
+        else if (!err) {
+          G.board.sparkle(t.c, t.r);
+          Sound.play('upgrade');
+          const B = TOWERS[t.p].branches[t.branch];
+          toast(t.level === MAX_LEVEL ? `${TOWERS[t.p].title}${iGa(TOWERS[t.p].title)} 왕관을 썼어요! ${B.name} 2단계` : `${TOWERS[t.p].name}${iGa(TOWERS[t.p].name)} ${B.name} 길을 골랐어요`);
+          saveRun();
+        }
         renderSide();
       }
       break;
-    case 'sell': if (G.g && G.sel) { G.board.puff(G.sel.c, G.sel.r); sellTower(G.g, G.sel); G.sel = null; Sound.play('sell'); saveRun(); renderSide(); } break;
-    case 'wave':
-      if (G.g && !G.g.active && !G.g.over) {
-        G.snap = snapshot(G.g);
-        const W = G.g.waves[G.g.wave];
-        startWave(G.g);
-        if (G.board) G.board.showBanner(`${G.g.wave + 1}웨이브`, '', W.list.some(m => m.boss) ? '보스가 섞여 있어요' : `몬스터 ${W.list.length}마리`);
-        Sound.play('wave');
-        saveRun();
-        renderSide();
-        pushLive();
-      }
-      break;
+    case 'sell': if (G.g && G.sel && !G.modal) { G.board.puff(G.sel.c, G.sel.r); sellTower(G.g, G.sel); G.sel = null; Sound.play('sell'); saveRun(); renderSide(); } break;
+    case 'wave': tryStartWave(); break;
     case 'speed': G.speed = G.speed === 1 ? 2 : 1; a.setAttribute('aria-pressed', String(G.speed === 2)); break;
-    case 'pause': G.paused = !G.paused; a.setAttribute('aria-pressed', String(G.paused)); a.querySelector('span').textContent = G.paused ? '계속하기' : '일시정지'; { const n = $('#pauseNote'); if (n) n.hidden = !G.paused; } break;
+    case 'pause':
+      if (G.modal) break;
+      G.paused = !G.paused; a.setAttribute('aria-pressed', String(G.paused)); a.querySelector('span').textContent = G.paused ? '계속하기' : '일시정지';
+      { const n = $('#pauseNote'); if (n) n.hidden = !G.paused; }
+      break;
     case 'sound': Sound.set(!Sound.on); store.set(KEY.sound, Sound.on); a.setAttribute('aria-pressed', String(Sound.on)); a.innerHTML = `${Sound.on ? ICON.sound : ICON.mute}<span>소리</span>`; Sound.play('click'); break;
     case 'giveup': onGiveup(a); break;
     default: onTeacherAct(a);
@@ -2783,6 +3492,7 @@ document.addEventListener('keydown', e => {
     else if (id === 'tcodeIn') { e.preventDefault(); showCode(e.target.value); }
     return;
   }
+  if (G.modal) { if (e.key === 'Escape') { e.preventDefault(); closeModal(); } return; }
   if (view !== 'game' || !G.g) return;
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
   if (typing) return;
@@ -2804,7 +3514,7 @@ Sound.set(store.get(KEY.sound, false) === true);
 /* ===== 선생님 화면 ===== */
 const T = {
   tab: 'live', cls: 'all', sort: { col: 'sid', dir: 1 }, open: null,
-  code: '', genLevel: 2, reveal: {}, players: {}, live: {}, games: {},
+  code: '', genMap: 1, genNo: 1, reveal: {}, players: {}, live: {}, games: {},
   err: '', note: '', busy: false, armed: null, armTimer: null,
   unsub: [], codeUnsub: null, tick: null,
 };
@@ -2836,8 +3546,8 @@ function teacherCodes() {
   const a = store.get(KEY.tcodes, []);
   return (Array.isArray(a) ? a : []).filter(x => x && typeof x.code === 'string' && parseCode(x.code));
 }
-function addTeacherCode(levelId) {
-  const code = formatCode(levelId, randomSeed());
+function addTeacherCode(stageId) {
+  const code = formatCode(stageId, randomSeed());
   const list = teacherCodes().filter(x => x.code !== code);
   list.unshift({ code, t: Date.now() });
   store.set(KEY.tcodes, list.slice(0, 20));
@@ -2964,10 +3674,11 @@ function classFilter(groups) {
 }
 
 function liveState(r) {
-  const lv = LEVELS[r.levelId];
+  const S = STAGES[r.stageId];
   const code = r.code ? ` <span class="muted-inline">${esc(r.code)}</span>` : '';
-  if (r.state === 'game' && lv) return `<span class="lvl-chip lv${r.levelId}">${lv.name}</span> ${Number(r.wave) || 0}웨이브, 목숨 ${Number(r.lives) || 0}${code}`;
-  if (r.state === 'result' && lv) return `<span class="lvl-chip lv${r.levelId}">${lv.name}</span> ${r.won ? `<span class="ok">방어 성공 ${fmt(Number(r.score) || 0)}점</span>` : `${(Number(r.wave) || 0) + 1}웨이브에서 무너짐`}${code}`;
+  const chip = S ? `<span class="lvl-chip lv${S.level}">${esc(r.stageId)} ${S.title}</span>` : '';
+  if (r.state === 'game' && S) return `${chip} ${Number(r.wave) || 0}/${S.waves}웨이브, 목숨 ${Number(r.lives) || 0}${code}`;
+  if (r.state === 'result' && S) return `${chip} ${r.won ? `<span class="ok">방어 성공 ${fmt(Number(r.score) || 0)}점</span>` : `${(Number(r.wave) || 0) + 1}웨이브에서 무너짐`}${code}`;
   return { records: '기록실 보는 중', out: '나감' }[r.state] || '처음 화면';
 }
 
@@ -3010,23 +3721,25 @@ function codeTabHTML() {
   const made = codes.length
     ? `<ul class="code-list">${codes.map(c => {
         const p = parseCode(c.code);
-        return `<li><span class="lvl-chip lv${p.levelId}">${LEVELS[p.levelId].name}</span><span class="cl-code">${c.code}</span>
+        return `<li><span class="lvl-chip lv${p.levelId}">${p.stageId} ${STAGES[p.stageId].title}</span><span class="cl-code">${c.code}</span>
   <button type="button" class="btn" data-act="tshow" data-code="${c.code}">결과 보기</button></li>`;
       }).join('')}</ul>`
     : '<p class="muted small">만든 코드는 이 노트북에 남아서 다음에도 볼 수 있어요.</p>';
   return `<div class="t-grid">
   <section class="panel">
     <h2>수업용 코드 만들기</h2>
-    <p class="muted small">난이도를 고르고 코드를 만들어 칠판에 적어 주세요. 같은 코드면 모든 학생에게 같은 몬스터가 같은 순서로 나와요.</p>
-    <div class="seg" role="radiogroup" aria-label="난이도">${[1, 2, 3].map(id =>
-      `<button type="button" role="radio" aria-checked="${T.genLevel === id}" data-act="tgenlv" data-level="${id}">${LEVELS[id].name}</button>`).join('')}</div>
+    <p class="muted small">지도와 단계를 고르고 코드를 만들어 칠판에 적어 주세요. 같은 코드면 모든 학생에게 같은 몬스터가 같은 순서로 나와요. 코드로 들어가면 아직 안 연 단계도 할 수 있어요.</p>
+    <div class="seg" role="radiogroup" aria-label="지도">${[1, 2, 3].map(id =>
+      `<button type="button" role="radio" aria-checked="${T.genMap === id}" data-act="tgenmap" data-map="${id}">${MAPS[LEVELS[id].map].name}</button>`).join('')}</div>
+    <div class="seg gen-stage" role="radiogroup" aria-label="단계">${[1, 2, 3, 4, 5].map(no => { const id = T.genMap + '-' + no;
+      return `<button type="button" role="radio" aria-checked="${T.genNo === no}" data-act="tgenno" data-no="${no}">${id} ${STAGES[id].title}</button>`; }).join('')}</div>
     <div class="actions"><button type="button" class="btn primary" data-act="tgen">새 코드 만들기</button></div>
     ${made}
   </section>
   <section class="panel">
     <h2><label for="tcodeIn">경기 코드 결과 보기</label></h2>
     <p class="muted small">학생들이 알려 준 코드나 직접 만든 코드를 넣으면, 그 코드로 끝낸 경기가 실시간으로 모여요.</p>
-    <div class="inline-row"><input id="tcodeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="7" placeholder="예: 2-4821" value="${esc(T.code)}"><button type="button" class="btn" data-act="tshow">보기</button></div>
+    <div class="inline-row"><input id="tcodeIn" class="code-in" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="8" placeholder="예: 2-3-4821" value="${esc(T.code)}"><button type="button" class="btn" data-act="tshow">보기</button></div>
     <p class="err" id="tcodeErr" role="alert"></p>
   </section>
 </div>
@@ -3038,7 +3751,7 @@ function codeResultsHTML() {
   const p = parseCode(T.code);
   if (!p) return '';
   const all = Object.values(T.games).filter(g => g && g.code === T.code && typeof g.sid === 'string');
-  const W = typeof WAVES === 'number' ? WAVES : 15;
+  const W = STAGES[p.stageId].waves;
   const first = new Map();
   all.slice().sort((a, b) => (Number(a.t) || 0) - (Number(b.t) || 0)).forEach(g => {
     const k = g.key || keyOf(g.sid, g.name || '');
@@ -3059,7 +3772,7 @@ function codeResultsHTML() {
     ? `<ol class="rank">${ranked.map((g, i) => `<li><span class="rk">${i + 1}</span><span class="lv-sid">${esc(g.sid)}</span><span class="lv-name">${esc(g.name || '')}</span><span class="${g.won ? 'ok' : 'muted-inline'}">${g.won ? `방어 성공, 목숨 ${Number(g.lives)}` : `${reached(g)}웨이브에서 무너짐`}</span><span class="lv-score">${fmt(Number(g.score) || 0)}점</span><span class="lv-time">${clock(g.t)}</span></li>`).join('')}</ol>`
     : '<p class="muted">아직 이 코드로 끝낸 경기가 없어요.</p>';
   return `<section class="board t-board">
-  <div class="rec-head"><span class="lvl-chip lv${p.levelId}">${LEVELS[p.levelId].name}</span><h2 class="code-title led">${T.code}</h2></div>
+  <div class="rec-head"><span class="lvl-chip lv${p.levelId}">${p.stageId} ${STAGES[p.stageId].title}</span><h2 class="code-title led">${T.code}</h2></div>
   <div class="plates four">
     <div class="plate"><span class="lbl">참가</span><span class="led val">${rows.length}</span></div>
     <div class="plate"><span class="lbl">방어 성공</span><span class="led val">${wins.length}</span></div>
@@ -3067,7 +3780,7 @@ function codeResultsHTML() {
     <div class="plate"><span class="lbl">최고 점수</span><span class="led val">${best}</span></div>
   </div>
   <p class="hist-cap">몇 웨이브에서 무너졌는지, 끝까지 막았는지</p>
-  <div class="hist hist16" role="img" aria-label="무너진 웨이브별 인원과 방어 성공 인원">${hist}</div>
+  <div class="hist" style="grid-template-columns: repeat(${W + 1}, minmax(0, 1fr))" role="img" aria-label="무너진 웨이브별 인원과 방어 성공 인원">${hist}</div>
 </section>
 <section class="panel t-section">
   <div class="filters"><h2>학생별 결과</h2><span class="spacer"></span>${classFilter(groups)}</div>
@@ -3078,17 +3791,18 @@ function codeResultsHTML() {
 
 const SCOLS = [
   ['sid', '학번', 'l'], ['name', '이름', 'l'], ['finished', '경기'], ['wins', '방어 성공'],
-  ['b1', '입문 최고'], ['b2', '기본 최고'], ['b3', '도전 최고'], ['kills', '물리친 몬스터'], ['badges', '모은 기록'], ['last', '마지막 경기'],
+  ['cleared', '깬 단계'], ['stars', '별'], ['kills', '물리친 몬스터'], ['badges', '모은 기록'], ['last', '마지막 경기'],
 ];
 function studentRows() {
   return Object.values(T.players).filter(p => p && typeof p.sid === 'string').map(p => {
-    const lv = k => (p.lv && p.lv[k]) || {};
-    const best = k => (lv(k).bestScore != null && Number.isFinite(Number(lv(k).bestScore)) ? Number(lv(k).bestScore) : null);
+    const st = p.st && typeof p.st === 'object' ? p.st : {};
     const last = toArr(p.recent).reduce((m, g) => Math.max(m, Number(g && g.t) || 0), 0);
     return {
       key: p.key || keyOf(p.sid, String(p.name || '')), sid: p.sid, name: String(p.name || ''),
       finished: Number(p.finished) || 0, wins: Number(p.wins) || 0, kills: Number(p.kills) || 0,
-      b1: best(1), b2: best(2), b3: best(3), badges: toArr(p.badges).length, last: last || null, raw: p,
+      cleared: STAGE_IDS.filter(id => st[id] && Number(st[id].w) > 0).length,
+      stars: STAGE_IDS.reduce((a, id) => a + Math.min(3, Number(st[id] && st[id].stars) || 0), 0),
+      badges: toArr(p.badges).length, last: last || null, raw: p,
     };
   });
 }
@@ -3107,9 +3821,11 @@ function sortedStudents() {
 function studentDetail(p) {
   const earned = BADGES.filter(b => toArr(p.badges).includes(b.id)).map(b => b.name);
   const rec = toArr(p.recent).slice(0, 8);
+  const st = p.st && typeof p.st === 'object' ? p.st : {};
+  const grid = [1, 2, 3].map(lv => `<p class="small">${MAPS[LEVELS[lv].map].name}: ${STAGE_IDS.filter(id => STAGES[id].level === lv).map(id => `${id} ${st[id] && Number(st[id].w) > 0 ? '★'.repeat(Math.min(3, Number(st[id].stars) || 0)) || '성공' : '-'}`).join(', ')}</p>`).join('');
   return `<div class="detail-grid">
-  <div><h3>모은 기록</h3><p>${earned.length ? earned.map(esc).join(', ') : '아직 없어요'}</p></div>
-  <div><h3>최근 경기</h3>${rec.length ? `<ul class="mini-recent">${rec.map(g => `<li><span class="lvl-chip lv${g.levelId}">${(LEVELS[g.levelId] || {}).name || ''}</span>${esc(g.code || '')} ${g.won ? '<span class="ok">방어 성공</span>' : `${(Number(g.wave) || 0) + 1}웨이브에서 무너짐`} <span class="muted-inline">${fmt(Number(g.score) || 0)}점, ${when(g.t)}</span></li>`).join('')}</ul>` : '<p>아직 없어요</p>'}</div>
+  <div><h3>단계별 별</h3>${grid}<h3>모은 기록</h3><p>${earned.length ? earned.map(esc).join(', ') : '아직 없어요'}</p></div>
+  <div><h3>최근 경기</h3>${rec.length ? `<ul class="mini-recent">${rec.map(g => `<li><span class="lvl-chip lv${g.levelId}">${esc(g.stageId || '')}</span>${esc(g.code || '')} ${g.won ? '<span class="ok">방어 성공</span>' : `${(Number(g.wave) || 0) + 1}웨이브에서 무너짐`} <span class="muted-inline">${fmt(Number(g.score) || 0)}점, ${when(g.t)}</span></li>`).join('')}</ul>` : '<p>아직 없어요</p>'}</div>
 </div>`;
 }
 function studentsTabHTML() {
@@ -3120,7 +3836,7 @@ function studentsTabHTML() {
   const head = SCOLS.map(([k, label, al]) => `<th scope="col" class="${al || ''}" aria-sort="${col === k ? (dir > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-act="tsort" data-col="${k}">${label}${col === k ? (dir > 0 ? ' ▲' : ' ▼') : ''}</button></th>`).join('');
   const body = rows.map(r => {
     const open = T.open === r.key;
-    const cells = [esc(r.sid), esc(r.name), r.finished, r.wins, r.b1 == null ? '-' : fmt(r.b1), r.b2 == null ? '-' : fmt(r.b2), r.b3 == null ? '-' : fmt(r.b3), fmt(r.kills), `${r.badges}/${BADGES.length}`, r.last ? when(r.last) : '-'];
+    const cells = [esc(r.sid), esc(r.name), r.finished, r.wins, `${r.cleared}/15`, `${r.stars}/45`, fmt(r.kills), `${r.badges}/${BADGES.length}`, r.last ? when(r.last) : '-'];
     return `<tr class="row${open ? ' open' : ''}" data-act="trow" data-key="${esc(r.key)}" tabindex="0" aria-expanded="${open}">${cells.map((c, i) => `<td class="${SCOLS[i][2] || ''}">${c}</td>`).join('')}</tr>`
       + (open ? `<tr class="t-detail"><td colspan="${SCOLS.length}">${studentDetail(r.raw)}</td></tr>` : '');
   }).join('');
@@ -3160,10 +3876,10 @@ function showCode(text) {
   const p = parseCode(text || '');
   if (!p) {
     const e = $('#tcodeErr');
-    if (e) e.textContent = '경기 코드는 숫자 다섯 자리예요. 예: 2-4821';
+    if (e) e.textContent = '경기 코드는 숫자 여섯 자리예요. 예: 2-3-4821';
     return;
   }
-  T.code = formatCode(p.levelId, p.seed);
+  T.code = formatCode(p.stageId, p.seed);
   T.tab = 'code';
   render();
   watchCode(T.code);
@@ -3197,11 +3913,12 @@ async function clearEverything() {
 }
 function downloadCSV() {
   const rows = sortedStudents();
-  const head = ['학번', '이름', '경기', '방어 성공', '입문 최고 점수', '기본 최고 점수', '도전 최고 점수', '물리친 몬스터', '모은 기록', '마지막 경기'];
+  const head = ['학번', '이름', '경기', '방어 성공', '깬 단계', '별', '물리친 몬스터', '모은 기록', '마지막 경기', ...STAGE_IDS.map(id => id + ' 별')];
   const cell = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const lines = [head, ...rows.map(r => [
-    r.sid, r.name, r.finished, r.wins, r.b1, r.b2, r.b3, r.kills,
+    r.sid, r.name, r.finished, r.wins, r.cleared, r.stars, r.kills,
     toArr(r.raw.badges).length, r.last ? new Date(r.last).toLocaleString('ko-KR') : '',
+    ...STAGE_IDS.map(id => { const v = r.raw.st && r.raw.st[id]; return v && Number(v.f) ? Math.min(3, Number(v.stars) || 0) : ''; }),
   ])].map(r => r.map(cell).join(','));
   const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const d = new Date();
@@ -3221,8 +3938,9 @@ function onTeacherAct(a) {
       Net.teacherSignOut().catch(() => {}).then(() => { T.players = {}; T.live = {}; T.games = {}; render(); });
       break;
     case 'ttab': T.tab = a.dataset.tab; T.err = ''; T.note = ''; T.armed = null; render(); break;
-    case 'tgenlv': T.genLevel = Number(a.dataset.level); renderTeacherBody(); break;
-    case 'tgen': { const code = addTeacherCode(T.genLevel); showCode(code); break; }
+    case 'tgenmap': T.genMap = Number(a.dataset.map); renderTeacherBody(); break;
+    case 'tgenno': T.genNo = Number(a.dataset.no); renderTeacherBody(); break;
+    case 'tgen': { const code = addTeacherCode(T.genMap + '-' + T.genNo); showCode(code); break; }
     case 'tshow': showCode(a.dataset.code || ($('#tcodeIn') ? $('#tcodeIn').value : '')); break;
     case 'tsort': {
       const c = a.dataset.col;
