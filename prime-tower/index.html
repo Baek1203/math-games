@@ -235,11 +235,20 @@ a.text-btn { display: inline-block; }
   .hpill b { font-size: .95rem; }
   .hpill .ico { width: 1em; height: 1em; }
 }
-.sel-card { display: flex; gap: .8rem; align-items: center; margin: .3rem 0 .5rem; }
+.sel-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: .7rem; align-items: center; margin: .3rem 0 .5rem; }
+.sel-card .sel-info { min-width: 0; order: 1; }
+.sell-btn { order: 2; align-self: start; justify-self: end; display: inline-grid; grid-template-columns: auto auto; align-items: center; column-gap: .3rem; row-gap: 0; padding: .35rem .55rem; border-radius: 12px; border: 2px solid #2b2140; background: #fff; color: #b0213a; font: inherit; font-size: .9rem; line-height: 1.15; cursor: pointer; box-shadow: 0 3px 0 #2b2140; }
+.sell-btn svg { width: 1.1rem; height: 1.1rem; grid-row: span 2; }
+.sell-btn .sell-c { grid-column: 2; font-family: var(--display); color: #2b2140; font-size: .95rem; }
+.sell-btn:hover { background: #ffe9ec; }
+.sell-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2b2140; }
+.sell-btn.armed { background: #d8344c; color: #fff; border-color: #2b2140; animation: nudge .35s ease; }
+.sell-btn.armed .sell-l { font-size: .82rem; }
+@keyframes nudge { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .sel-face { position: relative; flex: none; display: grid; place-items: center; width: 4.4rem; height: 4.4rem; border-radius: 18px; background: color-mix(in srgb, var(--c) 22%, white); border: 3px solid #2b2140; }
 .sel-face img { width: 3.9rem; height: 3.9rem; }
 .sel-title { margin: 0; font-family: var(--display); font-size: 1.3rem; }
-.sel-info p.small { margin: .15rem 0 0; }
+.sel-info p.small { margin: .15rem 0 0; word-break: keep-all; }
 .lv-stars .st { width: 1.15rem; height: 1.15rem; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin: .4rem 0 0; }
 .stats div { background: #f3f1fa; border-radius: 10px; padding: .3rem .4rem; text-align: center; }
@@ -2850,7 +2859,7 @@ function shopHTML() {
 }
 function selHTML() {
   const t = G.sel;
-  if (!t || !G.g.towers.includes(t)) return '<h2>선택한 수호대</h2><p class="muted small">판 위의 수호대를 누르면 강화하거나 돌려보낼 수 있어요.</p>';
+  if (!t || !G.g.towers.includes(t)) return '<h2>선택한 수호대</h2><p class="muted small">판 위의 수호대를 누르면 강화하거나 판에서 내보낼 수 있어요.</p>';
   const T = TOWERS[t.p], s = t.s, refund = Math.floor(t.paid * SELL_RATE);
   const B = t.branch != null ? T.branches[t.branch] : null;
   let up;
@@ -2876,6 +2885,7 @@ function selHTML() {
   return `<h2>선택한 수호대</h2>
 <div class="sel-card" style="--c:${T.color}">
   <span class="sel-face">${guardImg(t.p)}<span class="g-num">${t.p}</span></span>
+  ${sellButton(t, T, refund)}
   <div class="sel-info">
     <p class="sel-title">${T.title}</p>
     ${starsHTML(t.level, MAX_LEVEL, 'lv-stars')}
@@ -2888,8 +2898,13 @@ function selHTML() {
   <div><dt>쏜 횟수</dt><dd>${fmt(t.fired)}번</dd></div>
 </dl>
 ${extra.length ? `<p class="small sel-extra">${extra.join(', ')}</p>` : ''}
-${up}
-<div class="actions"><button type="button" class="btn" data-act="sell">돌려보내기 +${refund}</button></div>`;
+${up}`;
+}
+const EXIT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M10 12h10M16.5 8.5 20 12l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function sellButton(t, T, refund) {
+  const armed = G.sellArm && G.sellArm.id === t.id;
+  if (armed) return `<button type="button" class="sell-btn armed" data-act="sell" aria-label="한 번 더 누르면 ${T.name}${iGa(T.name)} 판에서 사라지고 코인 ${refund}개를 돌려받아요">${EXIT_ICON}<span class="sell-l">한 번 더 누르면<br>사라져요</span></button>`;
+  return `<button type="button" class="sell-btn" data-act="sell" title="${T.name}${eulReul(T.name)} 판에서 내보내요. 수호대는 사라지고 코인 ${refund}개를 돌려받아요." aria-label="${T.name} 내보내기: 판에서 사라지고 코인 ${refund}개를 돌려받아요">${EXIT_ICON}<span class="sell-l">내보내기</span><span class="sell-c">+${refund}</span></button>`;
 }
 function previewHTML() {
   const g = G.g;
@@ -3468,7 +3483,28 @@ document.addEventListener('click', e => {
         renderSide();
       }
       break;
-    case 'sell': if (G.g && G.sel && !G.modal) { G.board.puff(G.sel.c, G.sel.r); sellTower(G.g, G.sel); G.sel = null; Sound.play('sell'); saveRun(); renderSide(); } break;
+    case 'sell':
+      if (G.g && G.sel && !G.modal) {
+        const t = G.sel;
+        if (!G.sellArm || G.sellArm.id !== t.id) {
+          if (G.sellArm) clearTimeout(G.sellArm.timer);
+          G.sellArm = { id: t.id, timer: setTimeout(() => { G.sellArm = null; if (view === 'game') renderSide(); }, 3000) };
+          Sound.play('click');
+          renderSide();
+          break;
+        }
+        clearTimeout(G.sellArm.timer);
+        G.sellArm = null;
+        const refund = Math.floor(t.paid * SELL_RATE);
+        G.board.puff(t.c, t.r);
+        sellTower(G.g, t);
+        G.sel = null;
+        Sound.play('sell');
+        toast(`${TOWERS[t.p].name}${iGa(TOWERS[t.p].name)} 판을 떠났어요. 코인 +${refund}`);
+        saveRun();
+        renderSide();
+      }
+      break;
     case 'wave': tryStartWave(); break;
     case 'speed': G.speed = G.speed === 1 ? 2 : 1; a.setAttribute('aria-pressed', String(G.speed === 2)); break;
     case 'pause':
