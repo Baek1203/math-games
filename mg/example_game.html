@@ -1,0 +1,121 @@
+<!doctype html>
+<!-- ===== 예시 게임 뼈대: 수학 게임 목록에 게임을 연결하는 가장 작은 본보기 =====
+  이 파일에는 자리표시가 세 곳 있다(이름 @class_board, @mg_progress, @teacher_view). 각 자리에 mg/의 같은 이름 파일 내용을 그대로 넣으면 돌아가는 게임이 된다.
+    @class_board  : mg/class_board.html. 그 안의 __APP__을 게임 폴더 이름으로 바꿔서 넣는다(여기서는 example-game).
+    @mg_progress  : mg/mg_progress.html. 진행 기록이 없는 점수형 게임이면 자리표시째 지운다.
+    @teacher_view : mg/teacher_view.html.
+  조립하는 코드 예는 개발_안내서.md 5장에 있다. -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>예시 게임 | 수학 게임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap">
+<style>
+/* 게임 목록 테마: 하늘색 배경, 잉크색(#2b2140) 굵은 테두리, 흰 카드, 금색 주 단추, 제목은 Black Han Sans, 본문은 Jua */
+:root { --ink: #2b2140; }
+body { margin: 0; min-height: 100vh; font-family: Jua, sans-serif; color: var(--ink); background: linear-gradient(180deg, #7cc6ff 0, #bfe3ff 55%, #e8f5ff 100%); }
+.bar { display: flex; align-items: center; gap: .8rem; padding: 1rem; }
+h1 { margin: 0; font-family: "Black Han Sans", Jua, sans-serif; font-weight: 400; color: #ffd23f; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); font-size: 2rem; }
+.pill, .btn { font: inherit; color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink); padding: .3rem .9rem; cursor: pointer; text-decoration: none; }
+#who { margin-left: auto; }
+.btn { border-radius: 14px; margin-left: .4rem; }
+.btn.primary { background: linear-gradient(#ffd966, #ffc02e); }
+.card { max-width: 40rem; margin: 0 auto; background: #fff; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); padding: 1.2rem 1.4rem; }
+.stages { list-style: none; padding: 0; display: grid; gap: .6rem; }
+.stages li { display: flex; align-items: center; gap: .4rem; }
+.stages li.locked { opacity: .45; }
+.stars { color: #e0a800; letter-spacing: .1em; }
+.mg-no { display: inline-block; padding: 0 .5rem; margin-right: .3rem; border-radius: 999px; background: var(--ink); color: #ffd23f; }
+.mg-no.mg-test { background: #d8344c; color: #fff; }
+</style>
+<script src="../firebase-config.js"></script>
+<!--@class_board--><!--@mg_progress--><script>
+/* 선생님 화면 표 모양 (teacher_view.html보다 먼저 있어야 해요) */
+window.MG_TEACHER_CONF = { title: '예시 게임', progress: {
+  cols: [{ k: 'level', label: '열린 단계', num: true, max: 6, bar: true, def: 1 }, { k: 'clears', label: '깬 단계', num: true }, { k: 'stars', label: '별', num: true }, { k: 'ach', label: '도전과제', num: true }],
+  stats: [{ k: 'clears', label: '평균 깬 단계' }, { k: 'stars', label: '평균 별' }],
+  playCols: [{ k: 'stage', label: '단계' }, { k: 'result', label: '결과', map: { clear: '깸', fail: '실패' } }, { k: 'stars', label: '별', num: true }],
+  worst: true } };
+</script>
+</head>
+<body>
+<header class="bar">
+  <a class="pill" href="../" id="backBtn">← 게임 목록</a>
+  <h1>예시 게임</h1>
+  <button type="button" class="pill" id="who" title="두 번 누르면 선수를 바꿔요"></button>
+</header>
+<main class="card">
+  <p id="msg">기록을 불러오고 있어요.</p>
+  <ol class="stages" id="stages"></ol>
+</main>
+<script>
+/* ===== 예시 게임: 수학 게임 목록에 게임을 연결하는 가장 작은 본보기 =====
+   1) 선수: 게임 목록에서 등록한 학생(mgStudent)과 교실(mgRoom)을 쓴다. 없으면 게임 목록의 교실 입장으로 보냈다가 돌아온다.
+   2) 진행 기록: 이 노트북(localStorage)에 저장하고, MGProgress로 학급 서버에도 저장한다. 시작할 때 두 기록을 합친다.
+   3) 판 기록: 한 단계가 끝날 때 log()로 남기면 선생님 화면의 '최근 판'에 보인다.
+   4) 테스트 계정(mgStudent().test): 모든 단계를 열고, 서버에는 아무것도 저장하지 않는다(MGProgress가 알아서 건너뛴다).
+   5) 선생님 화면(주소 끝 #teacher): 게임을 시작하지 않는다. 표 모양은 <head>의 MG_TEACHER_CONF로 정한다. */
+const APP = 'example-game';
+const STAGES = 6;
+const sync = MGProgress({ app: APP });
+let KEY = null, P = null;
+const fresh = () => ({ unlocked: 1, clear: {}, stars: {}, ach: {} });
+const $ = id => document.getElementById(id);
+
+async function enter() {
+  if (window.MG_TEACHER) return;
+  const s = mgStudent(), cfg = window.CLASS_FIREBASE_CONFIG;
+  if (!s || (cfg && cfg.databaseURL && !mgRoom())) { location.href = mgLoginURL(); return; }
+  $('who').innerHTML = mgBadgeHTML();
+  KEY = `${APP}|${s.test ? 'test' : s.sid + '|' + s.name}`;   // 테스트 계정은 따로 저장
+  await sync.pullInto(KEY);
+  try { P = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { P = fresh(); }
+  $('msg').textContent = s.test ? '테스트 계정: 모든 단계가 열려 있고 기록은 남지 않아요.' : '단계를 깨면 다음 단계가 열려요.';
+  draw();
+}
+function summary() {   // 선생님 화면의 학생별 표 (MG_TEACHER_CONF.progress.cols의 k와 같은 이름)
+  return { level: P.unlocked, clears: Object.keys(P.clear).length, stars: Object.values(P.stars).reduce((a, b) => a + b, 0), ach: Object.keys(P.ach).length };
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) { /* 저장 공간이 없으면 건너뛴다 */ }
+  sync.push(P, summary());
+}
+const isOpen = n => mgStudent().test || n <= P.unlocked;
+function finish(n, ok, stars) {
+  if (ok) {
+    P.clear[n] = 1;
+    P.stars[n] = Math.max(P.stars[n] || 0, stars);
+    P.unlocked = Math.max(P.unlocked, Math.min(STAGES, n + 1));
+    if (n === 1) P.ach.first = 1;
+    if (Object.keys(P.clear).length === STAGES) P.ach.all = 1;
+    save();
+  }
+  sync.log({ result: ok ? 'clear' : 'fail', stage: `${n}단계`, stars: ok ? stars : 0 });
+  draw();
+}
+function draw() {
+  $('stages').innerHTML = Array.from({ length: STAGES }, (_, i) => i + 1).map(n => isOpen(n)
+    ? `<li><b>${n}단계</b> <span class="stars">${'★'.repeat(P.stars[n] || 0)}${'☆'.repeat(3 - (P.stars[n] || 0))}</span>
+        <button type="button" class="btn primary" data-n="${n}" data-ok="1">깨기</button><button type="button" class="btn" data-n="${n}" data-ok="0">실패</button></li>`
+    : `<li class="locked"><b>${n}단계</b> 잠겨 있어요</li>`).join('');
+}
+$('stages').addEventListener('click', e => {
+  const b = e.target.closest('button[data-n]');
+  if (b) finish(Number(b.dataset.n), b.dataset.ok === '1', 3);
+});
+/* 선수 바꾸기: 두 번 눌러야 게임 목록으로 간다 (실수로 누르지 않게) */
+let armed = null;
+$('who').addEventListener('click', () => {
+  if (armed) { sync.flush(); location.href = mgLoginURL(); return; }
+  $('who').textContent = '한 번 더 누르면 선수를 바꿔요';
+  armed = setTimeout(() => { armed = null; $('who').innerHTML = mgBadgeHTML(); }, 3000);
+});
+enter();
+</script>
+<!--@teacher_view-->
+<script src="../gate.js"></script>
+</body>
+</html>

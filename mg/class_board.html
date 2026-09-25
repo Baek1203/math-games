@@ -1,0 +1,199 @@
+<script data-app="__APP__">
+/* ===== 학급 서버 랭킹 =====
+   수학 게임 목록과 같은 학급 서버(firebase-config.js의 Realtime Database)를 써요.
+   선수 이름은 게임 목록에서 등록한 학번과 이름을 그대로 가져와요.
+   랭킹은 세 가지예요. 학급: 우리 교실, 학교: 우리 학교의 모든 교실, 전체: 모든 학교(이름 가운데를 가려요).
+   기록 위치: r/교실열쇠/apps/게임폴더/(board, plays, players), sb/학교열쇠/게임폴더, gb/게임폴더
+   선생님 테스트 계정은 기록을 서버에 남기지 않아요. 주소 끝에 #teacher가 붙으면 선생님 화면이 게임을 덮어요. */
+(function () {
+  var APP = document.currentScript.getAttribute('data-app');
+  var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  var KEY = 'mathgames.student';
+  var TEACHER = location.hash === '#teacher';
+  window.MG_TEACHER = TEACHER;
+  window.MG_APP = APP;
+  function me() {
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      var name = s && typeof s.name === 'string' ? s.name.replace(/\s+/g, '') : '';
+      return s && typeof s.sid === 'string' && /^\d{4,6}$/.test(s.sid) && name ? { sid: s.sid, name: name, test: s.test === true } : null;
+    } catch (e) { return null; }
+  }
+  window.mgStudent = me;
+  function needRoom() { return !!(window.CLASS_FIREBASE_CONFIG && window.CLASS_FIREBASE_CONFIG.databaseURL); }
+  function room() {
+    try { var r = JSON.parse(localStorage.getItem('mathgames.room')); return r && typeof r.key === 'string' && /^[A-Za-z0-9]{20,40}$/.test(r.key) ? r : null; }
+    catch (e) { return null; }
+  }
+  window.mgRoom = room;
+  function roomBase() { var r = room(); return r ? 'r/' + r.key + '/apps/' + APP + '/' : null; }
+  function keyOf(sid, name) { return (sid + '_' + name).replace(/[.#$\[\]\/\u0000-\u001f\u007f]/g, '_'); }
+  window.mgKeyOf = keyOf;
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function mask(n) { n = String(n || ''); if (n.length <= 1) return n; if (n.length === 2) return n[0] + '*'; return n[0] + new Array(n.length - 1).join('*') + n[n.length - 1]; }
+  function load(src) {
+    return new Promise(function (ok, no) {
+      var s = document.createElement('script');
+      s.src = src; s.async = false;
+      s.onload = ok; s.onerror = function () { no(new Error('불러오지 못함: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function timeout(p, ms) { return Promise.race([p, new Promise(function (_, no) { setTimeout(function () { no(new Error('시간 초과')); }, ms); })]); }
+  window.mgTimeout = timeout;
+  /* Firebase 준비 (학생은 익명 로그인, 선생님 화면은 로그인하지 않고 기다린다) */
+  var fbPromise = null;
+  function fb() {
+    if (fbPromise) return fbPromise;
+    fbPromise = (async function () {
+      if (window.CLASS_FIREBASE_CONFIG === undefined) await load('../firebase-config.js');
+      var cfg = window.CLASS_FIREBASE_CONFIG;
+      if (!cfg || !cfg.databaseURL) throw new Error('firebase-config.js에 학급 서버 설정이 없어요');
+      if (!window.firebase || !window.firebase.database) {
+        await load(SDK + 'firebase-app-compat.js');
+        await load(SDK + 'firebase-auth-compat.js');
+        await load(SDK + 'firebase-database-compat.js');
+      }
+      var f = window.firebase;
+      if (!(f.apps && f.apps.length)) f.initializeApp(cfg);
+      await timeout(new Promise(function (r) { var off = f.auth().onAuthStateChanged(function () { off(); r(); }); }), 8000).catch(function () {});
+      return f;
+    })();
+    fbPromise.catch(function () { fbPromise = null; });
+    return fbPromise;
+  }
+  window.mgFirebase = fb;
+  var dbPromise = null;
+  function db() {
+    if (dbPromise) return dbPromise;
+    dbPromise = (async function () {
+      var f = await fb();
+      var auth = f.auth();
+      if (!auth.currentUser) await timeout(auth.signInAnonymously(), 12000);
+      return f.database();
+    })();
+    dbPromise.catch(function () { dbPromise = null; });
+    return dbPromise;
+  }
+  window.mgDb = db;
+
+  /* 게임 목록의 선수 등록으로 갔다가 이 게임으로 돌아오는 주소 */
+  window.mgLoginURL = function () { return '../?login=1&next=' + encodeURIComponent(APP + '/'); };
+  window.getPlayerName = function () {
+    if (TEACHER) return '선생님';
+    var s = me();
+    if (!s || (needRoom() && !room())) return '';
+    return s.test ? '테스트 계정' : s.sid + ' ' + s.name;
+  };
+  window.mgBadgeHTML = function () {
+    var s = me();
+    if (!s) return '';
+    return s.test ? '<span class="mg-no mg-test">테스트</span>' : '<span class="mg-no">' + esc(s.sid) + '</span>' + esc(s.name);
+  };
+
+  /* 랭킹 탭: 게임의 weekly/semester/all 탭을 학급/학교/전체로 쓴다 */
+  function roomLabel(r) { return r ? ((r.school || '') + (r.label ? ' ' + r.label : '')).trim() : ''; }
+  window.getWeekId = function () { return ''; };
+  window.getSemesterId = function () { return ''; };
+  window.getWeekLabel = function (id) { return id || '우리 교실'; };
+  window.getSemesterLabel = function (id) { return id || '우리 학교의 모든 교실'; };
+  window.assignRanks = function (rows) {
+    var out = [], rank = 0, prev = null;
+    (rows || []).forEach(function (row, i) {
+      if (prev === null || row.score < prev) rank = i + 1;
+      prev = row.score;
+      out.push({ row: row, rank: rank });
+    });
+    return out;
+  };
+  window.fetchScores = async function (gameId, opt) {
+    opt = opt || {};
+    var scope = opt.scope === 'semester' ? 'school' : opt.scope === 'all' ? 'all' : 'class';
+    if (TEACHER) return { ok: true, rows: [] };
+    try {
+      var d = await db();
+      var r = room();
+      if (!r) return { ok: false, error: '교실을 고르지 않았어요' };
+      var path, label, pick;
+      if (scope === 'class') {
+        path = roomBase() + 'board'; label = roomLabel(r);
+        pick = function (x) { return ((x.sid || '') + ' ' + (x.name || '')).trim(); };
+      } else if (scope === 'school') {
+        if (!r.skey) return { ok: false, error: '이 교실은 학교 랭킹이 없어요' };
+        path = 'sb/' + r.skey + '/' + APP; label = (r.school || '우리 학교') + '의 모든 교실';
+        pick = function (x) { return ((x.sid || '') + ' ' + (x.name || '')).trim() + (x.room ? ' · ' + x.room : ''); };
+      } else {
+        path = 'gb/' + APP; label = null;
+        pick = function (x) { return (x.name || '') + (x.school ? ' · ' + x.school : ''); };
+      }
+      var snap = await timeout(d.ref(path).once('value'), 12000);
+      var v = snap.val() || {};
+      var rows = Object.keys(v).map(function (k) {
+        var x = v[k] || {};
+        return { name: esc(pick(x)), score: Number(x.score) || 0, count: Number(x.count) || 0 };
+      }).sort(function (a, b) { return b.score - a.score; }).slice(0, opt.limit || 500);
+      return { ok: true, rows: rows, periodId: label };
+    } catch (e) {
+      console.warn('[학급 서버] 랭킹을 불러오지 못했어요.', e);
+      return { ok: false, error: String((e && e.message) || e) };
+    }
+  };
+  window.saveScore = async function (gameId, name, score, extra) {
+    var s = me();
+    if (TEACHER) return { ok: false, error: '선생님 화면' };
+    if (!s) return { ok: false, error: '등록한 선수가 없어요' };
+    if (s.test) return { ok: true, test: true };
+    score = Number(score) || 0;
+    try {
+      var d = await db();
+      var r = room();
+      if (!r) return { ok: false, error: '교실을 고르지 않았어요' };
+      var base = roomBase();
+      var key = keyOf(s.sid, s.name), t = Date.now();
+      var log = { key: key, sid: s.sid, name: s.name, score: score, t: t };
+      if (extra && typeof extra === 'object') Object.keys(extra).forEach(function (k) {
+        var x = extra[k];
+        if ((typeof x === 'number' && isFinite(x)) || typeof x === 'string') log[k] = x;
+      });
+      var bump = function (fields) {
+        return function (cur) {
+          cur = cur || {};
+          return Object.assign({}, fields, { score: Math.max(Number(cur.score) || 0, score), count: (Number(cur.count) || 0) + 1, t: t });
+        };
+      };
+      var jobs = [
+        d.ref(base + 'plays').push(log),
+        d.ref(base + 'board/' + key).transaction(bump({ sid: s.sid, name: s.name })),
+        d.ref(base + 'players/' + key).transaction(function (cur) {
+          cur = cur || {};
+          return { sid: s.sid, name: s.name, best: Math.max(Number(cur.best) || 0, score), finished: (Number(cur.finished) || 0) + 1, sum: (Number(cur.sum) || 0) + score, last: t };
+        }),
+        d.ref('gb/' + APP + '/' + keyOf((r.schoolId || 'x') + '_' + r.id, key)).transaction(function (cur) {
+          cur = cur || {};
+          return { name: mask(s.name), school: String(r.school || '').slice(0, 40), score: Math.max(Number(cur.score) || 0, score), t: t };
+        }),
+      ];
+      if (r.skey) jobs.push(d.ref('sb/' + r.skey + '/' + APP + '/' + keyOf(r.id, key)).transaction(bump({ sid: s.sid, name: s.name, room: String(r.label || '').slice(0, 20) })));
+      await timeout(Promise.all(jobs), 15000);
+      return { ok: true };
+    } catch (e) {
+      console.warn('[학급 서버] 점수를 저장하지 못했어요.', e);
+      return { ok: false, error: String((e && e.message) || e) };
+    }
+  };
+
+  /* 이름표를 누르면 게임 목록에서 선수를 바꿨다가 돌아와요 */
+  document.addEventListener('DOMContentLoaded', function () {
+    var badge = document.getElementById('zsbPlayerBadge') || document.getElementById('playerBadge');
+    if (!badge || TEACHER) return;
+    badge.setAttribute('role', 'link');
+    badge.setAttribute('tabindex', '0');
+    badge.title = '눌러서 선수 바꾸기';
+    badge.style.cursor = 'pointer';
+    var go = function () { location.href = window.mgLoginURL(); };
+    badge.addEventListener('click', go);
+    badge.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  window.addEventListener('hashchange', function () { if ((location.hash === '#teacher') !== TEACHER) location.reload(); });
+})();
+</script>

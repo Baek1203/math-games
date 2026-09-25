@@ -1,0 +1,281 @@
+<style id="mg-teacher-style">
+#mgT { position: fixed; inset: 0; z-index: 2147483000; overflow-y: auto; padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem 2.5rem; background: linear-gradient(180deg, #7cc6ff 0, #bfe3ff 55%, #e8f5ff 100%); color: #2b2140; font-family: Jua, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: 16px; line-height: 1.5; }
+#mgT * { box-sizing: border-box; }
+#mgT .w { max-width: 1080px; margin: 0 auto; }
+#mgT .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .6rem; }
+#mgT .pill, #mgT .btn, #mgT select, #mgT .seg button { font: inherit; color: #2b2140; border: 3px solid #2b2140; border-radius: 14px; background: #fff; box-shadow: 0 3px 0 #2b2140; cursor: pointer; text-decoration: none; }
+#mgT .pill { display: inline-block; padding: .3rem .9rem; border-radius: 999px; font-size: .95rem; }
+#mgT .btn { padding: .55rem 1.2rem; font-size: 1.05rem; }
+#mgT .btn.primary { background: linear-gradient(#ffd966, #ffc02e); }
+#mgT .btn:disabled { opacity: .55; cursor: default; }
+#mgT h1 { margin: .2rem 0; font-family: "Black Han Sans", Jua, sans-serif; font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.5rem); color: #ffd23f; -webkit-text-stroke: 1.5px #2b2140; paint-order: stroke fill; text-shadow: 0 4px 0 #2b2140; letter-spacing: .02em; }
+#mgT h2 { margin: 0 0 .6rem; font-family: "Black Han Sans", Jua, sans-serif; font-weight: 400; font-size: 1.35rem; }
+#mgT .sub { margin: 0; color: #3d3556; }
+#mgT .bar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .4rem 0 1rem; }
+#mgT .acct { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: .95rem; }
+#mgT .acct button { font: inherit; background: none; border: 0; color: #2b2140; text-decoration: underline; cursor: pointer; }
+#mgT select { padding: .35rem .7rem; border-radius: 12px; }
+#mgT .card { background: #fff; border: 4px solid #2b2140; border-radius: 22px; box-shadow: 0 7px 0 #2b2140; padding: 1.1rem 1.2rem; margin-bottom: 1.2rem; }
+#mgT .muted { color: #62597a; }
+#mgT .small { font-size: .88rem; }
+#mgT .err { color: #c0203a; }
+#mgT .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .8rem; margin-bottom: 1.2rem; }
+#mgT .stat { background: #2b2140; color: #ffd23f; border: 4px solid #2b2140; border-radius: 18px; padding: .6rem .9rem; box-shadow: 0 5px 0 #1a1428; }
+#mgT .stat span { display: block; color: #d8d2ea; font-size: .9rem; }
+#mgT .stat b { font-family: "Black Han Sans", Jua, sans-serif; font-weight: 400; font-size: 1.9rem; line-height: 1.1; }
+#mgT .seg { display: inline-flex; gap: .3rem; padding: .25rem; border: 3px solid #2b2140; border-radius: 16px; background: #fff; }
+#mgT .seg button { border: 0; box-shadow: none; border-radius: 11px; padding: .35rem .9rem; background: transparent; }
+#mgT .seg button[aria-selected="true"] { background: #2b2140; color: #ffd23f; }
+#mgT .tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .8rem; }
+#mgT .scroll { overflow-x: auto; }
+#mgT table { width: 100%; border-collapse: collapse; font-size: .98rem; }
+#mgT th, #mgT td { padding: .45rem .55rem; text-align: left; border-bottom: 2px dashed #e1dcef; white-space: nowrap; }
+#mgT th { font-size: .88rem; color: #62597a; font-weight: 400; }
+#mgT th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+#mgT td.num, #mgT th.num { text-align: right; font-variant-numeric: tabular-nums; }
+#mgT tr.dim td { color: #9a93ad; }
+#mgT .bar-in { display: inline-block; height: .6rem; border-radius: 99px; background: #ffc02e; border: 2px solid #2b2140; vertical-align: middle; }
+#mgT .note { margin: .6rem 0 0; }
+</style>
+<script>
+/* ===== 선생님 화면 (제로섬 스페이스 미션, 파리 잡기 좌표게임, 접으면 만난다) =====
+   주소 끝에 #teacher를 붙이면 게임 대신 이 화면이 보여요.
+   게임 목록의 수업 관리에서 승인받은 선생님 Google 계정으로 로그인하면, 고른 교실 학생들의 기록을 보여 줘요. */
+(function () {
+  if (!window.MG_TEACHER) return;
+  var APP = window.MG_APP;
+  /* 게임별 표 모양. 새 게임은 이 모듈보다 먼저 window.MG_TEACHER_CONF = {...}를 두면 돼요.
+     점수 게임: { title, unit, extra: [{ k, label, how: 'avg'|'max', pct }], extraPlay: [{ k, label, pct }] }
+       - players/{학생}: { sid, name, best, finished, sum, last }, plays/{판}: { key, sid, name, score, t, ...extra의 k }
+     진행 게임: { title, progress: { cols, stats, playCols, worst } }
+       - cols: 학생 기록(players/{학생})의 칸 [{ k, label, num, max, bar, def }]
+       - stats: 위쪽 카드에 평균을 낼 칸 [{ k, label }]
+       - playCols: 최근 판(plays)의 칸 [{ k, label, num, map: { 값: '보일 글자' } }]
+       - worst: true면 result가 'fail'인 판을 stage별로 세어 '많이 실패한 스테이지'를 보여 줘요 */
+  var BUILTIN = {
+    'zero-sum': { title: '제로섬 스페이스 미션', unit: '에너지', extra: [
+      { k: 'groups', label: '평균 묶음', how: 'avg' }, { k: 'miss', label: '평균 헛손질', how: 'avg' }, { k: 'big', label: '가장 큰 묶음', how: 'max' }],
+      extraPlay: [{ k: 'groups', label: '묶음' }, { k: 'zero', label: '합 0' }, { k: 'ten', label: '합 10' }, { k: 'minus', label: '합 -10' }, { k: 'miss', label: '헛손질' }] },
+    'fly-coords': { title: '파리 잡기 좌표게임', unit: '잡은 파리', extra: [
+      { k: 'accuracy', label: '평균 명중률', how: 'avg', pct: true }, { k: 'bestStreak', label: '최고 연속', how: 'max' }],
+      extraPlay: [{ k: 'accuracy', label: '명중률', pct: true }, { k: 'bestStreak', label: '최고 연속' }] },
+    'fold-meet': { title: '접으면 만난다', progress: {
+      cols: [{ k: 'lap', label: '회차', num: true, def: 1 }, { k: 'lap1', label: '1회차 깬 스테이지', num: true, max: 16, bar: true }, { k: 'clears', label: '모든 회차 깬 스테이지', num: true },
+        { k: 'stars', label: '별', num: true }, { k: 'ach', label: '도전과제', num: true }, { k: 'cur', label: '지금 하는 곳' }],
+      stats: [{ k: 'clears', label: '평균 깬 스테이지' }, { k: 'ach', label: '평균 도전과제' }],
+      playCols: [{ k: 'stage', label: '스테이지' }, { k: 'result', label: '결과', map: { clear: '깸', fail: '실패' } }, { k: 'stars', label: '별', num: true }, { k: 'lost', label: '잃은 종이', num: true }, { k: 'hints', label: '힌트', num: true }],
+      worst: true } }
+  };
+  var CONF = window.MG_TEACHER_CONF || BUILTIN[APP] || { title: APP, unit: '점수', extra: [], extraPlay: [] };
+  CONF.extra = CONF.extra || []; CONF.extraPlay = CONF.extraPlay || [];
+  var PG = CONF.progress || null;
+  var S = { f: null, user: undefined, rooms: null, room: null, players: {}, plays: {}, tab: 'students', sort: 'sid', busy: false, err: '', offs: [] };
+  var root;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function when(t) {
+    if (!t) return '';
+    var d = new Date(t), now = new Date();
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    var same = d.toDateString() === now.toDateString();
+    return (same ? '오늘 ' : (d.getMonth() + 1) + '/' + d.getDate() + ' ') + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  var fmt = function (n, pct) { if (n == null || !isFinite(n)) return '–'; return pct ? Math.round(n) + '%' : (Math.round(n * 10) / 10).toLocaleString('ko-KR'); };
+  function roomName(r) { return r ? ((r.school || '') + (r.label ? ' ' + r.label : '')).trim() : ''; }
+
+  /* ----- 학생별로 모으기 ----- */
+  function rowsScore() {
+    var by = {};
+    Object.keys(S.players).forEach(function (k) { var p = S.players[k] || {}; by[k] = { key: k, sid: p.sid || '', name: p.name || '', n: Number(p.finished) || 0, best: Number(p.best) || 0, sum: Number(p.sum) || 0, last: Number(p.last) || 0, scores: [], ex: {} }; });
+    Object.keys(S.plays).forEach(function (id) {
+      var g = S.plays[id] || {};
+      var r = by[g.key] || (by[g.key] = { key: g.key, sid: g.sid || '', name: g.name || '', n: 0, best: 0, sum: 0, last: 0, scores: [], ex: {} });
+      r.scores.push({ t: Number(g.t) || 0, s: Number(g.score) || 0 });
+      CONF.extra.forEach(function (e) { var v = Number(g[e.k]); if (!isFinite(v)) return; var x = r.ex[e.k] || (r.ex[e.k] = { sum: 0, n: 0, max: null }); x.sum += v; x.n += 1; x.max = x.max == null ? v : Math.max(x.max, v); });
+    });
+    return Object.keys(by).map(function (k) {
+      var r = by[k];
+      r.scores.sort(function (a, b) { return a.t - b.t; });
+      if (!r.n) r.n = r.scores.length;
+      if (!r.best) r.best = r.scores.reduce(function (m, x) { return Math.max(m, x.s); }, 0);
+      if (!r.sum) r.sum = r.scores.reduce(function (m, x) { return m + x.s; }, 0);
+      if (!r.last && r.scores.length) r.last = r.scores[r.scores.length - 1].t;
+      r.avg = r.n ? r.sum / r.n : null;
+      r.recent = r.scores.length ? r.scores[r.scores.length - 1].s : null;
+      return r;
+    });
+  }
+  function rowsProg() {
+    var fails = {};
+    if (PG.worst) Object.keys(S.plays).forEach(function (id) { var g = S.plays[id] || {}; if (g.result !== 'fail') return; var f = fails[g.key] || (fails[g.key] = {}); var st = g.stage || ''; f[st] = (f[st] || 0) + 1; });
+    return Object.keys(S.players).map(function (k) {
+      var p = S.players[k] || {}, f = fails[k] || {}, worst = Object.keys(f).sort(function (a, b) { return f[b] - f[a]; })[0];
+      var r = { key: k, sid: p.sid || '', name: p.name || '', worst: worst ? worst + ' (' + f[worst] + '번)' : '', last: Number(p.t || p.last) || 0 };
+      PG.cols.forEach(function (c) { var v = p[c.k]; r[c.k] = c.num ? (Number(v) || (c.def || 0)) : (v == null ? '' : String(v)); });
+      return r;
+    });
+  }
+  function sorted(rows) {
+    var k = S.sort;
+    return rows.slice().sort(function (a, b) {
+      if (k === 'sid') return String(a.sid).localeCompare(String(b.sid), 'ko', { numeric: true }) || String(a.name).localeCompare(String(b.name), 'ko');
+      return (Number(b[k]) || 0) - (Number(a[k]) || 0);
+    });
+  }
+
+  /* ----- 그리기 ----- */
+  function statsHTML(rows) {
+    var today = new Date().toDateString(), nToday = 0, total = 0, sum = 0;
+    Object.keys(S.plays).forEach(function (id) { var g = S.plays[id] || {}; total++; sum += Number(g.score) || 0; if (new Date(Number(g.t) || 0).toDateString() === today) nToday++; });
+    if (PG) {
+      var avg = function (k) { return rows.length ? rows.reduce(function (m, r) { return m + (Number(r[k]) || 0); }, 0) / rows.length : null; };
+      return '<div class="stats"><div class="stat"><span>참여 학생</span><b>' + rows.length + '명</b></div>' + (PG.stats || []).map(function (c) { return '<div class="stat"><span>' + esc(c.label) + '</span><b>' + fmt(avg(c.k)) + '</b></div>'; }).join('') + '<div class="stat"><span>오늘 도전한 판</span><b>' + nToday + '</b></div></div>';
+    }
+    return '<div class="stats"><div class="stat"><span>참여 학생</span><b>' + rows.length + '명</b></div><div class="stat"><span>전체 판 수</span><b>' + total + '</b></div><div class="stat"><span>평균 ' + esc(CONF.unit) + '</span><b>' + (total ? fmt(sum / total) : '–') + '</b></div><div class="stat"><span>오늘 한 판</span><b>' + nToday + '</b></div></div>';
+  }
+  function sortBtn(k, label, num) { return '<th class="' + (num ? 'num' : '') + '"><button type="button" data-sort="' + k + '" aria-pressed="' + (S.sort === k) + '">' + label + (S.sort === k ? ' ▼' : '') + '</button></th>'; }
+  function studentsHTML(rows) {
+    if (!rows.length) return '<p class="muted">아직 기록이 없어요. 학생들이 게임 목록에서 이 교실로 들어와 게임을 하면 여기에 나타나요.</p>';
+    var list = sorted(rows), head, body;
+    if (PG) {
+      head = '<tr>' + sortBtn('sid', '학번') + '<th>이름</th>' + PG.cols.map(function (c) { return c.num ? sortBtn(c.k, esc(c.label), true) : '<th>' + esc(c.label) + '</th>'; }).join('') + (PG.worst ? '<th>많이 실패한 스테이지</th>' : '') + sortBtn('last', '마지막 활동') + '</tr>';
+      body = list.map(function (r) {
+        return '<tr><td>' + esc(r.sid) + '</td><td>' + esc(r.name) + '</td>' + PG.cols.map(function (c) {
+          if (!c.num) return '<td>' + esc(r[c.k]) + '</td>';
+          return '<td class="num">' + r[c.k] + (c.max ? '/' + c.max : '') + (c.bar && c.max ? ' <span class="bar-in" style="width:' + Math.round(Math.min(1, r[c.k] / c.max) * 60) + 'px"></span>' : '') + '</td>';
+        }).join('') + (PG.worst ? '<td>' + esc(r.worst || '–') + '</td>' : '') + '<td>' + esc(when(r.last)) + '</td></tr>';
+      }).join('');
+    } else {
+      head = '<tr>' + sortBtn('sid', '학번') + '<th>이름</th>' + sortBtn('n', '판 수', true) + sortBtn('best', '최고', true) + sortBtn('avg', '평균', true) + '<th class="num">최근</th>' + CONF.extra.map(function (e) { return '<th class="num">' + esc(e.label) + '</th>'; }).join('') + sortBtn('last', '마지막으로 한 때') + '</tr>';
+      body = list.map(function (r) {
+        return '<tr' + (r.n ? '' : ' class="dim"') + '><td>' + esc(r.sid) + '</td><td>' + esc(r.name) + '</td><td class="num">' + r.n + '</td><td class="num">' + fmt(r.best) + '</td><td class="num">' + fmt(r.avg) + '</td><td class="num">' + fmt(r.recent) + '</td>'
+          + CONF.extra.map(function (e) { var x = r.ex[e.k]; var v = !x ? null : e.how === 'max' ? x.max : x.sum / x.n; return '<td class="num">' + fmt(v, e.pct) + '</td>'; }).join('') + '<td>' + esc(when(r.last)) + '</td></tr>';
+      }).join('');
+    }
+    return '<div class="scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
+  }
+  function playsHTML() {
+    var list = Object.keys(S.plays).map(function (id) { return S.plays[id] || {}; }).sort(function (a, b) { return (Number(b.t) || 0) - (Number(a.t) || 0); }).slice(0, 60);
+    if (!list.length) return '<p class="muted">아직 끝낸 판이 없어요.</p>';
+    var head, body;
+    if (PG) {
+      var pc = PG.playCols || [];
+      head = '<tr><th>때</th><th>학번</th><th>이름</th>' + pc.map(function (c) { return '<th' + (c.num ? ' class="num"' : '') + '>' + esc(c.label) + '</th>'; }).join('') + '</tr>';
+      body = list.map(function (g) { return '<tr><td>' + esc(when(g.t)) + '</td><td>' + esc(g.sid) + '</td><td>' + esc(g.name) + '</td>' + pc.map(function (c) { var v = g[c.k]; if (c.map && v in c.map) v = c.map[v]; return c.num ? '<td class="num">' + (Number(v) || 0) + '</td>' : '<td>' + esc(v == null ? '' : v) + '</td>'; }).join('') + '</tr>'; }).join('');
+    } else {
+      head = '<tr><th>때</th><th>학번</th><th>이름</th><th class="num">' + esc(CONF.unit) + '</th>' + CONF.extraPlay.map(function (e) { return '<th class="num">' + esc(e.label) + '</th>'; }).join('') + '</tr>';
+      body = list.map(function (g) { return '<tr><td>' + esc(when(g.t)) + '</td><td>' + esc(g.sid) + '</td><td>' + esc(g.name) + '</td><td class="num">' + fmt(Number(g.score) || 0) + '</td>' + CONF.extraPlay.map(function (e) { var v = Number(g[e.k]); return '<td class="num">' + (isFinite(v) ? fmt(v, e.pct) : '–') + '</td>'; }).join('') + '</tr>'; }).join('');
+    }
+    return '<div class="scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div><p class="muted small note">가장 최근 60판까지 보여요.</p>';
+  }
+  function draw() {
+    var body;
+    if (S.user === undefined) body = '<div class="card"><p class="muted">학급 서버를 확인하고 있어요.</p></div>';
+    else if (!S.user) body = '<div class="card"><h2>선생님 로그인</h2><p class="muted">게임 목록의 수업 관리에서 승인받은 선생님 Google 계정으로 로그인하면, 내 교실 학생들의 기록을 볼 수 있어요.</p><button type="button" class="btn primary" data-t="signin"' + (S.busy ? ' disabled' : '') + '>' + (S.busy ? '로그인하는 중…' : 'Google 계정으로 로그인') + '</button>' + (S.err ? '<p class="err">' + esc(S.err) + '</p>' : '') + '</div>';
+    else if (S.rooms === null) body = '<div class="card"><p class="muted">내 교실을 찾고 있어요.</p></div>';
+    else if (!S.rooms.length) body = '<div class="card"><h2>아직 만든 교실이 없어요</h2><p class="muted">게임 목록의 수업 관리에서 학교와 교실을 만들면, 그 교실 학생들의 기록이 여기에 보여요.</p><a class="btn primary" href="../#teacher">수업 관리로 가기</a></div>';
+    else {
+      var rows = PG ? rowsProg() : rowsScore();
+      body = (S.err ? '<p class="err">' + esc(S.err) + '</p>' : '') + statsHTML(rows)
+        + '<div class="card"><div class="tools"><div class="seg" role="tablist"><button type="button" role="tab" data-tab="students" aria-selected="' + (S.tab === 'students') + '">학생별 기록</button><button type="button" role="tab" data-tab="plays" aria-selected="' + (S.tab === 'plays') + '">최근 판</button></div>'
+        + (S.tab === 'students' && rows.length ? '<button type="button" class="btn" data-t="csv">CSV로 받기</button>' : '') + '</div>'
+        + (S.tab === 'students' ? studentsHTML(rows) : playsHTML()) + '</div>';
+    }
+    var picker = S.rooms && S.rooms.length ? (S.rooms.length === 1 ? '<span class="pill">' + esc(roomName(S.rooms[0])) + '</span>'
+      : '<label>교실 <select id="mgTRoom">' + S.rooms.map(function (r) { return '<option value="' + esc(r.id) + '"' + (S.room && S.room.id === r.id ? ' selected' : '') + '>' + esc(roomName(r)) + '</option>'; }).join('') + '</select></label>') : '';
+    root.innerHTML = '<div class="w"><div class="top"><a class="pill" href="./">학생 화면으로</a><a class="pill" href="../#teacher">수업 관리</a></div>'
+      + '<h1>선생님 화면</h1><p class="sub">' + esc(CONF.title) + '</p>'
+      + '<div class="bar">' + picker + (S.user ? '<span class="acct">' + esc(S.user.email || '') + '<button type="button" data-t="signout">로그아웃</button></span>' : '') + '</div>'
+      + body + '</div>';
+  }
+  function csv() {
+    var rows = sorted(PG ? rowsProg() : rowsScore()), lines;
+    var q = function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    if (PG) {
+      lines = [['학번', '이름'].concat(PG.cols.map(function (c) { return c.label; })).concat(PG.worst ? ['많이 실패한 스테이지'] : []).concat(['마지막 활동'])]
+        .concat(rows.map(function (r) { return [r.sid, r.name].concat(PG.cols.map(function (c) { return r[c.k]; })).concat(PG.worst ? [r.worst] : []).concat([when(r.last)]); }));
+    } else {
+      lines = [['학번', '이름', '판 수', '최고', '평균', '최근'].concat(CONF.extra.map(function (e) { return e.label; })).concat(['마지막으로 한 때'])]
+        .concat(rows.map(function (r) { return [r.sid, r.name, r.n, r.best, r.avg == null ? '' : Math.round(r.avg * 10) / 10, r.recent == null ? '' : r.recent].concat(CONF.extra.map(function (e) { var x = r.ex[e.k]; return !x ? '' : Math.round((e.how === 'max' ? x.max : x.sum / x.n) * 10) / 10; })).concat([when(r.last)]); }));
+    }
+    var blob = new Blob(['\ufeff' + lines.map(function (l) { return l.map(q).join(','); }).join('\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = CONF.title + ' ' + roomName(S.room) + ' 학생 기록.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+
+  /* ----- 데이터 ----- */
+  function stop() { S.offs.forEach(function (f) { try { f(); } catch (e) { /* 무시 */ } }); S.offs = []; }
+  function watch() {
+    stop();
+    S.players = {}; S.plays = {};
+    if (!S.room) return;
+    var d = S.f.database(), base = 'r/' + S.room.key + '/apps/' + APP + '/';
+    ['players', 'plays'].forEach(function (k) {
+      var ref = d.ref(base + k);
+      var h = ref.on('value', function (snap) { S[k] = snap.val() || {}; S.err = ''; draw(); }, function () { S.err = '이 교실의 기록을 볼 수 없어요. 수업 관리에서 승인받은 선생님 계정인지 확인해 주세요.'; draw(); });
+      S.offs.push(function () { ref.off('value', h); });
+    });
+  }
+  async function loadRooms() {
+    S.rooms = null; draw();
+    try {
+      var snap = await window.mgTimeout(S.f.database().ref('teacherRooms/' + S.user.uid).once('value'), 10000);
+      var v = snap.val() || {};
+      S.rooms = Object.keys(v).map(function (id) { return Object.assign({ id: id }, v[id]); }).filter(function (r) { return r && typeof r.key === 'string'; })
+        .sort(function (a, b) { return roomName(a).localeCompare(roomName(b), 'ko', { numeric: true }); });
+    } catch (e) { S.rooms = []; S.err = '교실 목록을 불러오지 못했어요.'; }
+    var want = null;
+    try { want = localStorage.getItem('mathgames.teacherRoom'); } catch (e) { /* 무시 */ }
+    S.room = S.rooms.find(function (r) { return r.id === want; }) || S.rooms[0] || null;
+    draw(); watch();
+  }
+  async function signIn() {
+    S.busy = true; S.err = ''; draw();
+    try {
+      var a = S.f.auth();
+      await a.setPersistence(S.f.auth.Auth.Persistence.SESSION);
+      await a.signInWithPopup(new S.f.auth.GoogleAuthProvider());
+    } catch (e) {
+      var c = e && e.code;
+      S.err = c === 'auth/popup-blocked' ? '팝업이 막혔어요. 주소창에서 팝업을 허용한 뒤 다시 눌러 주세요.' : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? '로그인 창이 닫혔어요. 다시 눌러 주세요.' : '로그인하지 못했어요. 다시 시도해 주세요.';
+    }
+    S.busy = false; draw();
+  }
+  function start() {
+    root = document.createElement('div');
+    root.id = 'mgT';
+    root.setAttribute('role', 'main');
+    document.body.appendChild(root);
+    document.documentElement.style.overflow = 'hidden';
+    document.title = '선생님 화면 | ' + CONF.title;
+    draw();
+    root.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-t],[data-tab],[data-sort]');
+      if (!t) return;
+      if (t.dataset.tab) { S.tab = t.dataset.tab; draw(); }
+      else if (t.dataset.sort) { S.sort = t.dataset.sort; draw(); }
+      else if (t.dataset.t === 'signin') signIn();
+      else if (t.dataset.t === 'signout') { stop(); S.f.auth().signOut(); }
+      else if (t.dataset.t === 'csv') csv();
+    });
+    root.addEventListener('change', function (e) {
+      if (e.target.id !== 'mgTRoom') return;
+      S.room = (S.rooms || []).find(function (r) { return r.id === e.target.value; }) || null;
+      try { if (S.room) localStorage.setItem('mathgames.teacherRoom', S.room.id); } catch (x) { /* 무시 */ }
+      draw(); watch();
+    });
+    window.mgFirebase().then(function (f) {
+      S.f = f;
+      f.auth().onAuthStateChanged(function (u) {
+        var g = u && !u.isAnonymous ? u : null;
+        if ((g && g.uid) === (S.user && S.user.uid)) return;
+        S.user = g; stop();
+        if (g) loadRooms(); else { S.rooms = null; draw(); }
+      });
+    }, function () { S.user = null; S.err = '학급 서버에 연결되어 있지 않아요. firebase-config.js를 확인해 주세요.'; draw(); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>

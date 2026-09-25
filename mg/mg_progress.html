@@ -1,0 +1,78 @@
+<script>
+/* ===== 학급 서버 진행 기록 (스테이지를 해제해 가는 게임용) =====
+   class_board.html 다음, 게임 스크립트 앞에 넣어요. 게임에서는 이렇게 써요.
+     const sync = MGProgress({ app: 'my-game', merge: (local, remote) => 합친기록 });  // merge를 빼면 기본 규칙
+     await sync.pullInto(저장키);          // 게임을 시작하기 전에: 서버 기록을 이 노트북 기록(localStorage[저장키])과 합쳐 둔다
+     sync.push(진행기록, { 요약칸: 값 });   // 저장할 때마다 (1.2초 모아서 보낸다). 요약칸은 선생님 화면의 학생별 표에 보인다
+     sync.log({ result: 'clear' 또는 'fail', stage: '1-3', ... });  // 한 판(스테이지)이 끝날 때, 선생님 화면의 최근 판
+     sync.live()                            // 서버에 저장하는 상황인지 (테스트 계정·선생님 화면·학급 서버 없음이면 false)
+   기본 합치기 규칙: 숫자는 큰 값, 참/거짓은 참, 객체는 두 쪽을 합치고, 배열은 긴 쪽, 글자는 이 노트북 값.
+     (해제한 단계, 별, 도전과제처럼 늘어나기만 하는 기록에 맞아요. 그렇지 않은 칸이 있으면 merge를 직접 주세요.)
+   서버 위치: r/교실열쇠/apps/{app}/players/{학번_이름} = { sid, name, p: 진행 기록 JSON 글자, t, ...요약칸 }
+             r/교실열쇠/apps/{app}/plays/{자동} = { key, sid, name, t, ...log 값 }
+   진행 기록을 JSON 글자로 저장하는 까닭: Realtime Database는 숫자 키 객체를 배열로 바꾸고 빈 객체를 지워 버려요. */
+window.MGProgress = function (opts) {
+  var APP = opts.app, timer = null, pending = null;
+  function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
+  function deepMax(a, b) {
+    if (a === undefined || a === null) return b;
+    if (b === undefined || b === null) return a;
+    if (typeof a === 'number' && typeof b === 'number') return Math.max(a, b);
+    if (typeof a === 'boolean' && typeof b === 'boolean') return a || b;
+    if (Array.isArray(a) || Array.isArray(b)) return (Array.isArray(a) ? a.length : -1) >= (Array.isArray(b) ? b.length : -1) ? a : b;
+    if (isObj(a) && isObj(b)) {
+      var o = {};
+      Object.keys(a).concat(Object.keys(b)).forEach(function (k) { if (!(k in o)) o[k] = deepMax(a[k], b[k]); });
+      return o;
+    }
+    return a;
+  }
+  var merge = opts.merge || deepMax;
+  function me() { return window.mgStudent ? window.mgStudent() : null; }
+  function base() { var r = window.mgRoom ? window.mgRoom() : null; return r ? 'r/' + r.key + '/apps/' + APP + '/' : null; }
+  function live() {
+    var s = me(), cfg = window.CLASS_FIREBASE_CONFIG;
+    return !!(s && !s.test && !window.MG_TEACHER && cfg && cfg.databaseURL && base());
+  }
+  function pk() { var s = me(); return window.mgKeyOf(s.sid, s.name); }
+  function db() { return window.mgTimeout(window.mgDb(), 8000); }
+  async function pullInto(localKey) {
+    if (!live()) return false;
+    try {
+      var d = await db();
+      var snap = await window.mgTimeout(d.ref(base() + 'players/' + pk()).once('value'), 8000);
+      var v = snap.val();
+      if (!v || typeof v.p !== 'string') return false;
+      var remote = JSON.parse(v.p), local = null;
+      try { local = JSON.parse(localStorage.getItem(localKey) || 'null'); } catch (e) { local = null; }
+      localStorage.setItem(localKey, JSON.stringify(local ? merge(local, remote) : remote));
+      return true;
+    } catch (e) { console.warn('[학급 서버] 진행 기록을 불러오지 못했어요. 이 노트북 기록으로 이어서 해요.', e); return false; }
+  }
+  async function send() {
+    var job = pending; pending = null; timer = null;
+    if (!job || !live()) return;
+    try {
+      var s = me(), d = await db();
+      await window.mgTimeout(d.ref(base() + 'players/' + pk()).set(Object.assign({}, job.sum, { sid: s.sid, name: s.name, p: job.p, t: Date.now() })), 12000);
+    } catch (e) { console.warn('[학급 서버] 진행 기록을 저장하지 못했어요.', e); }
+  }
+  function push(progress, summary) {
+    if (!live()) return;
+    pending = { p: JSON.stringify(progress), sum: summary || {} };
+    clearTimeout(timer);
+    timer = setTimeout(send, 1200);
+  }
+  function flush() { if (pending) { clearTimeout(timer); send(); } }
+  async function log(rec) {
+    if (!live()) return;
+    try {
+      var s = me(), d = await db();
+      await window.mgTimeout(d.ref(base() + 'plays').push(Object.assign({}, rec, { key: pk(), sid: s.sid, name: s.name, t: Date.now() })), 12000);
+    } catch (e) { console.warn('[학급 서버] 판 기록을 저장하지 못했어요.', e); }
+  }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+  return { pullInto: pullInto, push: push, flush: flush, log: log, live: live, merge: merge };
+};
+</script>
