@@ -256,6 +256,14 @@ a.card:hover .art { transform: scale(1.03); }
 .room-form h3 { margin: 0; }
 .btn.danger-soft.armed { background: #d8344c; color: #fff; }
 .room-card .code-form { margin: .8rem 0 1rem; }
+.who-test { padding: .05rem .6rem; border-radius: 999px; background: #d8344c; color: #fff; border: 2px solid var(--edge); font-size: .9rem; }
+.test-box { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin-top: .9rem; padding-top: .9rem; border-top: 2px dashed var(--line); }
+.test-box .btn { padding: .45rem 1rem; font-size: 1rem; }
+.test-box .muted { flex: 1; min-width: 14rem; }
+.school-top { margin-top: .2rem; }
+.school-top .muted { margin: 0; }
+#schoolSuggest:empty { display: none; }
+#schoolSuggest .room-list { max-height: 11rem; }
 </style>
 </head>
 <body>
@@ -278,8 +286,9 @@ const TITLE = '수학 게임';
 const GAMES = [
   { id: 'gcd-baseball', name: '최대공약수 숫자야구', desc: '최대공약수만 단서로 숨은 비밀 수를 찾아내요.', art: 'baseball', color: '#17402c', mark: '60 ▶ 12', tags: ['최대공약수', '추리'], ready: true },
   { id: 'prime-tower', name: '소인수 타워 디펜스', desc: '수를 나누는 수호대로 숫자 몬스터를 막아요.', art: 'tower', color: '#5b3a8c', mark: '2 3 5 7', tags: ['소인수분해', '전략'], ready: true },
-  { id: 'zero-sum', name: '제로섬 스페이스 미션', desc: '합이 0이 되게 숫자 크리스탈을 묶어요.', art: 'space', color: '#1a2140', mark: '0', tags: ['정수', '덧셈'], ready: true, teacher: false },
-  { id: 'fly-coords', name: '파리 잡기 좌표게임', desc: '좌표를 맞춰 칠판 위의 파리를 잡아요.', art: 'fly', color: '#1e332a', mark: '(x, y)', tags: ['좌표', '순서쌍'], ready: true, teacher: false },
+  { id: 'zero-sum', name: '제로섬 스페이스 미션', desc: '합이 0이 되게 숫자 크리스탈을 묶어요.', art: 'space', color: '#1a2140', mark: '0', tags: ['정수', '덧셈'], ready: true },
+  { id: 'fly-coords', name: '파리 잡기 좌표게임', desc: '좌표를 맞춰 칠판 위의 파리를 잡아요.', art: 'fly', color: '#1e332a', mark: '(x, y)', tags: ['좌표', '순서쌍'], ready: true },
+  { id: 'fold-meet', name: '접으면 만난다', desc: '전개도 위에 용사를 놓고 접어서 몬스터를 물리쳐요.', art: 'fold', color: '#2f5c49', mark: '전개도', tags: ['입체도형', '전개도'], ready: true },
   { id: 'coord-battle', name: '좌표 해전', desc: '그래프 무기로 숨은 함대를 찾아요.', art: 'sea', color: '#1c5585', mark: '(3, -2)', tags: ['그래프', '정비례', '반비례'], ready: false },
   { id: 'math-liar', name: '수학 라이어 게임', desc: '모둠 안에서 제시어를 모르는 라이어를 찾아요.', art: 'liar', color: '#a13d2d', mark: '?', tags: ['모둠', '추론'], ready: false },
   { id: 'data-coach', name: '데이터 감독 게임', desc: '기록의 분포를 보고 이어달리기 팀을 꾸려요.', art: 'coach', color: '#2e6b52', mark: '▂▅▇▃', tags: ['자료 정리', '분포'], ready: false },
@@ -523,6 +532,59 @@ ${labels}
 ${num('찰싹!', 272, 58, 16, '#ffd23f')}`, '파리 잡기 좌표게임: 칠판 좌표평면 위의 파리를 조준하고 파리채를 휘두르는 장면');
   }
 
+
+  /* 접으면 만난다: 재단 매트 위 정육면체 전개도가 접혀서, 용사와 박쥐가 한 입체 위에서 만난다 */
+  function fold() {
+    const hero = (x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})">
+<path d="M7 1 L21 -13" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/><path d="M7 1 L21 -13" stroke="#e4ebf5" stroke-width="2.8" stroke-linecap="round"/>
+<path d="M4 -2 l6 6" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><path d="M4 -2 l6 6" stroke="#c9913d" stroke-width="1.8" stroke-linecap="round"/>
+<rect x="-9" y="2" width="18" height="15" rx="6" fill="#3d6fd8" stroke="${INK}" stroke-width="2.4"/>
+<circle cx="0" cy="-6" r="8.5" fill="#ffdcb8" stroke="${INK}" stroke-width="2.4"/>
+<path d="M-9.2 -6.5 a9.2 9.2 0 0 1 18.4 0 z" fill="#cfd6e2" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M0 -15.5 q4 -7 9.5 -5" fill="none" stroke="#e8453c" stroke-width="3.2" stroke-linecap="round"/>
+<circle cx="-3" cy="-3.6" r="1.4" fill="${INK}"/><circle cx="3" cy="-3.6" r="1.4" fill="${INK}"/></g>`;
+    const wing = '<path d="M-5 -1 C-11 -12 -23 -12 -27 -3 C-22 -4 -20 0 -19 3 C-16 0 -13 1 -11 4 C-9 2 -7 2 -5 4 Z" fill="#43307a" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    const bat = (x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})">${wing}<g transform="scale(-1 1)">${wing}</g>
+<path d="M-6 -6 l1.6 -7 l3.6 5.2 M6 -6 l-1.6 -7 l-3.6 5.2" fill="#5b3f96" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+<ellipse cx="0" cy="1" rx="8.2" ry="9" fill="#5b3f96" stroke="${INK}" stroke-width="2.4"/>
+<circle cx="-3.1" cy="-1" r="2.7" fill="#ff5a5f" stroke="${INK}" stroke-width="1.3"/><circle cx="3.1" cy="-1" r="2.7" fill="#ff5a5f" stroke="${INK}" stroke-width="1.3"/>
+<circle cx="-3.8" cy="-1.8" r=".9" fill="#fff"/><circle cx="2.4" cy="-1.8" r=".9" fill="#fff"/>
+<path d="M-2.4 4.6 l1 2.6 l1 -2.6 M.4 4.6 l1 2.6 l1 -2.6" fill="#fff" stroke="${INK}" stroke-width="1"/></g>`;
+    let grid = '';
+    for (let x = 8; x < 320; x += 16) grid += `<path d="M${x} 0 V200" stroke="#fff" stroke-width="${x % 80 === 8 ? 1.2 : .6}" opacity="${x % 80 === 8 ? .16 : .08}"/>`;
+    for (let y = 8; y < 200; y += 16) grid += `<path d="M0 ${y} H320" stroke="#fff" stroke-width="${y % 80 === 8 ? 1.2 : .6}" opacity="${y % 80 === 8 ? .16 : .08}"/>`;
+    const S = 32, X0 = 26, Y0 = 20;
+    const cell = (c, r, t) => `<rect x="${X0 + c * S}" y="${Y0 + r * S}" width="${S}" height="${S}" fill="#fbf6ea"/><text x="${X0 + c * S + S - 5}" y="${Y0 + r * S + S - 5}" font-size="9" text-anchor="end" fill="#a69a82" font-family="Jua, sans-serif">${t}</text>`;
+    const out = `M${X0 + S} ${Y0} h${S} v${S} h0 v${S} v${S} v${S} h-${S} v-${S} v-${S} h-${S} v-${S} h${S} z`;
+    const folds = `M${X0 + S} ${Y0 + S} h${S} M${X0 + S} ${Y0 + 2 * S} h${S} M${X0 + S} ${Y0 + 3 * S} h${S} M${X0 + S} ${Y0 + S} v${S} M${X0 + 2 * S} ${Y0 + S} v${S}`;
+    const fx = X0 + 2 * S, fy = Y0 + S;
+    const C = { x: 244, y: 106, a: 40, h: 23 };
+    const top = `M${C.x} ${C.y - 2 * C.h} L${C.x + C.a} ${C.y - C.h} L${C.x} ${C.y} L${C.x - C.a} ${C.y - C.h} Z`;
+    const left = `M${C.x - C.a} ${C.y - C.h} L${C.x} ${C.y} L${C.x} ${C.y + 2 * C.h} L${C.x - C.a} ${C.y + C.h} Z`;
+    const right = `M${C.x} ${C.y} L${C.x + C.a} ${C.y - C.h} L${C.x + C.a} ${C.y + C.h} L${C.x} ${C.y + 2 * C.h} Z`;
+    return svg('fold', `<rect width="320" height="200" fill="#2f5c49"/>${grid}
+<rect x="3" y="3" width="314" height="194" rx="10" fill="none" stroke="${INK}" stroke-width="4"/>
+<g>${cell(1, 0, '가')}${cell(0, 1, '나')}${cell(1, 1, '다')}${cell(1, 2, '라')}${cell(1, 3, '마')}
+<path d="${out}" fill="none" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<path d="${folds}" fill="none" stroke="${INK}" stroke-width="1.6" stroke-dasharray="4 3" opacity=".5"/>
+<path d="M${fx} ${fy} L${fx + 24} ${fy - 15} L${fx + 24} ${fy + S - 15} L${fx} ${fy + S} Z" fill="#efe3c6" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+<text x="${fx + 15}" y="${fy + S - 12}" font-size="9" text-anchor="middle" fill="#a69a82" font-family="Jua, sans-serif">바</text>
+<path d="M${fx + 6} ${fy - 20} q14 -12 30 -4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M${fx + 30} ${fy - 30} l7 6 l-9 2" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="${X0 + S - 14}" y="${Y0 - 7}" width="44" height="13" rx="2" fill="#f6c945" opacity=".88" transform="rotate(-14 ${X0 + S + 8} ${Y0})"/></g>
+${hero(X0 + S / 2, Y0 + S * 1.5 + 2, .8)}
+${bat(X0 + S * 1.5, Y0 + S * 3.5, .72)}
+<path d="M${X0 + 2 * S - 3} ${Y0 + S * 3.5} l9 0 l-4.5 -5" fill="#e8453c" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M118 150 C142 170 170 168 190 148" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/>
+<path d="M181 145 l11 1 l-3 10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="152" y="186" font-size="14" text-anchor="middle" fill="#fff" font-family="Jua, sans-serif">접으면</text>
+<path d="${left}" fill="#f1e6cc"/><path d="${right}" fill="#e2d2ad"/><path d="${top}" fill="#fffaf0"/>
+<path d="${top} ${left} ${right}" fill="none" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+${hero(C.x - 10, C.y - C.h - 4, .74)}
+${bat(C.x + 22, C.y + C.h + 2, .66)}
+<path d="M${C.x + 14} ${C.y - 14} l3 -8 l3 8 l8 -3 l-5 7 l8 3 l-8 2 l2 8 l-6 -6 l-5 6 l1 -8 l-8 -2 l7 -3 l-5 -7 z" fill="#ffd23f" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+${num('만났다!', 262, 30, 17, '#ffd23f')}`, '접으면 만난다: 재단 매트 위 정육면체 전개도가 접혀서 용사와 박쥐가 입체 위에서 만나는 장면');
+  }
+
   /* 그림이 없는 게임: 색과 글자로 만든 표지 */
   function plain(g) {
     const c = safeColor(g.color);
@@ -559,7 +621,7 @@ ${img('t2', 54, 62, 70, 70)}${img('t3', 116, 58, 72, 72)}${img('slime_meadow', 1
 <text x="116" y="30" font-size="15" fill="#fff" stroke="${INK}" stroke-width="3.5" paint-order="stroke" font-family="'Black Han Sans', sans-serif">z</text>
 <text x="160" y="42" font-size="18" fill="#fff" stroke="${INK}" stroke-width="4" paint-order="stroke" font-family="'Black Han Sans', sans-serif">Z</text></svg>`;
   }
-  const BY_KEY = { tower, baseball, sea, liar, coach, space, fly };
+  const BY_KEY = { tower, baseball, sea, liar, coach, space, fly, fold };
   return { cover: g => (BY_KEY[g.art] ? BY_KEY[g.art]() : plain(g)), hero, waiting };
 })();
 
@@ -568,11 +630,12 @@ const FIREBASE_SDK_BASE = 'https://www.gstatic.com/firebasejs/10.12.2/';
 /* ===== 상태 ===== */
 const H = {
   mode: 'pending', FB: null, auth: null, db: null,
-  /* 학생: 고른 학교 방과 그 방의 게임 설정 */
+  /* 학생: 고른 교실과 그 교실의 게임 설정 */
   room: null, view: null, loaded: false, viewOff: null, dir: null,
   /* 선생님 */
+  sdir: null,
   user: null, prof: undefined, isAdmin: false, teachers: null, teachersOff: null,
-  myRooms: null, cur: null, tview: null, tloaded: false, tviewOff: null, form: null, armed: null,
+  myRooms: null, mySchools: null, school: null, joined: [], cur: null, tview: null, tloaded: false, tviewOff: null, form: null, armed: null,
   err: '', note: '', busy: false, shown: null, check: null,
 };
 const $ = s => document.querySelector(s);
@@ -584,6 +647,7 @@ const gameURL = (g, suffix) => (g.href ? g.href + (H.room && !suffix ? '#mgroom=
 const TS = () => H.FB.database.ServerValue.TIMESTAMP;
 const clip = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
 const roomName = r => (r ? (r.school || '') + (r.label ? ' ' + r.label : '') : '');
+const normName = s => String(s || '').replace(/\s+/g, '').toLowerCase();
 
 function student() {
   try {
@@ -598,7 +662,7 @@ function readRoom() {
   } catch (e) { return null; }
 }
 H.room = readRoom();
-/* 학급 서버를 쓰면 학생은 학교 방을 골라야 게임 기록이 남는다 */
+/* 학급 서버를 쓰면 학생은 교실을 골라야 게임 기록이 남는다 */
 const needRoom = () => H.mode === 'firebase';
 const registered = () => !!student() && (!needRoom() || !!H.room);
 
@@ -668,23 +732,26 @@ function watchStudentRoom() {
 }
 async function loadDirectory() {
   try {
-    const snap = await withTimeout(H.db.ref('rooms').once('value'), 10000);
-    const v = snap.val() || {};
-    H.dir = Object.keys(v).map(id => Object.assign({ id }, v[id])).filter(r => r && r.school)
-      .sort((a, b) => roomName(a).localeCompare(roomName(b), 'ko'));
-  } catch (e) { H.dir = []; }
+    const [ss, rs] = await withTimeout(Promise.all([H.db.ref('schools').once('value'), H.db.ref('rooms').once('value')]), 10000);
+    const sv = ss.val() || {}, rv = rs.val() || {};
+    H.sdir = Object.keys(sv).map(id => Object.assign({ id }, sv[id])).filter(x => x && x.name).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    H.dir = Object.keys(rv).map(id => Object.assign({ id }, rv[id])).filter(r => r && r.school)
+      .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), 'ko', { numeric: true }));
+  } catch (e) { H.sdir = H.sdir || []; H.dir = H.dir || []; }
 }
 async function checkDoor(roomId, code) {
   const snap = await withTimeout(H.db.ref('doors/' + roomId + '/' + code).once('value'), 10000);
   const v = snap.val();
-  return v && typeof v.key === 'string' ? v.key : null;
+  return v && typeof v.key === 'string' ? { key: v.key, skey: typeof v.skey === 'string' ? v.skey : '' } : null;
 }
+/* 게임과 게임 목록이 함께 쓰는 '지금 들어온 교실' */
+const studentRoom = r => ({ id: r.id, key: r.key, skey: r.skey || '', school: r.school || '', schoolId: r.schoolId || '', label: r.label || '', teacher: r.teacher || '' });
 
 /* ----- 선생님 ----- */
 function resetTeacher() {
   if (H.teachersOff) { H.teachersOff(); H.teachersOff = null; }
   if (H.tviewOff) { H.tviewOff(); H.tviewOff = null; }
-  Object.assign(H, { prof: undefined, isAdmin: false, teachers: null, myRooms: null, cur: null, tview: null, tloaded: false, form: null, armed: null, err: '', note: '' });
+  Object.assign(H, { prof: undefined, isAdmin: false, teachers: null, myRooms: null, mySchools: null, school: null, joined: [], cur: null, tview: null, tloaded: false, form: null, armed: null, err: '', note: '' });
 }
 async function loadTeacher() {
   const u = H.user;
@@ -700,19 +767,37 @@ async function loadTeacher() {
   render();
 }
 const canManage = () => H.isAdmin || (H.prof && H.prof.status === 'approved');
-async function loadMyRooms(pick) {
+async function loadMyRooms(pickRoom, pickSchool) {
   const u = H.user;
+  await loadDirectory();
   try {
-    const s = await withTimeout(H.db.ref('teacherRooms/' + u.uid).once('value'), 10000);
-    const v = s.val() || {};
+    const snap = await withTimeout(H.db.ref('teacherRooms/' + u.uid).once('value'), 10000);
+    const v = snap.val() || {};
     H.myRooms = Object.keys(v).map(id => Object.assign({ id }, v[id])).filter(r => r && typeof r.key === 'string')
-      .sort((a, b) => roomName(a).localeCompare(roomName(b), 'ko'));
-  } catch (e) { H.myRooms = []; H.err = '내 학교 방을 불러오지 못했어요.'; }
-  let want = pick;
-  if (!want) { try { want = localStorage.getItem('mathgames.teacherRoom'); } catch (e) { want = null; } }
-  selectRoom((H.myRooms.find(r => r.id === want) || H.myRooms[0] || {}).id || null);
+      .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), 'ko', { numeric: true }));
+  } catch (e) { H.myRooms = []; H.err = '내 교실을 불러오지 못했어요.'; }
+  const ids = new Set(H.myRooms.map(r => r.schoolId).filter(Boolean).concat(H.joined));
+  (H.sdir || []).forEach(x => { if (x.owner === u.uid) ids.add(x.id); });
+  H.mySchools = [...ids].map(id => (H.sdir || []).find(x => x.id === id) || { id, name: (H.myRooms.find(r => r.schoolId === id) || {}).school || '이름 없는 학교' })
+    .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  if (H.myRooms.some(r => !r.schoolId)) H.mySchools.push({ id: '', name: '예전에 만든 교실', legacy: true });
+  let want = pickSchool;
+  if (pickRoom) { const r = H.myRooms.find(x => x.id === pickRoom); if (r) want = r.schoolId || ''; }
+  if (want === undefined || want === null) { try { want = localStorage.getItem('mathgames.teacherSchool'); } catch (e) { want = null; } }
+  const found = H.mySchools.find(x => x.id === want) || H.mySchools[0] || null;
+  selectSchool(found ? found.id : null, pickRoom);
 }
+const curSchool = () => (H.mySchools || []).find(x => x.id === H.school) || null;
+const schoolRooms = () => (H.myRooms || []).filter(r => (r.schoolId || '') === (H.school || ''));
 const curRoom = () => (H.myRooms || []).find(r => r.id === H.cur) || null;
+function selectSchool(id, pickRoom) {
+  H.school = id;
+  if (id !== null) { try { localStorage.setItem('mathgames.teacherSchool', id); } catch (e) { /* 무시 */ } }
+  const rooms = schoolRooms();
+  let want = pickRoom;
+  if (!want) { try { want = localStorage.getItem('mathgames.teacherRoom'); } catch (e) { want = null; } }
+  selectRoom((rooms.find(r => r.id === want) || rooms[0] || {}).id || null);
+}
 function selectRoom(id) {
   if (H.tviewOff) { H.tviewOff(); H.tviewOff = null; }
   H.cur = id; H.tview = null; H.tloaded = false; H.armed = null;
@@ -736,7 +821,7 @@ function submitSignup(f) {
     const rec = { name, school, region, memo, email: H.user.email, status: 'pending', t: TS() };
     await H.db.ref('teachers/' + H.user.uid).set(rec);
     H.prof = rec;
-    H.note = '가입 신청을 보냈어요. 관리자가 승인하면 학교 방을 만들 수 있어요.';
+    H.note = '가입 신청을 보냈어요. 관리자가 승인하면 학교와 교실을 만들 수 있어요.';
   }, '가입 신청을 보내지 못했어요. 이메일 인증이 된 Google 계정인지 확인해 주세요.');
 }
 function decide(uid, status) {
@@ -750,37 +835,99 @@ function randomKey(n) {
 }
 const normCode = s => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
 const validCode = c => /^[0-9A-Z]{4,12}$/.test(c);
+function schoolMatches(name, region) {
+  const n = normName(name), g = normName(region);
+  return (H.sdir || []).filter(x => normName(x.name) === n && (!g || !x.region || normName(x.region) === g));
+}
+function joinSchool(id) {
+  if (!H.joined.includes(id)) H.joined.push(id);
+  H.form = 'room';
+  const x = (H.sdir || []).find(y => y.id === id);
+  H.note = x ? `${x.name}에 교실을 만들어요. 같은 학교의 다른 선생님 교실과 학교 랭킹을 함께 써요.` : '';
+  loadMyRooms(null, id);
+}
+function createSchool(f) {
+  const name = clip(f.name.value, 40), region = clip(f.region.value, 20);
+  if (!name) { H.err = '학교 이름을 적어 주세요.'; render(); return; }
+  const same = schoolMatches(name, region);
+  if (same.length) { joinSchool(same[0].id); return; }
+  act(async () => {
+    const uid = H.user.uid, id = H.db.ref('schools').push().key, skey = randomKey(28);
+    await H.db.ref('schools/' + id).set({ name, region, owner: uid, t: TS() });
+    await H.db.ref('skeys/' + skey).set({ school: id });
+    await H.db.ref('schoolSecrets/' + id).set({ skey });
+    H.form = 'room';
+    await loadMyRooms(null, id);
+    H.note = `${name}을(를) 만들었어요. 이제 이 학교 안에 교실을 만들어 주세요.`;
+  }, '학교를 만들지 못했어요. 승인된 선생님 계정인지 확인해 주세요.');
+}
+function deleteSchool() {
+  const x = curSchool();
+  if (!x || x.legacy || x.owner !== H.user.uid) return;
+  if ((H.dir || []).some(r => r.schoolId === x.id)) { H.err = '이 학교에 교실이 남아 있어요. 교실을 모두 지운 뒤에 학교를 지울 수 있어요.'; render(); return; }
+  if (H.armed !== 'delSchool') { H.armed = 'delSchool'; render(); setTimeout(() => { if (H.armed === 'delSchool') { H.armed = null; render(); } }, 4000); return; }
+  H.armed = null;
+  act(async () => {
+    const sec = await withTimeout(H.db.ref('schoolSecrets/' + x.id).once('value'), 10000);
+    const skey = sec.val() && sec.val().skey;
+    if (skey) await H.db.ref('skeys/' + skey).remove();
+    await H.db.ref('schoolSecrets/' + x.id).remove();
+    await H.db.ref('schools/' + x.id).remove();
+    H.joined = H.joined.filter(id => id !== x.id);
+    try { localStorage.removeItem('mathgames.teacherSchool'); } catch (e) { /* 무시 */ }
+    H.note = `${x.name}을(를) 지웠어요.`;
+    await loadMyRooms();
+  });
+}
 function createRoom(f) {
-  const school = clip(f.school.value, 40), label = clip(f.label.value, 20), code = normCode(f.code.value);
-  if (!school) { H.err = '학교 이름을 적어 주세요.'; render(); return; }
+  const x = curSchool();
+  const label = clip(f.label.value, 20), code = normCode(f.code.value);
+  if (!x || x.legacy) { H.err = '먼저 학교를 골라 주세요.'; render(); return; }
+  if (!label) { H.err = '교실 이름을 적어 주세요. 예: 1학년 3반'; render(); return; }
   if (!validCode(code)) { H.err = '입장 코드는 영어 대문자와 숫자로 4~12자리예요. 예: MATH2026'; render(); return; }
   act(async () => {
     const uid = H.user.uid, id = H.db.ref('rooms').push().key, key = randomKey(28);
+    const sec = await withTimeout(H.db.ref('schoolSecrets/' + x.id).once('value'), 10000);
+    const skey = sec.val() && sec.val().skey;
+    if (!skey) throw new Error('no school key');
     const teacher = clip((H.prof && H.prof.name) || H.user.displayName || '', 30);
-    await H.db.ref('rooms/' + id).set({ school, label, teacher, owner: uid, t: TS() });
+    await H.db.ref('rooms/' + id).set({ school: x.name, schoolId: x.id, label, teacher, owner: uid, t: TS() });
     await H.db.ref('keys/' + key).set({ room: id, owner: uid });
-    await H.db.ref('doors/' + id + '/' + code).set({ key });
+    await H.db.ref('doors/' + id + '/' + code).set({ key, skey });
     await H.db.ref('views/' + key).set({ mode: 'all', t: TS() });
-    await H.db.ref('teacherRooms/' + uid + '/' + id).set({ key, school, label, code });
+    await H.db.ref('teacherRooms/' + uid + '/' + id).set({ key, skey, school: x.name, schoolId: x.id, label, code });
     H.form = null;
     await loadMyRooms(id);
-    H.note = `${roomName({ school, label })} 방을 만들었어요. 학생들에게 입장 코드 ${code}를 알려 주세요.`;
-  }, '방을 만들지 못했어요. 승인된 선생님 계정인지 확인해 주세요.');
+    H.note = `${x.name} ${label} 교실을 만들었어요. 학생들에게 입장 코드 ${code}를 알려 주세요.`;
+  }, '교실을 만들지 못했어요. 승인된 선생님 계정인지 확인해 주세요.');
 }
 function changeCode(f) {
   const r = curRoom(), code = normCode(f.code.value);
   if (!r) return;
   if (!validCode(code)) { H.err = '입장 코드는 영어 대문자와 숫자로 4~12자리예요.'; render(); return; }
   if (code === r.code) { H.form = null; render(); return; }
+  if (!r.skey) { H.err = '예전 방식으로 만든 교실이라 코드를 바꿀 수 없어요. 학교를 만든 뒤 교실을 새로 만들어 주세요.'; render(); return; }
   act(async () => {
     const uid = H.user.uid;
-    await H.db.ref('doors/' + r.id + '/' + code).set({ key: r.key });
+    await H.db.ref('doors/' + r.id + '/' + code).set({ key: r.key, skey: r.skey });
     if (r.code) await H.db.ref('doors/' + r.id + '/' + r.code).remove();
     await H.db.ref('teacherRooms/' + uid + '/' + r.id + '/code').set(code);
     r.code = code;
     H.form = null;
     H.note = `입장 코드를 ${code}(으)로 바꿨어요. 이미 들어온 학생은 그대로 이어서 할 수 있어요.`;
   });
+}
+const RANKED = ['zero-sum', 'fly-coords'];
+async function dropRankings(r) {
+  for (const app of RANKED) {
+    const drop = async (path, prefix) => {
+      const snap = await withTimeout(H.db.ref(path).once('value'), 10000);
+      const v = snap.val() || {};
+      for (const k of Object.keys(v)) if (k.indexOf(prefix) === 0) await H.db.ref(path + '/' + k).remove();
+    };
+    try { if (r.skey) await drop('sb/' + r.skey + '/' + app, r.id + '_'); } catch (e) { /* 랭킹 정리는 건너뛴다 */ }
+    try { if (r.schoolId) await drop('gb/' + app, r.schoolId + '_' + r.id + '_'); } catch (e) { /* 랭킹 정리는 건너뛴다 */ }
+  }
 }
 function deleteRoom() {
   const r = curRoom();
@@ -789,15 +936,28 @@ function deleteRoom() {
   H.armed = null;
   act(async () => {
     const uid = H.user.uid;
+    await dropRankings(r);
     await H.db.ref('r/' + r.key).remove();
     await H.db.ref('views/' + r.key).remove();
     if (r.code) await H.db.ref('doors/' + r.id + '/' + r.code).remove();
     await H.db.ref('keys/' + r.key).remove();
     await H.db.ref('rooms/' + r.id).remove();
     await H.db.ref('teacherRooms/' + uid + '/' + r.id).remove();
-    H.note = `${roomName(r)} 방과 그 방의 기록을 지웠어요.`;
-    await loadMyRooms();
+    H.note = `${roomName(r)} 교실과 그 교실의 기록을 지웠어요.`;
+    await loadMyRooms(null, r.schoolId || '');
   });
+}
+/* 선생님 전용 테스트 계정: 모든 스테이지가 열리고, 기록은 서버에 남기지 않는다 */
+function testAccount() {
+  const r = curRoom();
+  if (!r) return;
+  try {
+    localStorage.setItem('mathgames.student', JSON.stringify({ sid: '00000', name: '테스트', test: true }));
+    localStorage.setItem('mathgames.room', JSON.stringify(studentRoom(r)));
+  } catch (e) { H.err = '이 브라우저에서는 테스트 계정을 쓸 수 없어요.'; render(); return; }
+  H.room = readRoom();
+  watchStudentRoom();
+  location.hash = '';
 }
 async function writeView(fn) {
   const r = curRoom();
@@ -862,7 +1022,7 @@ async function runCheck() {
     const base = String(cfg.databaseURL).replace(/\/+$/, '');
     try {
       const res = await withTimeout(fetch(base + '/rooms.json?shallow=true', { cache: 'no-store' }), 10000);
-      if (res.ok) add('ok', '보안 규칙', '학교 방을 쓰는 새 규칙이 게시되어 있어요.');
+      if (res.ok) add('ok', '보안 규칙', '학교와 교실을 쓰는 새 규칙이 게시되어 있어요.');
       else if (res.status === 401 || res.status === 403) add('bad', '보안 규칙', '규칙이 예전 버전이거나 처음의 잠금 모드예요. 새 firebase-rules.json 내용을 Realtime Database의 규칙 탭에 붙여 넣고 게시해 주세요.');
       else if (res.status === 404) add('bad', '데이터베이스 주소', 'databaseURL이 가리키는 데이터베이스가 없어요. Realtime Database 데이터 탭 맨 위의 주소를 그대로 복사해 주세요.');
       else add('bad', '보안 규칙', `학급 서버가 ${res.status} 응답을 보냈어요. databaseURL을 다시 확인해 주세요.`);
@@ -891,18 +1051,21 @@ async function runCheck() {
       if (user && r) {
         try {
           await withTimeout(app2.database().ref('r/' + r.key + '/apps/_check/live/probe').set({ online: false, t: Date.now() }), 12000);
-          add('ok', '학생 기록 저장', `${roomName(r)} 방에 학생 기록을 저장할 수 있어요.`);
+          add('ok', '학생 기록 저장', `${roomName(r)} 교실에 학생 기록을 저장할 수 있어요.`);
         } catch (e) {
           add('bad', '학생 기록 저장', denied(e) ? '규칙 때문에 저장이 막혔어요. 새 firebase-rules.json을 그대로 붙여 넣고 게시했는지 확인해 주세요.' : `저장하지 못했어요. (${(e && (e.code || e.message)) || ''})`);
         }
         try {
-          await withTimeout(app2.database().ref('r/' + r.key + '/apps/_check/board/all/all/probe').set({ sid: '0000', name: '점검', score: 0 }), 12000);
-          add('ok', '랭킹 저장', '제로섬 스페이스 미션, 파리 잡기 좌표게임의 랭킹을 저장할 수 있어요.');
+          const d2 = app2.database(), probe = { sid: '0000', name: '점검', score: 0 };
+          await withTimeout(d2.ref('r/' + r.key + '/apps/_check/board/probe').set(probe), 12000);
+          if (r.skey) await withTimeout(d2.ref('sb/' + r.skey + '/_check/probe').set({ name: '점검', score: 0 }), 12000);
+          await withTimeout(d2.ref('gb/_check/probe').set({ name: '점검', school: '점검', score: 0 }), 12000);
+          add('ok', '랭킹 저장', r.skey ? '제로섬 스페이스 미션, 파리 잡기 좌표게임의 학급·학교·전체 랭킹을 저장할 수 있어요.' : '학급·전체 랭킹은 저장돼요. 이 교실은 예전 방식이라 학교 랭킹이 없어요.');
         } catch (e) {
           add('bad', '랭킹 저장', '랭킹을 저장하지 못했어요. 새 firebase-rules.json을 게시했는지 확인해 주세요.');
         }
       } else if (user) {
-        add('info', '학생 기록 저장', '선생님 계정으로 로그인해 학교 방을 만들면, 그 방에 학생 기록이 저장되는지도 확인해요.');
+        add('info', '학생 기록 저장', '선생님 계정으로 로그인해 교실을 만들면, 그 교실에 학생 기록이 저장되는지도 확인해요.');
       }
     } finally {
       if (app2) app2.delete().catch(() => {});
@@ -914,16 +1077,18 @@ async function runCheck() {
           const snap = await withTimeout(H.db.ref('r/' + r.key + '/apps').once('value'), 12000);
           const apps = snap.val() || {};
           const n = id => Object.keys((apps[id] && apps[id].players) || {}).length;
-          add('ok', '선생님 계정', `${H.user.email}(${role}) 계정으로 ${roomName(r)} 방의 기록을 볼 수 있어요. 지금 숫자야구 ${n('gcdbb')}명, 타워 디펜스 ${n('prime-tower')}명, 제로섬 ${n('zero-sum')}명, 파리 잡기 ${n('fly-coords')}명의 기록이 있어요.`);
+          add('ok', '선생님 계정', `${H.user.email}(${role}) 계정으로 ${roomName(r)} 교실의 기록을 볼 수 있어요. 지금 숫자야구 ${n('gcdbb')}명, 타워 디펜스 ${n('prime-tower')}명, 제로섬 ${n('zero-sum')}명, 파리 잡기 ${n('fly-coords')}명의 기록이 있어요.`);
           H.db.ref('r/' + r.key + '/apps/_check').remove().catch(() => {});
+          if (r.skey) H.db.ref('sb/' + r.skey + '/_check/probe').remove().catch(() => {});
+          H.db.ref('gb/_check/probe').remove().catch(() => {});
         } catch (e) {
-          add('bad', '선생님 계정', `${H.user.email} 계정으로는 이 방의 기록을 볼 수 없어요.`);
+          add('bad', '선생님 계정', `${H.user.email} 계정으로는 이 교실의 기록을 볼 수 없어요.`);
         }
       } else {
-        add(canManage() ? 'info' : 'bad', '선생님 계정', canManage() ? `${H.user.email}(${role}) 계정이에요. 학교 방을 만들면 그 방의 기록도 확인해요.` : `${H.user.email}(${role}) 계정이에요. 관리자가 가입을 승인해야 학교 방을 만들 수 있어요.`);
+        add(canManage() ? 'info' : 'bad', '선생님 계정', canManage() ? `${H.user.email}(${role}) 계정이에요. 교실을 만들면 그 교실의 기록도 확인해요.` : `${H.user.email}(${role}) 계정이에요. 관리자가 가입을 승인해야 학교와 교실을 만들 수 있어요.`);
       }
     } else {
-      add('info', '선생님 계정', '위에서 선생님 Google 계정으로 로그인한 뒤 다시 점검하면, 선생님 계정과 학교 방 저장도 확인해요.');
+      add('info', '선생님 계정', '위에서 선생님 Google 계정으로 로그인한 뒤 다시 점검하면, 선생님 계정과 교실 저장도 확인해요.');
     }
   } finally {
     H.check.running = false;
@@ -951,7 +1116,7 @@ function render(force) {
   const focus = document.activeElement;
   const keep = focus && (focus.dataset.open ? `[data-open="${focus.dataset.open}"]` : focus.name === 'mode' ? `input[name="mode"][value="${focus.value}"]`
     : focus.dataset.act === 'move' ? `[data-act="move"][data-id="${focus.dataset.id}"][data-dir="${focus.dataset.dir}"]`
-    : focus.dataset.act === 'tpick' ? `[data-act="tpick"][data-id="${focus.dataset.id}"]` : null);
+    : focus.dataset.act === 'tpick' || focus.dataset.act === 'spick' ? `[data-act="${focus.dataset.act}"][data-id="${focus.dataset.id}"]` : null);
   if (!force && focus && focus.matches && focus.matches('#app form input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), #app form textarea')) return;
   const teacher = isTeacherView();
   $('#app').innerHTML = teacher ? teacherHTML() : studentHTML();
@@ -979,6 +1144,11 @@ document.addEventListener('click', e => {
       if (d.status === 'rejected' && H.armed !== 'dec-' + d.uid) { H.armed = 'dec-' + d.uid; render(); setTimeout(() => { if (H.armed === 'dec-' + d.uid) { H.armed = null; render(); } }, 4000); break; }
       H.armed = null; decide(d.uid, d.status); break;
     case 'tpick': H.note = ''; H.err = ''; H.form = null; selectRoom(d.id); break;
+    case 'spick': H.note = ''; H.err = ''; H.form = null; H.armed = null; selectSchool(d.id); break;
+    case 'newSchool': H.form = 'school'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#schoolForm input[name="name"]'); if (i) i.focus(); } break;
+    case 'joinSchool': H.err = ''; joinSchool(d.id); break;
+    case 'delSchool': deleteSchool(); break;
+    case 'testAccount': testAccount(); break;
     case 'newRoom': H.form = 'room'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#roomForm input[name="school"]'); if (i) i.focus(); } break;
     case 'editCode': H.form = 'code'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#codeForm input[name="code"]'); if (i) { i.focus(); i.select(); } } break;
     case 'cancelForm': H.form = null; H.err = ''; render(); break;
@@ -988,10 +1158,11 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('submit', e => {
   const id = e.target.id;
-  if (!['signupForm', 'roomForm', 'codeForm'].includes(id)) return;
+  if (!['signupForm', 'schoolForm', 'roomForm', 'codeForm'].includes(id)) return;
   e.preventDefault();
   const f = e.target.elements;
   if (id === 'signupForm') submitSignup(f);
+  else if (id === 'schoolForm') createSchool(f);
   else if (id === 'roomForm') createRoom(f);
   else changeCode(f);
 });
@@ -1002,6 +1173,12 @@ document.addEventListener('change', e => {
   else if (t.dataset.open) writeView(p => H.db.ref(p + '/open/' + t.dataset.open).set(t.checked ? true : null));
 });
 window.addEventListener('hashchange', () => { H.err = ''; H.note = ''; render(); window.scrollTo(0, 0); });
+/* 학교 이름을 적는 동안 같은 이름의 학교를 보여 준다 (화면 전체를 다시 그리지 않는다) */
+document.addEventListener('input', e => {
+  if (!e.target.closest || !e.target.closest('#schoolForm')) return;
+  const box = document.getElementById('schoolSuggest');
+  if (box) box.innerHTML = schoolSuggestHTML();
+});
 window.addEventListener('storage', e => {
   if (e.key === 'mathgames.student') render();
   if (e.key === 'mathgames.room') { H.room = readRoom(); watchStudentRoom(); }
@@ -1030,11 +1207,12 @@ function whoHTML() {
   const me = student();
   if (registered() && me) {
     const room = needRoom() && H.room ? `<span class="who-room">${SCHOOL}${esc(roomName(H.room))}</span>` : '';
+    if (me.test) return `<p class="who">${room}<span class="who-test">테스트 계정</span>모든 스테이지가 열려 있어요. 기록은 남지 않아요.<button type="button" class="who-switch" data-act="endTest">테스트 끝내기</button></p>`;
     return `<p class="who">${room}<span class="who-no">${esc(me.sid)}</span>${esc(me.name)} 선수, 어서 와요!<button type="button" class="who-switch" data-act="switch">${needRoom() ? '바꾸기' : '선수 바꾸기'}</button></p>`;
   }
   if (H.mode === 'pending') return '';
   return needRoom()
-    ? `<p class="who-login"><button type="button" class="btn primary" data-act="login">학교 방 입장하기</button><span class="muted small">학교를 고르고 선생님이 알려 준 입장 코드를 넣은 뒤 학번과 이름을 등록해요.</span></p>`
+    ? `<p class="who-login"><button type="button" class="btn primary" data-act="login">교실 입장하기</button><span class="muted small">학교와 교실을 고르고 선생님이 알려 준 입장 코드를 넣은 뒤 학번과 이름을 등록해요.</span></p>`
     : `<p class="who-login"><button type="button" class="btn primary" data-act="login">선수 등록하기</button><span class="muted small">학번과 이름을 한 번 등록하면 모든 게임에서 이어져요.</span></p>`;
 }
 function studentHTML() {
@@ -1067,39 +1245,53 @@ function studentHTML() {
 ${body}`;
 }
 
-/* ===== 선수 등록: 학교 방 고르기, 입장 코드, 학번과 이름 ===== */
-const LOGIN = { open: false, next: '', pick: null, q: '' };
+/* ===== 선수 등록: 학교와 교실 고르기, 입장 코드, 학번과 이름 ===== */
+const LOGIN = { open: false, next: '', school: null, room: null, q: '' };
 function safeNext(v) {
   const s = String(v || '');
   return GAMES.some(g => !g.href && s === encodeURI(g.id) + '/') ? s : '';
 }
-function roomsListHTML() {
-  if (H.dir === null) return '<p class="muted small">학교 방 목록을 불러오고 있어요.</p>';
-  const q = LOGIN.q.trim();
-  const list = H.dir.filter(r => !q || (roomName(r) + ' ' + (r.teacher || '')).indexOf(q) >= 0).slice(0, 40);
-  if (!H.dir.length) return '<p class="muted small">아직 만들어진 학교 방이 없어요. 선생님께 여쭤보세요.</p>';
+const roomsOf = id => (H.dir || []).filter(r => r.schoolId === id);
+function schoolsListHTML() {
+  if (H.sdir === null || H.dir === null) return '<p class="muted small">학교 목록을 불러오고 있어요.</p>';
+  const q = normName(LOGIN.q);
+  const open = H.sdir.filter(x => roomsOf(x.id).length);
+  if (!open.length) return '<p class="muted small">아직 만들어진 교실이 없어요. 선생님께 여쭤보세요.</p>';
+  const list = open.filter(x => !q || normName(x.name + (x.region || '')).indexOf(q) >= 0).slice(0, 40);
   if (!list.length) return '<p class="muted small">찾는 학교가 없어요. 학교 이름을 다시 확인해 주세요.</p>';
-  return `<ul class="room-list">${list.map(r => `<li><button type="button" class="room-opt" data-act="pickRoom" data-id="${esc(r.id)}">${SCHOOL}<span><b>${esc(r.school)}</b>${r.label ? ` ${esc(r.label)}` : ''}${r.teacher ? `<small>${esc(r.teacher)} 선생님</small>` : ''}</span></button></li>`).join('')}</ul>`;
+  return `<ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="pickSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>교실 ${roomsOf(x.id).length}개</small></span></button></li>`).join('')}</ul>`;
+}
+function classListHTML(schoolId) {
+  const list = roomsOf(schoolId);
+  if (!list.length) return '<p class="muted small">이 학교에는 아직 교실이 없어요.</p>';
+  return `<ul class="room-list">${list.map(r => `<li><button type="button" class="room-opt" data-act="pickRoom" data-id="${esc(r.id)}"><span><b>${esc(r.label || r.school)}</b>${r.teacher ? `<small>${esc(r.teacher)} 선생님</small>` : ''}</span></button></li>`).join('')}</ul>`;
 }
 function roomSectionHTML() {
   const cur = H.room;
-  const pick = LOGIN.pick && ((cur && cur.id === LOGIN.pick) ? cur : (H.dir || []).find(r => r.id === LOGIN.pick));
+  const pick = LOGIN.room && ((cur && cur.id === LOGIN.room) ? cur : (H.dir || []).find(r => r.id === LOGIN.room));
   if (pick) {
     const same = cur && cur.id === pick.id;
-    return `<div class="fld-room"><span class="fld-lbl">학교 방</span>
-  <p class="room-chosen">${SCHOOL}<span><b>${esc(pick.school)}</b>${pick.label ? ` ${esc(pick.label)}` : ''}${pick.teacher ? `<small>${esc(pick.teacher)} 선생님</small>` : ''}</span><button type="button" class="link" data-act="unpickRoom">다른 방 고르기</button></p>
+    return `<div class="fld-room"><span class="fld-lbl">학교와 교실</span>
+  <p class="room-chosen">${SCHOOL}<span><b>${esc(pick.school)}</b> ${esc(pick.label || '')}${pick.teacher ? `<small>${esc(pick.teacher)} 선생님</small>` : ''}</span><button type="button" class="link" data-act="unpickRoom">다른 교실 고르기</button></p>
   ${same ? '' : '<label class="fld"><span>입장 코드</span><input name="code" autocomplete="off" spellcheck="false" maxlength="12" placeholder="선생님이 알려 준 코드" style="text-transform:uppercase"></label>'}
 </div>`;
   }
-  return `<div class="fld-room"><span class="fld-lbl">학교 방</span>
+  if (LOGIN.school) {
+    const x = (H.sdir || []).find(y => y.id === LOGIN.school) || { name: '' };
+    return `<div class="fld-room"><span class="fld-lbl">교실 고르기</span>
+  <p class="room-chosen">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}</span><button type="button" class="link" data-act="unpickSchool">다른 학교 고르기</button></p>
+  <div id="roomList">${classListHTML(LOGIN.school)}</div>
+</div>`;
+  }
+  return `<div class="fld-room"><span class="fld-lbl">학교 고르기</span>
   <input id="roomSearch" class="room-search" autocomplete="off" spellcheck="false" placeholder="학교 이름으로 찾기" value="${esc(LOGIN.q)}" aria-label="학교 이름으로 찾기">
-  <div id="roomList">${roomsListHTML()}</div>
+  <div id="roomList">${schoolsListHTML()}</div>
 </div>`;
 }
 function loginHTML() {
   const cur = student();
-  const title = needRoom() ? (registered() ? '학교 방과 선수 바꾸기' : '학교 방 입장') : (cur ? '선수 바꾸기' : '선수 등록');
-  const sub = needRoom() ? '학교 방을 고르고 입장 코드를 넣은 뒤, 학번과 이름을 적어 주세요. 한 번 하면 모든 게임에서 이어져요.'
+  const title = needRoom() ? (registered() && !(cur && cur.test) ? '교실과 선수 바꾸기' : '교실 입장') : (cur ? '선수 바꾸기' : '선수 등록');
+  const sub = needRoom() ? '학교와 교실을 고르고 입장 코드를 넣은 뒤, 학번과 이름을 적어 주세요. 한 번 하면 모든 게임에서 이어져요.'
     : cur ? `지금은 <b>${esc(cur.sid)} ${esc(cur.name)}</b> 선수예요. 새로 들어올 선수의 학번과 이름을 넣어 주세요.` : '한 번 등록하면 모든 게임에서 기록이 이어져요.';
   return `<div class="dlg-back">
   <form class="dlg" id="loginForm" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" novalidate>
@@ -1126,15 +1318,16 @@ function drawLogin() {
 function openLogin(next) {
   LOGIN.open = true;
   LOGIN.next = safeNext(next);
-  LOGIN.pick = H.room ? H.room.id : null;
+  LOGIN.room = H.room ? H.room.id : null;
+  LOGIN.school = H.room ? H.room.schoolId || null : null;
   LOGIN.q = '';
   const box = $('#dlg');
   box.innerHTML = '';
   drawLogin();
   box.hidden = false;
   document.body.classList.add('dlg-on');
-  if (needRoom() && H.dir === null) loadDirectory().then(() => { if (!LOGIN.open) return; const l = $('#roomList'); if (l) l.innerHTML = roomsListHTML(); else drawLogin(); });
-  setTimeout(() => { const i = box.querySelector(needRoom() && !LOGIN.pick ? '#roomSearch' : 'input[name="sid"]'); if (i) i.focus(); }, 30);
+  if (needRoom() && (H.dir === null || H.sdir === null)) loadDirectory().then(() => { if (LOGIN.open) drawLogin(); });
+  setTimeout(() => { const i = box.querySelector(needRoom() && !LOGIN.room ? '#roomSearch' : 'input[name="sid"]'); if (i) i.focus(); }, 30);
 }
 function closeLogin() {
   LOGIN.open = false;
@@ -1153,15 +1346,15 @@ async function submitLogin(form) {
   if (name.length > 20) { err.textContent = '이름은 20자까지 입력할 수 있어요.'; form.elements.name.focus(); return; }
   let room = H.room;
   if (needRoom()) {
-    if (!LOGIN.pick) { err.textContent = '먼저 학교 방을 골라 주세요.'; const s = $('#roomSearch'); if (s) s.focus(); return; }
-    if (!H.room || H.room.id !== LOGIN.pick) {
+    if (!LOGIN.room) { err.textContent = LOGIN.school ? '교실을 골라 주세요.' : '먼저 학교를 골라 주세요.'; const s = $('#roomSearch'); if (s) s.focus(); return; }
+    if (!H.room || H.room.id !== LOGIN.room) {
       const code = normCode(form.elements.code ? form.elements.code.value : '');
       if (!validCode(code)) { err.textContent = '입장 코드를 넣어 주세요. 영어와 숫자 4~12자리예요.'; if (form.elements.code) form.elements.code.focus(); return; }
-      const r = (H.dir || []).find(x => x.id === LOGIN.pick);
-      let key = null;
-      try { key = await checkDoor(LOGIN.pick, code); } catch (e) { err.textContent = '학급 서버에 닿지 않아요. 인터넷 연결을 확인해 주세요.'; return; }
-      if (!key) { err.textContent = '입장 코드가 맞지 않아요. 선생님께 코드를 다시 확인해 주세요.'; form.elements.code.focus(); form.elements.code.select(); return; }
-      room = { id: LOGIN.pick, key, school: r ? r.school : '', label: r ? r.label || '' : '', teacher: r ? r.teacher || '' : '' };
+      const r = (H.dir || []).find(x => x.id === LOGIN.room) || {};
+      let door = null;
+      try { door = await checkDoor(LOGIN.room, code); } catch (e) { err.textContent = '학급 서버에 닿지 않아요. 인터넷 연결을 확인해 주세요.'; return; }
+      if (!door) { err.textContent = '입장 코드가 맞지 않아요. 선생님께 코드를 다시 확인해 주세요.'; form.elements.code.focus(); form.elements.code.select(); return; }
+      room = studentRoom(Object.assign({}, r, { id: LOGIN.room, key: door.key, skey: door.skey }));
     }
   }
   try {
@@ -1190,8 +1383,11 @@ document.addEventListener('click', e => {
   const act = a.dataset.act;
   if (act === 'login' || act === 'switch') openLogin('');
   else if (act === 'dlgClose') closeLogin();
-  else if (act === 'pickRoom') { LOGIN.pick = a.dataset.id; drawLogin(); const c = $('#loginForm input[name="code"]'); if (c) c.focus(); }
-  else if (act === 'unpickRoom') { LOGIN.pick = null; drawLogin(); const s = $('#roomSearch'); if (s) s.focus(); }
+  else if (act === 'pickSchool') { LOGIN.school = a.dataset.id; LOGIN.room = null; drawLogin(); const b = $('#roomList .room-opt'); if (b) b.focus(); }
+  else if (act === 'unpickSchool') { LOGIN.school = null; LOGIN.room = null; drawLogin(); const s = $('#roomSearch'); if (s) s.focus(); }
+  else if (act === 'pickRoom') { LOGIN.room = a.dataset.id; const r = (H.dir || []).find(x => x.id === a.dataset.id); if (r) LOGIN.school = r.schoolId || LOGIN.school; drawLogin(); const c = $('#loginForm input[name="code"]'); if (c) c.focus(); }
+  else if (act === 'unpickRoom') { LOGIN.room = null; if (!LOGIN.school && H.room) LOGIN.school = H.room.schoolId || null; drawLogin(); const b = $('#roomList .room-opt'); if (b) b.focus(); else { const s2 = $('#roomSearch'); if (s2) s2.focus(); } }
+  else if (act === 'endTest') { try { localStorage.removeItem('mathgames.student'); } catch (x) { /* 무시 */ } render(); openLogin(''); }
   else if (act === 'logout') {
     try { localStorage.removeItem('mathgames.student'); localStorage.removeItem('mathgames.room'); } catch (x) { /* 무시 */ }
     H.room = null; closeLogin(); watchStudentRoom(); render();
@@ -1201,7 +1397,7 @@ document.addEventListener('input', e => {
   if (e.target.id !== 'roomSearch') return;
   LOGIN.q = e.target.value;
   const l = $('#roomList');
-  if (l) l.innerHTML = roomsListHTML();
+  if (l) l.innerHTML = schoolsListHTML();
 });
 document.addEventListener('submit', e => {
   if (e.target.id !== 'loginForm') return;
@@ -1217,7 +1413,7 @@ function field(label, name, value, attrs) {
 function signupHTML() {
   return `<section class="panel">
   <h2>선생님 가입 신청</h2>
-  <p class="muted">처음 오신 선생님은 가입 신청을 보내 주세요. 관리자가 확인하고 승인하면 학교 방을 만들고 게임을 열 수 있어요.</p>
+  <p class="muted">처음 오신 선생님은 가입 신청을 보내 주세요. 관리자가 확인하고 승인하면 학교와 교실을 만들고 게임을 열 수 있어요.</p>
   <form id="signupForm" class="t-form" novalidate>
     ${field('이름', 'name', H.user.displayName || '', ' maxlength="30" placeholder="예: 김지현"')}
     ${field('학교 이름', 'school', '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
@@ -1232,7 +1428,7 @@ function pendingHTML() {
   const p = H.prof;
   return `<section class="panel">
   <h2>승인을 기다리고 있어요</h2>
-  <p class="muted">관리자가 가입 신청을 확인하고 있어요. 승인되면 이 화면에서 바로 학교 방을 만들 수 있어요. 승인된 뒤 새로 고침해 주세요.</p>
+  <p class="muted">관리자가 가입 신청을 확인하고 있어요. 승인되면 이 화면에서 바로 학교와 교실을 만들 수 있어요. 승인된 뒤 새로 고침해 주세요.</p>
   <dl class="t-dl"><div><dt>이름</dt><dd>${esc(p.name)}</dd></div><div><dt>학교</dt><dd>${esc(p.school)}</dd></div>${p.region ? `<div><dt>지역</dt><dd>${esc(p.region)}</dd></div>` : ''}<div><dt>계정</dt><dd>${esc(p.email)}</dd></div></dl>
 </section>`;
 }
@@ -1251,30 +1447,58 @@ function adminHTML() {
   ${ok.length ? `<ul class="tlist t-people">${ok.map(t => row(t, `<button type="button" class="btn" data-act="decide" data-uid="${esc(t.uid)}" data-status="rejected">${H.armed === 'dec-' + t.uid ? '한 번 더 누르면 승인 취소' : '승인 취소'}</button>`)).join('')}</ul>` : '<p class="muted">아직 없어요.</p>'}
 </section>`;
 }
+function schoolSuggestHTML() {
+  const f = document.getElementById('schoolForm');
+  const q = f ? normName(f.elements.name.value) : '';
+  if (!q || !H.sdir) return '';
+  const mine = new Set((H.mySchools || []).map(x => x.id));
+  const list = H.sdir.filter(x => !mine.has(x.id) && normName(x.name).indexOf(q) >= 0).slice(0, 6);
+  if (!list.length) return '';
+  return `<p class="muted small">이미 있는 학교예요. 같은 학교라면 골라서 그 안에 교실을 만들어 주세요.</p><ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="joinSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>교실 ${roomsOf(x.id).length}개</small></span></button></li>`).join('')}</ul>`;
+}
+function schoolsHTML() {
+  const list = H.mySchools;
+  if (list === null) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>내 학교를 불러오고 있어요.</p></section>';
+  const adding = H.form === 'school' || !list.length;
+  const pills = list.length ? `<div class="room-pills" role="tablist" aria-label="내 학교">${list.map(x => `<button type="button" role="tab" class="room-pill" data-act="spick" data-id="${esc(x.id)}" aria-selected="${x.id === H.school}">${SCHOOL}${esc(x.name)}</button>`).join('')}${adding ? '' : '<button type="button" class="room-pill add" data-act="newSchool">+ 학교 추가</button>'}</div>` : '';
+  const form = adding ? `<form id="schoolForm" class="t-form room-form" novalidate>
+    <h3>${list.length ? '학교 추가' : '먼저 학교를 만들어 주세요'}</h3>
+    <p class="muted small">학교 안에 교실을 만들어요. 같은 학교의 다른 선생님이 이미 학교를 만들었다면 그 학교를 골라 주세요. 같은 학교의 교실끼리 학교 랭킹을 함께 써요.</p>
+    ${field('학교 이름', 'name', (!list.length && H.prof && H.prof.school) || '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
+    <div id="schoolSuggest">${schoolSuggestHTML()}</div>
+    ${field('지역 (시·도)', 'region', (!list.length && H.prof && H.prof.region) || '', ' maxlength="20" placeholder="예: 전북"')}
+    <div class="dlg-actions"><button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>학교 만들기</button>${list.length ? '<button type="button" class="btn" data-act="cancelForm">취소</button>' : ''}</div>
+  </form>` : '';
+  const x = curSchool();
+  const canDel = x && !x.legacy && x.owner === H.user.uid;
+  const info = x && !adding ? `<div class="room-top school-top"><p class="muted small">${x.legacy ? '학교를 정하기 전에 만든 교실이에요. 학생 입장 목록에는 보이지 않으니, 학교를 만든 뒤 교실을 새로 만들어 주세요.' : `${esc(x.name)}${x.region ? ` · ${esc(x.region)}` : ''} · 교실 ${roomsOf(x.id).length}개${x.owner === H.user.uid ? ' · 내가 만든 학교' : ''}`}</p>${canDel ? `<button type="button" class="btn danger-soft${H.armed === 'delSchool' ? ' armed' : ''}" data-act="delSchool">${H.armed === 'delSchool' ? '한 번 더 누르면 학교가 지워져요' : '학교 지우기'}</button>` : ''}</div>` : '';
+  return `<section class="panel"><h2>내 학교</h2>${pills}${form}${info}</section>`;
+}
 function roomsHTML() {
-  const rooms = H.myRooms;
-  if (rooms === null) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>내 학교 방을 불러오고 있어요.</p></section>';
+  const x = curSchool();
+  if (!x || H.form === 'school') return '';
+  const rooms = schoolRooms();
   const r = curRoom();
-  const creating = H.form === 'room' || !rooms.length;
-  const pills = rooms.length ? `<div class="room-pills" role="tablist" aria-label="내 학교 방">${rooms.map(x => `<button type="button" role="tab" class="room-pill" data-act="tpick" data-id="${esc(x.id)}" aria-selected="${x.id === H.cur}">${SCHOOL}${esc(roomName(x))}</button>`).join('')}${creating ? '' : '<button type="button" class="room-pill add" data-act="newRoom">+ 새 방 만들기</button>'}</div>` : '';
+  const creating = !x.legacy && (H.form === 'room' || !rooms.length);
+  const pills = rooms.length ? `<div class="room-pills" role="tablist" aria-label="${esc(x.name)} 교실">${rooms.map(y => `<button type="button" role="tab" class="room-pill" data-act="tpick" data-id="${esc(y.id)}" aria-selected="${y.id === H.cur}">${esc(y.label || roomName(y))}</button>`).join('')}${creating || x.legacy ? '' : '<button type="button" class="room-pill add" data-act="newRoom">+ 교실 만들기</button>'}</div>` : '';
   const form = creating ? `<form id="roomForm" class="t-form room-form" novalidate>
-    <h3>${rooms.length ? '새 학교 방 만들기' : '첫 학교 방을 만들어 주세요'}</h3>
-    <p class="muted small">학생들은 게임 목록에서 학교 이름으로 방을 찾고, 여기서 정한 입장 코드를 넣어 들어와요. 방마다 학생 기록과 게임 설정이 따로 저장돼요.</p>
-    ${field('학교 이름', 'school', (H.prof && H.prof.school) || '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
-    ${field('방 이름 (선택)', 'label', '', ' maxlength="20" placeholder="예: 1학년 수학"')}
+    <h3>${rooms.length ? '새 교실 만들기' : `${esc(x.name)}에 첫 교실을 만들어 주세요`}</h3>
+    <p class="muted small">학생들은 게임 목록에서 학교를 고르고 교실을 고른 뒤, 여기서 정한 입장 코드를 넣어 들어와요. 교실마다 학생 기록과 게임 설정이 따로 저장돼요.</p>
+    ${field('교실 이름', 'label', '', ' maxlength="20" placeholder="예: 1학년 3반"')}
     ${field('입장 코드', 'code', '', ' maxlength="12" placeholder="예: MATH2026" style="text-transform:uppercase"')}
-    <div class="dlg-actions"><button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>방 만들기</button>${rooms.length ? '<button type="button" class="btn" data-act="cancelForm">취소</button>' : ''}</div>
+    <div class="dlg-actions"><button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>교실 만들기</button>${rooms.length ? '<button type="button" class="btn" data-act="cancelForm">취소</button>' : ''}</div>
   </form>` : '';
   const info = r && !creating ? `<div class="room-card">
-    <div class="room-top"><h3>${SCHOOL}${esc(roomName(r))}</h3><button type="button" class="btn danger-soft${H.armed === 'del' ? ' armed' : ''}" data-act="delRoom">${H.armed === 'del' ? '한 번 더 누르면 방과 기록이 모두 지워져요' : '방 지우기'}</button></div>
+    <div class="room-top"><h3>${esc(r.label || roomName(r))}</h3><button type="button" class="btn danger-soft${H.armed === 'del' ? ' armed' : ''}" data-act="delRoom">${H.armed === 'del' ? '한 번 더 누르면 교실과 기록이 모두 지워져요' : '교실 지우기'}</button></div>
     ${H.form === 'code' ? `<form id="codeForm" class="t-form code-form" novalidate>${field('새 입장 코드', 'code', r.code || '', ' maxlength="12" style="text-transform:uppercase"')}<div class="dlg-actions"><button type="submit" class="btn primary">바꾸기</button><button type="button" class="btn" data-act="cancelForm">취소</button></div></form>`
       : `<p class="room-code">입장 코드 <b>${esc(r.code || '')}</b><button type="button" class="link" data-act="editCode">코드 바꾸기</button></p>`}
-    <p class="muted small">학생 안내: 게임 목록에서 "학교 방 입장하기" → ${esc(roomName(r))} 선택 → 입장 코드 ${esc(r.code || '')}</p>
+    <p class="muted small">학생 안내: 게임 목록에서 "교실 입장하기" → ${esc(r.school || '')} → ${esc(r.label || '')} → 입장 코드 ${esc(r.code || '')}</p>
+    <div class="test-box"><button type="button" class="btn" data-act="testAccount">테스트 계정으로 해 보기</button><span class="muted small">모든 스테이지가 열린 테스트 계정으로 이 교실의 학생 화면을 열어요. 테스트 계정의 기록은 랭킹과 선생님 화면에 남지 않아요.</span></div>
   </div>` : '';
-  return `<section class="panel"><h2>내 학교 방</h2>${pills}${form}${info}</section>`;
+  return `<section class="panel"><h2>${esc(x.name)}의 교실</h2>${pills}${form}${info}</section>`;
 }
 function viewHTML() {
-  if (!H.tloaded) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>이 방의 게임 설정을 불러오고 있어요.</p></section>';
+  if (!H.tloaded) return '<section class="panel"><p class="loading"><span></span><span></span><span></span>이 교실의 게임 설정을 불러오고 있어요.</p></section>';
   const st = H.tview || {};
   const mode = st.mode === 'selected' ? 'selected' : 'all';
   const open = st.open || {};
@@ -1290,7 +1514,7 @@ function viewHTML() {
     <label class="mode"><input type="radio" name="mode" value="selected"${mode === 'selected' ? ' checked' : ''}><span><b>고른 게임만 보이기</b><small>켠 게임만 보이고, 나머지 게임은 주소로 들어가도 닫혀 있어요.</small></span></label>
   </div>
   <h3>게임 순서와 열기</h3>
-  <p class="muted small">▲ ▼ 단추로 학생 화면에 보이는 게임 순서를 바꿀 수 있어요. 스위치를 켠 게임이 수업에서 열려요. 이 설정은 이 방에만 적용돼요.</p>
+  <p class="muted small">▲ ▼ 단추로 학생 화면에 보이는 게임 순서를 바꿀 수 있어요. 스위치를 켠 게임이 수업에서 열려요. 이 설정은 이 교실에만 적용돼요.</p>
   <ul class="tlist">${rows}</ul>
   <p class="status">${esc(statusText(mode, open))}</p>
 </section>`;
@@ -1302,13 +1526,13 @@ function teacherHTML() {
   } else if (H.mode === 'local') {
     body = `<section class="panel">
   <h2>학급 서버가 연결되어 있지 않아요</h2>
-  <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 선생님 가입, 학교 방 만들기, 게임 열기를 할 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
+  <p class="muted">firebase-config.js에 설정값을 넣으면 여기에서 선생님 가입, 학교와 교실 만들기, 게임 열기를 할 수 있어요. 지금은 학생 화면에 모든 게임이 보여요.</p>
   <ul class="tlist">${ready.map(g => `<li><span class="t-name">${esc(g.name)}</span>${g.href || g.teacher === false ? '' : `<a class="link" href="${esc(gameURL(g, '#teacher'))}">이 게임의 선생님 화면</a>`}</li>`).join('')}</ul>
 </section>`;
   } else if (!H.user) {
     body = `<section class="panel">
   <h2>선생님 로그인</h2>
-  <p class="muted">Google 계정으로 로그인하세요. 처음이면 가입 신청을 보내고, 관리자가 승인하면 학교 방을 만들어 게임을 열 수 있어요.</p>
+  <p class="muted">Google 계정으로 로그인하세요. 처음이면 가입 신청을 보내고, 관리자가 승인하면 학교와 교실을 만들어 게임을 열 수 있어요.</p>
   <button type="button" class="btn primary" data-act="signin"${H.busy ? ' disabled' : ''}>${H.busy ? '로그인하는 중…' : 'Google 계정으로 로그인'}</button>
   ${H.err ? `<p class="err">${esc(H.err)}</p>` : ''}
 </section>`;
@@ -1319,7 +1543,7 @@ function teacherHTML() {
     if (H.note) parts.push(`<p class="status ok-note" role="status">${esc(H.note)}</p>`);
     if (H.err) parts.push(`<p class="err" role="alert">${esc(H.err)}</p>`);
     if (H.isAdmin) parts.push(adminHTML());
-    if (canManage()) { parts.push(roomsHTML()); if (curRoom() && H.form !== 'room') parts.push(viewHTML()); }
+    if (canManage()) { parts.push(schoolsHTML(), roomsHTML()); if (curRoom() && !H.form) parts.push(viewHTML()); }
     else if (!H.prof) parts.push(signupHTML());
     else if (H.prof.status === 'pending') parts.push(pendingHTML());
     else parts.push(rejectedHTML());
@@ -1327,7 +1551,7 @@ function teacherHTML() {
   }
   const who = H.user ? `<p class="acct">${H.isAdmin ? '<span class="role">관리자</span>' : ''}${esc(H.user.email || '')}<button type="button" class="link" data-act="signout">로그아웃</button></p>` : '';
   return `<header class="head t-head">
-  <div><p class="kicker">선생님 전용</p><h1 class="title"><span>수업 관리</span></h1><p class="lead">학교 방을 만들고, 방마다 학생들이 볼 게임을 정해요.</p></div>
+  <div><p class="kicker">선생님 전용</p><h1 class="title"><span>수업 관리</span></h1><p class="lead">학교를 만들고 그 안에 교실을 만들어, 교실마다 학생들이 볼 게임을 정해요.</p></div>
   ${who}
 </header>
 ${body}
