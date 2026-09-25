@@ -257,6 +257,19 @@ body { font-family: var(--body); }
 .coach { font-family: Jua, sans-serif; }
 .howto summary { font-family: Jua, sans-serif; }
 </style>
+<style>
+/* 판 다시 보기 막대 (스테이지가 끝난 뒤) */
+.rv-bar { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 6; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; width: max-content; max-width: calc(100% - 20px); padding: 8px 12px 7px; background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 5px 0 var(--ink); font-family: Jua, sans-serif; }
+.rv-bar[hidden] { display: none; }
+.rv-title { font-family: "Black Han Sans", Jua, sans-serif; font-weight: 400; font-size: 16px; margin-right: 2px; }
+.rv-rounds { display: inline-flex; gap: 4px; }
+.rv-rounds:empty { display: none; }
+.rv-bar .btn { padding: 4px 10px; font-size: 14px; box-shadow: 0 2px 0 var(--ink); }
+.rv-rounds .btn[aria-pressed="true"], .rv-bar #rvAim[aria-pressed="true"] { background: var(--ink); color: #ffd23f; }
+.rv-fold { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.rv-fold input { width: 150px; accent-color: #ffc02e; }
+.rv-tip { flex-basis: 100%; text-align: center; font-size: 12.5px; color: #62597a; line-height: 1.35; }
+</style>
 
 <script src="../firebase-config.js"></script>
 <script data-app="fold-meet">
@@ -568,6 +581,16 @@ window.MGF = (function () {
   <main class="main">
     <section class="board" id="board">
       <canvas id="cv" role="img" aria-label="전개도 게임판"></canvas>
+      <div class="rv-bar" id="rvBar" role="group" aria-label="판 다시 보기" hidden>
+        <span class="rv-title">판 다시 보기</span>
+        <span class="rv-rounds" id="rvRounds"></span>
+        <label class="rv-fold">펼침 <input type="range" id="rvFold" min="0" max="100" value="0" aria-label="접은 정도"> 접음</label>
+        <button class="btn" id="rvToggle" type="button">접기</button>
+        <button class="btn primary" id="rvPlay" type="button">공격 다시 보기</button>
+        <button class="btn" id="rvAim" type="button" aria-pressed="false">겨누는 곳 보기</button>
+        <button class="btn" id="rvBack" type="button">결과로 돌아가기</button>
+        <span class="rv-tip" id="rvTip"></span>
+      </div>
       <div class="coach" id="coach" hidden></div>
       <div class="banner" id="banner" hidden></div>
       <div class="board-tools">
@@ -1245,10 +1268,10 @@ function layoutAudit(){
   return {layouts:n,newOverlap:nb,newOutside:no,oldOverlap:ob,oldOutside:oo,examples:ex};
 }
 // 도움: 몬스터가 공격할 면(빨간 빗금), 용사가 공격할 면(파란 과녁)
-function helpSets(){
+function helpSets(all){
   const d=new Set(),h=new Set(),net=G.net;
   for(const m of G.monsters)if(alive(m))for(const g of targets(net,m.f,MON[m.t].pat,m.a))d.add(g);
-  if(G.help>=3){
+  if(G.help>=3||all){
     for(const x of G.heroes)for(const g of targets(net,x.f,UNIT[x.u].pat,x.a))h.add(g);
     const hv=G.hover;
     if(hv&&(hv.kind==='place'||hv.kind==='aim')){const u=hv.kind==='place'?hv.u:(G.heroes.find(x=>x.f===hv.f)||{}).u;if(u)for(const g of targets(net,hv.f,UNIT[u].pat,hv.a))h.add(g);}
@@ -1329,7 +1352,7 @@ function proj(P,B){const v=V.sub(P,cam.target);return [cam.cx+cam.scale*V.dot(v,
 let ORD=new Map();
 
 function draw(now){
-  G.hs=(G.help>=2&&G.phase==='plan')?helpSets():null;
+  G.hs=(G.help>=2&&G.phase==='plan')?helpSets():(G.phase==='review'&&RV&&RV.aim)?helpSets(true):null;
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(mat,0,0);
   ctx.setTransform(dpr,0,0,dpr,0,0);
   const net=G.net;if(!net)return;
@@ -1536,11 +1559,11 @@ const polyArea=P=>{let a=0;for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.
 function netFace(n){let f=FACE_SZ.get(n);if(!f){f=Math.sqrt(n.faces.reduce((a,x)=>a+polyArea(x.P),0)/n.faces.length)||1;FACE_SZ.set(n,f);}return f;}
 function netView(){
   const [x0,x1,y0,y1]=G.net.box,bw=x1-x0,bh=y1-y0;
-  return {alpha:0,beta:Math.PI/2,target:[(x0+x1)/2,(y0+y1)/2,0],scale:clamp(Math.min((W-56)/bw,(H-60)/bh,FACE_PX/netFace(G.net)),30,360)};
+  return {alpha:0,beta:Math.PI/2,target:[(x0+x1)/2,(y0+y1)/2,0],scale:clamp(Math.min((W-56)/bw,(H-60-rvPad())/bh,FACE_PX/netFace(G.net)),30,360)};
 }
 function solidView(alpha,beta){
   const n=G.net;
-  return {alpha:alpha==null?-.5:alpha,beta:beta==null?.5:beta,target:n.center.slice(),scale:clamp(Math.min(W,H)/(3.1*n.radius),50,320)};
+  return {alpha:alpha==null?-.5:alpha,beta:beta==null?.5:beta,target:n.center.slice(),scale:clamp(Math.min(W,H-rvPad())/(3.1*n.radius),50,320)};
 }
 function attackView(f,pat,a,tg){
   const net=G.net;let d;
@@ -1670,6 +1693,7 @@ async function doAttack(act){
     hit=tg.map((g,i)=>impact(g,pw,isM,i));
   }
   recordAttack(o,isM,pat,tg,hit);
+  rvRecStep(act,tg);
   G.fx.shots=[];updatePanel();
   const f0={};for(const k in G.fx.flash)f0[k]=G.fx.flash[k].a;
   const sa=G.fx.seam?G.fx.seam.alpha:0,xa=G.xray;
@@ -1698,6 +1722,7 @@ async function playRound(){
   showBoard();G.acted=new Set();G.roundMM=0;G.run.heroesMax=Math.max(G.run.heroesMax,G.heroes.length);
   setHintMode(false);
   G.frozen=orderList();
+  rvRecStart();
   G.phase='folding';G.hover=null;cv.classList.remove('can-pick');
   showCoach(null);updatePanel();updateHeader();
   $('speedBtn').hidden=false;
@@ -2195,13 +2220,13 @@ function showResult(kind){
         card.appendChild(el('p',null,G.lap===1
           ?(USER.name?USER.name+' 학생, ':'')+'1회차 16개를 모두 깼어요. 여기까지가 기본 목표예요! 더 해 보고 싶다면 새 기술을 하나 골라 2회차에 도전해 보세요. 2회차는 전개도와 몬스터 배치가 달라져요.'
           :`${G.lap}회차를 모두 깼어요! 새 기술을 하나 더 골라 ${G.lap+1}회차에 도전해 보세요.`));
-        acts(card,[['새 기술 고르기',true,()=>showSkillPick(()=>startStage(G.lap+1,0))],['스테이지 고르기',false,()=>openMap()]]);
+        acts(card,[['새 기술 고르기',true,()=>showSkillPick(()=>startStage(G.lap+1,0))],['스테이지 고르기',false,()=>openMap()]].concat(rvBtn()));
       }else{
         const b=[],next=G.slot+1;
         if(next<NSLOT)b.push(['다음 스테이지',true,()=>startStage(G.lap,next)]);
         b.push(['스테이지 고르기',next>=NSLOT,()=>openMap()]);
         b.push(['다시 하기',false,()=>startStage(G.lap,G.slot)]);
-        acts(card,b);
+        acts(card,b.concat(rvBtn()));
       }
     }else{
       const L=lapRec(G.lap);L.fails=L.fails||{};
@@ -2212,10 +2237,10 @@ function showResult(kind){
       if(lv){
         card.appendChild(el('p','newach',`이 스테이지에서 ${fails}번 실패했어요. 도움을 받을 수 있어요: ${HELP.slice(0,lv).map(h=>h.text).join(' · ')}`));
         if(HELP[lv])card.appendChild(el('p','newach',`한 번 더 실패하면: ${HELP[lv].text}`));
-        acts(card,[['도움 받고 다시 도전',true,()=>startStage(G.lap,G.slot,lv)],['도움 없이 다시 도전',false,()=>startStage(G.lap,G.slot,0)],['스테이지 고르기',false,()=>openMap()]]);
+        acts(card,[['도움 받고 다시 도전',true,()=>startStage(G.lap,G.slot,lv)],['도움 없이 다시 도전',false,()=>startStage(G.lap,G.slot,0)],['스테이지 고르기',false,()=>openMap()]].concat(rvBtn()));
       }else{
         card.appendChild(el('p','newach','한 번 더 실패하면 도움을 받을 수 있어요.'));
-        acts(card,[['다시 도전',true,()=>startStage(G.lap,G.slot)],['스테이지 고르기',false,()=>openMap()]]);
+        acts(card,[['다시 도전',true,()=>startStage(G.lap,G.slot)],['스테이지 고르기',false,()=>openMap()]].concat(rvBtn()));
       }
     }
   });
@@ -2308,7 +2333,7 @@ function startStage(lap,s,help){
   G.run={heroesMax:0,lost:0,hints:0,edits:0,mm:0,wasted:0,heroAtt:0,allCut:true,slowActed:false};
   G.acted=new Set();G.roundMM=0;G.stageAch=[];
   G.t=0;G.phase='plan';G.hover=null;G.frozen=null;G.gain=null;G.rotP=1;G.xray=0;G.speed=G.baseSpeed;
-  G.fx={shots:[],floats:[],flash:{},seam:null,acting:null};
+  G.fx={shots:[],floats:[],flash:{},seam:null,acting:null};G.rv={rounds:[]};rvClose();
   closeCard();$('unfoldBtn').hidden=true;$('speedBtn').hidden=true;$('banner').hidden=true;
   cv.classList.remove('can-drag','can-pick','hinting');
   setCam(netView());renderPapers();updateHeader();updatePanel();
@@ -2386,13 +2411,14 @@ cv.addEventListener('pointermove',e=>{
   if(drag){
     const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
     if(!drag.moved&&Math.hypot(dx,dy)>7)drag.moved=true;
-    if(drag.moved&&G.phase==='folded'){cam.alpha=drag.a-dx*.009;cam.beta=clamp(drag.b+dy*.009,-1.25,1.4);dirty=true;}
+    if(drag.moved&&(G.phase==='folded'||(G.phase==='review'&&RV&&!RV.busy&&G.t>.5))){cam.alpha=drag.a-dx*.009;cam.beta=clamp(drag.b+dy*.009,-1.25,1.4);dirty=true;}
     return;
   }
   if(G.phase==='plan'&&e.pointerType==='mouse'){const p=ptr(e);updateHover(p[0],p[1]);}
 });
 cv.addEventListener('pointerup',e=>{
   const d=drag;drag=null;
+  if(d&&d.moved&&G.phase==='review'&&RV)RV.solid=snap();
   if(d&&!d.moved&&G.phase==='plan'&&$('overlay').hidden){const p=ptr(e);tap(p[0],p[1]);}
 });
 cv.addEventListener('pointercancel',()=>{drag=null;});
@@ -2411,9 +2437,9 @@ $('hintBtn').addEventListener('click',()=>{
 });
 $('unfoldBtn').addEventListener('click',unfoldRound);
 $('speedBtn').addEventListener('click',()=>{G.speed=G.baseSpeed*3;$('speedBtn').hidden=true;});
-$('mapBtn').addEventListener('click',()=>{if(G.phase==='plan'||G.phase==='result')openMap();});
-$('achBtn').addEventListener('click',()=>{if(!G.tut&&(G.phase==='plan'||G.phase==='result'||G.phase==='folded'))openAch();});
-$('dexBtn').addEventListener('click',()=>{if(!G.tut&&(G.phase==='plan'||G.phase==='result'||G.phase==='folded'))openDex();});
+$('mapBtn').addEventListener('click',()=>{if(G.phase==='plan'||G.phase==='result'||G.phase==='review')openMap();});
+$('achBtn').addEventListener('click',()=>{if(!G.tut&&(G.phase==='plan'||G.phase==='result'||G.phase==='folded'||G.phase==='review'))openAch();});
+$('dexBtn').addEventListener('click',()=>{if(!G.tut&&(G.phase==='plan'||G.phase==='result'||G.phase==='folded'||G.phase==='review'))openDex();});
 $('tutBtn').addEventListener('click',()=>{if(G.phase==='plan'||G.phase==='result')startTutorial();});
 window.addEventListener('resize',()=>{if(!$('tut').hidden)tutPlace();});
 window.addEventListener('scroll',()=>{if(!$('tut').hidden)tutPlace();},{passive:true});
@@ -2481,11 +2507,12 @@ document.addEventListener('keydown',e=>{
 function resize(){
   const r=cv.getBoundingClientRect();
   W=Math.max(10,r.width);H=Math.max(10,r.height);dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cam.cx=W/2;cam.cy=H/2;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cam.cx=W/2;cam.cy=(H-rvPad())/2;
   buildMat();
   if(G.net){
     if(G.phase==='plan'||G.phase==='result'||G.phase==='rotating')setCam(netView());
     else if(G.phase==='folded')cam.scale=solidView().scale;
+    else if(G.phase==='review'&&RV&&!RV.busy){RV.solid=null;camLerp(netView(),solidView(),ease(G.t));}
   }
   dirty=true;
 }
@@ -2505,7 +2532,129 @@ resize();
 startStage(1,0);updateUser();if(!window.MG_TEACHER)mgEnter();
 new ResizeObserver(resize).observe($('board'));
 requestAnimationFrame(loop);
-if(new URLSearchParams(location.search).has('debug'))window.__fold={G,P,cam,NETS,LAP1,POOLS,MON,UNIT,SKILLS,ACH,startStage,playRound,unfoldRound,tap,pick,netView,targets,orderList,showSkillPick,openMap,openAch,openDex,startTutorial,tutEnd,TUT,layoutAudit,save,checkAch,getStage,USER,doLogin,showLogin,HELP,stageClear,showResult,closeCard,closeMap};
+
+/* ===== 판 다시 보기 =====
+   라운드마다 처음 모습(몬스터, 놓은 용사), 공격 순서, 공격이 끝날 때마다의 상태를 기록해 둔다.
+   다시 볼 때는 게임 규칙을 다시 돌리지 않고 기록만 재생한다: 종이, 별, 도전과제, 선생님 화면 기록은 그대로다.
+   밀대로 전개도를 천천히 접었다 펴고, 절반 넘게 접으면 끌어서 입체도형을 돌려 볼 수 있다. */
+var RV=null; // var: 게임이 시작하며 startStage(→rvClose)를 이 줄보다 먼저 부르므로
+const rvRef=o=>{const i=G.monsters.indexOf(o);return i>=0?{k:'m',i}:{k:'h',i:G.heroes.indexOf(o)};};
+function rvRecStart(){
+  if(G.tut)return;
+  (G.rv=G.rv||{rounds:[]}).rounds.push({round:G.round,ms:G.monsters.map(m=>Object.assign({},m)),hs:G.heroes.map(h=>Object.assign({},h)),order:G.frozen.map(a=>rvRef(a.o)),steps:[]});
+}
+function rvRecStep(act,tg){
+  const R=G.rv&&G.rv.rounds[G.rv.rounds.length-1];
+  if(!R||G.tut)return;
+  R.steps.push({who:rvRef(act.o),tg:tg.slice(),hp:G.monsters.map(m=>m.hp),down:G.heroes.map(h=>!!h.down)});
+}
+const rvBtn=()=>G.rv&&G.rv.rounds.length&&!G.tut?[['판 다시 보기',false,()=>rvOpen()]]:[];
+/* 다시 보기 막대가 차지하는 판 아래쪽 높이: 전개도와 입체를 그만큼 위로 올려 가리지 않게 한다 */
+function rvPad(){const b=$('rvBar');return RV&&b&&!b.hidden?b.offsetHeight+16:0;}
+function rvClose(){RV=null;const b=$('rvBar');if(b)b.hidden=true;cam.cy=H/2;}
+function rvOpen(){
+  if(!G.rv||!G.rv.rounds.length)return;
+  closeCard();
+  RV={keep:{ms:G.monsters,hs:G.heroes,frozen:G.frozen,round:G.round},r:G.rv.rounds.length-1,busy:false,solid:null,aim:false,speed:G.speed};
+  G.phase='review';G.hover=null;cv.classList.remove('can-pick','hinting');hideTip(true);showCoach(null);
+  $('rvBar').hidden=false;cam.cy=(H-rvPad())/2;
+  rvLoad(RV.r);
+}
+function rvLoad(r){
+  const R=G.rv.rounds[r];RV.r=r;RV.solid=null;
+  G.monsters=R.ms.map(m=>Object.assign({},m));
+  G.heroes=R.hs.map(h=>Object.assign({},h,{down:false,dieAt:0,fade:0}));
+  G.frozen=R.order.map(x=>({k:x.k,o:(x.k==='m'?G.monsters:G.heroes)[x.i]}));
+  G.acted=new Set();G.fx={shots:[],floats:[],flash:{},seam:null,acting:null};G.xray=0;G.round=R.round;
+  G.t=0;setCam(netView());cv.classList.remove('can-drag');
+  updatePanel();dirty=true;rvDraw();
+}
+function rvDraw(){
+  if(!RV)return;
+  const box=$('rvRounds'),R=G.rv.rounds;box.innerHTML='';
+  if(R.length>1)R.forEach((x,i)=>{const b=el('button','btn',`라운드 ${x.round}`);b.type='button';b.setAttribute('aria-pressed',String(i===RV.r));b.disabled=RV.busy;b.addEventListener('click',()=>{if(!RV.busy)rvLoad(i);});box.appendChild(b);});
+  $('rvFold').value=String(Math.round(G.t*100));$('rvFold').disabled=RV.busy;
+  $('rvToggle').textContent=G.t>.5?'펼치기':'접기';$('rvToggle').disabled=RV.busy;
+  $('rvPlay').disabled=RV.busy;$('rvPlay').textContent=RV.busy?'다시 보는 중…':'공격 다시 보기';
+  $('rvAim').setAttribute('aria-pressed',String(RV.aim));$('rvAim').disabled=RV.busy;
+  $('rvBack').disabled=RV.busy;
+  $('rvTip').textContent=RV.busy?'이번 판의 공격을 순서대로 다시 보여 줘요.'
+    :G.t>.5?'끌어서 입체도형을 돌려 보세요. 밀대를 왼쪽으로 옮기면 다시 펼쳐져요.'
+    :'밀대를 오른쪽으로 옮기며 전개도를 천천히 접어 보세요. 어느 면끼리 만나는지 살펴봐요.';
+}
+function rvSetFold(t){
+  if(!RV||RV.busy)return;
+  G.t=t;camLerp(netView(),RV.solid||solidView(),ease(t));dirty=true;
+  cv.classList.toggle('can-drag',t>.5);rvDraw();
+}
+async function rvFoldTo(t1){
+  if(!RV||RV.busy)return;
+  RV.busy=true;rvDraw();
+  const t0=G.t,from=snap(),to=t1>.5?(RV.solid||solidView()):netView();
+  await tween(300+1000*Math.abs(t1-t0),p=>{G.t=t0+(t1-t0)*p;camLerp(from,to,ease(p));});
+  if(!RV)return;
+  G.t=t1;RV.busy=false;cv.classList.toggle('can-drag',t1>.5);rvDraw();
+}
+async function rvStep(st){
+  const isM=st.who.k==='m',o=(isM?G.monsters:G.heroes)[st.who.i];
+  if(!o)return;
+  const pat=isM?MON[o.t].pat:UNIT[o.u].pat,pw=isM?1:UNIT[o.u].pw,color=isM?INK.mon:UNIT[o.u].band;
+  G.acted.add(o);G.fx.acting=o;updateOrder();
+  await camMove(attackView(o.f,pat,o.a,st.tg),480);
+  if(!RV)return;
+  if(pat==='parallel')await tween(240,p=>{G.xray=p;});
+  const segs=crossedSegs(o.f,pat,o.a);
+  if(segs.length){G.fx.seam={segs,alpha:0};await tween(180,p=>{G.fx.seam.alpha=p;});}
+  G.fx.shots=attackPaths(G.net,o.f,pat,o.a).map(path=>({path,prog:0,color}));
+  await tween(680,p=>{G.fx.shots.forEach(s=>{s.prog=ease(p);});});
+  if(!RV)return;
+  if(!st.tg.length)addFloat(o.f,'헛방!','#5A6474',0);
+  st.tg.forEach((g,i)=>{
+    const m=G.monsters.find(x=>x.f===g&&x.hp>0&&!x.gone),h=G.heroes.find(x=>x.f===g);
+    if(m){
+      const j=G.monsters.indexOf(m);m.hp=st.hp[j];G.fx.flash[g]={c:'#E0463C',a:.55};addFloat(g,'-'+pw,INK.mon,i);
+      if(m.hp<=0){m.dieAt=performance.now();animUntil=Math.max(animUntil,m.dieAt+600);}
+    }else if(h){
+      const j=G.heroes.indexOf(h);
+      if(isM&&!h.down&&st.down[j]){h.down=true;h.dieAt=performance.now();animUntil=Math.max(animUntil,h.dieAt+600);G.fx.flash[g]={c:'#F2A33C',a:.6};addFloat(g,'앗!','#C9701E',i);}
+      else if(!isM){G.fx.flash[g]={c:'#FFFFFF',a:.35};addFloat(g,'같은 편','#5A6474',i);}
+      else{G.fx.flash[g]={c:'#F2A33C',a:.4};addFloat(g,'앗!','#C9701E',i);}
+    }else{G.fx.flash[g]={c:'#FFFFFF',a:.4};addFloat(g,'빈 면','#5A6474',i);}
+  });
+  st.hp.forEach((v,j)=>{const m=G.monsters[j];if(m&&m.hp!==v){m.hp=v;if(v<=0&&!m.dieAt){m.dieAt=performance.now();animUntil=Math.max(animUntil,m.dieAt+600);}}});
+  G.fx.shots=[];updatePanel();
+  const f0={};for(const k in G.fx.flash)f0[k]=G.fx.flash[k].a;
+  const sa=G.fx.seam?G.fx.seam.alpha:0,xa=G.xray;
+  await tween(400,p=>{for(const k in G.fx.flash)G.fx.flash[k].a=f0[k]*(1-p);if(G.fx.seam)G.fx.seam.alpha=sa*(1-p);G.xray=xa*(1-p);});
+  G.fx.flash={};G.fx.seam=null;G.xray=0;
+}
+async function rvReplay(){
+  if(!RV||RV.busy)return;
+  rvLoad(RV.r);
+  RV.busy=true;G.speed=G.baseSpeed*1.6;rvDraw();
+  const from=snap(),to=solidView();
+  await tween(1300,p=>{G.t=p;camLerp(from,to,ease(p));});
+  if(!RV)return;
+  G.t=1;
+  for(const st of G.rv.rounds[RV.r].steps){await rvStep(st);if(!RV)return;}
+  G.fx.acting=null;updateOrder();
+  await camMove(solidView(),500);
+  if(!RV)return;
+  G.speed=RV.speed;RV.busy=false;RV.solid=null;cv.classList.add('can-drag');rvDraw();
+}
+function rvBack(){
+  if(!RV||RV.busy)return;
+  const k=RV.keep;rvClose();
+  G.monsters=k.ms;G.heroes=k.hs;G.frozen=k.frozen;G.round=k.round;
+  G.fx={shots:[],floats:[],flash:{},seam:null,acting:null};G.xray=0;G.t=0;setCam(netView());cv.classList.remove('can-drag');
+  G.phase='result';updatePanel();showResult(G.lastResult);
+}
+$('rvFold').addEventListener('input',e=>rvSetFold(Number(e.target.value)/100));
+$('rvToggle').addEventListener('click',()=>rvFoldTo(G.t>.5?0:1));
+$('rvPlay').addEventListener('click',rvReplay);
+$('rvAim').addEventListener('click',()=>{if(!RV||RV.busy)return;RV.aim=!RV.aim;dirty=true;rvDraw();});
+$('rvBack').addEventListener('click',rvBack);
+if(new URLSearchParams(location.search).has('debug'))window.__fold={G,P,cam,NETS,LAP1,POOLS,MON,UNIT,SKILLS,ACH,startStage,playRound,unfoldRound,tap,pick,netView,targets,orderList,showSkillPick,openMap,openAch,openDex,startTutorial,tutEnd,TUT,layoutAudit,save,checkAch,getStage,USER,doLogin,showLogin,HELP,stageClear,showResult,closeCard,closeMap,rvOpen,rv:()=>RV};
 })();
 </script>
 <style id="mg-teacher-style">
