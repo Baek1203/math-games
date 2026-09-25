@@ -618,6 +618,8 @@ const GROW_EVERY = 4;
 const SUMMON_EVERY = 4;
 
 /* 스테이지: 지도마다 다섯 단계. roster는 [몬스터, 비율, 처음 나오는 웨이브] */
+/* 시작 코인: 2·3단계(2-1 빼고)는 네 수호대를 한 개씩 세우고도 20코인 이상 남게 한다 (20+25+35+40 = 120).
+   2-2는 네 수호대를 처음 다 같이 쓰는 스테이지라, 몬스터의 소인수 개수를 작게 시작해 웨이브마다 조금 더 빨리 늘린다. */
 const STAGES = {
   '1-1': { level: 1, no: 1, title: '첫 출전', waves: 6, lives: 20, coins: 60, speed: 1.282, gap: 1.15, count: [8, 0.8], omega: [3, 1, 0.48], armor: [2, 2], unlock: { 3: 3 }, roster: [['basic', 1, 1]] },
   '1-2': { level: 1, no: 2, title: '날쌘 무리', waves: 7, lives: 20, coins: 60, speed: 1.35, gap: 1.05, count: [7, 1], omega: [3, 2, 0.48], armor: [2, 2], roster: [['basic', 3, 1], ['fast', 2, 2]] },
@@ -625,15 +627,15 @@ const STAGES = {
   '1-4': { level: 1, no: 4, title: '쪼개지는 슬라임', waves: 8, lives: 20, coins: 70, speed: 1.418, gap: 0.95, count: [8, 1], omega: [4, 2, 0.56], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 2, 1], ['split', 2, 2]] },
   '1-5': { level: 1, no: 5, title: '왕 슬라임', waves: 9, lives: 20, coins: 80, speed: 1.418, gap: 0.95, count: [10, 1], omega: [4, 2, 0.56], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1], ['split', 1, 1]], boss: { type: 'king', omega: [10], armor: 12, leak: 6 } },
   '2-1': { level: 2, no: 1, title: '협곡 입구', waves: 7, lives: 20, coins: 120, speed: 1.1, gap: 1.0, count: [4, 1], omega: [1, 2, 0.35], armor: [1, 2], unlock: { 5: 2, 7: 4 }, roster: [['basic', 3, 1], ['fast', 1, 2], ['armor', 1, 4]] },
-  '2-2': { level: 2, no: 2, title: '되살아나는 새싹', waves: 8, lives: 20, coins: 110, speed: 1.15, gap: 1.0, count: [5, 1], omega: [2, 2, 0.35], armor: [1, 2], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['regen', 2, 2]] },
-  '2-3': { level: 2, no: 3, title: '가면 행렬', waves: 8, lives: 20, coins: 110, speed: 1.15, gap: 0.95, count: [5, 1], omega: [2, 2, 0.35], armor: [2, 3], roster: [['basic', 1, 1], ['mask', 3, 1], ['fast', 1, 1], ['armor', 2, 1], ['regen', 1, 2]] },
-  '2-4': { level: 2, no: 4, title: '모래 폭풍', waves: 9, lives: 20, coins: 125, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 3, 1], ['regen', 2, 1], ['split', 2, 1], ['mask', 1, 1]] },
-  '2-5': { level: 2, no: 5, title: '모래 골렘', waves: 10, lives: 20, coins: 120, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1], ['regen', 1, 1], ['split', 1, 1], ['mask', 1, 1]], boss: { type: 'golem', omega: [10], armor: 10, leak: 6 } },
-  '3-1': { level: 3, no: 1, title: '뜨거운 길', waves: 8, lives: 15, coins: 110, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1]] },
-  '3-2': { level: 3, no: 2, title: '부풀이 소동', waves: 8, lives: 15, coins: 120, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['grow', 3, 2]] },
-  '3-3': { level: 3, no: 3, title: '그림자 습격', waves: 9, lives: 15, coins: 125, speed: 1.43, gap: 0.9, count: [6, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 3, 2]] },
-  '3-4': { level: 3, no: 4, title: '화산 폭발', waves: 9, lives: 15, coins: 120, speed: 1.43, gap: 0.9, count: [7, 1.1], omega: [3, 2, 0.45], armor: [3, 5], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['split', 1, 1], ['regen', 1, 1], ['mask', 1, 1], ['grow', 2, 1], ['shadow', 2, 1]] },
-  '3-5': { level: 3, no: 5, title: '용암 대왕', waves: 10, lives: 15, coins: 130, speed: 1.5, gap: 0.9, count: [7, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 1, 1], ['regen', 1, 1]], boss: { type: 'lava', omega: [7, 8, 9], armor: 8, leak: 8 } },
+  '2-2': { level: 2, no: 2, title: '되살아나는 새싹', waves: 8, lives: 20, coins: 140, speed: 1.15, gap: 1.0, count: [5, 1], omega: [1, 2, 0.45], armor: [1, 2], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['regen', 2, 2]] },
+  '2-3': { level: 2, no: 3, title: '가면 행렬', waves: 8, lives: 20, coins: 140, speed: 1.15, gap: 0.95, count: [5, 1], omega: [2, 2, 0.35], armor: [2, 3], roster: [['basic', 1, 1], ['mask', 3, 1], ['fast', 1, 1], ['armor', 2, 1], ['regen', 1, 2]] },
+  '2-4': { level: 2, no: 4, title: '모래 폭풍', waves: 9, lives: 20, coins: 145, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 3, 1], ['regen', 2, 1], ['split', 2, 1], ['mask', 1, 1]] },
+  '2-5': { level: 2, no: 5, title: '모래 골렘', waves: 10, lives: 20, coins: 140, speed: 1.2, gap: 0.9, count: [5, 1], omega: [2, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1], ['regen', 1, 1], ['split', 1, 1], ['mask', 1, 1]], boss: { type: 'golem', omega: [10], armor: 10, leak: 6 } },
+  '3-1': { level: 3, no: 1, title: '뜨거운 길', waves: 8, lives: 15, coins: 140, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 2, 1], ['armor', 2, 1]] },
+  '3-2': { level: 3, no: 2, title: '부풀이 소동', waves: 8, lives: 15, coins: 140, speed: 1.375, gap: 0.95, count: [7, 1], omega: [3, 2, 0.35], armor: [2, 3], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 1, 1], ['grow', 3, 2]] },
+  '3-3': { level: 3, no: 3, title: '그림자 습격', waves: 9, lives: 15, coins: 145, speed: 1.43, gap: 0.9, count: [6, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 2, 1], ['fast', 1, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 3, 2]] },
+  '3-4': { level: 3, no: 4, title: '화산 폭발', waves: 9, lives: 15, coins: 145, speed: 1.43, gap: 0.9, count: [7, 1.1], omega: [3, 2, 0.45], armor: [3, 5], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['split', 1, 1], ['regen', 1, 1], ['mask', 1, 1], ['grow', 2, 1], ['shadow', 2, 1]] },
+  '3-5': { level: 3, no: 5, title: '용암 대왕', waves: 10, lives: 15, coins: 150, speed: 1.5, gap: 0.9, count: [7, 1], omega: [3, 2, 0.4], armor: [2, 4], roster: [['basic', 1, 1], ['fast', 2, 1], ['armor', 2, 1], ['grow', 1, 1], ['shadow', 1, 1], ['regen', 1, 1]], boss: { type: 'lava', omega: [7, 8, 9], armor: 8, leak: 8 } },
 };
 const STAGE_IDS = Object.keys(STAGES);
 const stageLabel = id => id;
