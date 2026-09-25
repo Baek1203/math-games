@@ -264,6 +264,8 @@ a.card:hover .art { transform: scale(1.03); }
 .school-top .muted { margin: 0; }
 #schoolSuggest:empty { display: none; }
 #schoolSuggest .room-list { max-height: 11rem; }
+.dup-warn { margin: .35rem 0 .2rem; color: #b3261e; font-size: .95rem; }
+.dup-warn:empty { display: none; }
 </style>
 </head>
 <body>
@@ -635,7 +637,7 @@ const H = {
   /* 선생님 */
   sdir: null,
   user: null, prof: undefined, isAdmin: false, teachers: null, teachersOff: null,
-  myRooms: null, mySchools: null, school: null, joined: [], cur: null, tview: null, tloaded: false, tviewOff: null, form: null, armed: null,
+  myRooms: null, mySchools: null, school: null, joined: [], dupName: null, cur: null, tview: null, tloaded: false, tviewOff: null, form: null, armed: null,
   err: '', note: '', busy: false, shown: null, check: null,
 };
 const $ = s => document.querySelector(s);
@@ -835,9 +837,9 @@ function randomKey(n) {
 }
 const normCode = s => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
 const validCode = c => /^[0-9A-Z]{4,12}$/.test(c);
-function schoolMatches(name, region) {
-  const n = normName(name), g = normName(region);
-  return (H.sdir || []).filter(x => normName(x.name) === n && (!g || !x.region || normName(x.region) === g));
+function schoolMatches(name) {
+  const n = normName(name);
+  return (H.sdir || []).filter(x => normName(x.name) === n);
 }
 function joinSchool(id) {
   if (!H.joined.includes(id)) H.joined.push(id);
@@ -847,13 +849,23 @@ function joinSchool(id) {
   loadMyRooms(null, id);
 }
 function createSchool(f) {
-  const name = clip(f.name.value, 40), region = clip(f.region.value, 20);
+  const name = clip(f.name.value, 40), n = normName(name);
   if (!name) { H.err = '학교 이름을 적어 주세요.'; render(); return; }
-  const same = schoolMatches(name, region);
-  if (same.length) { joinSchool(same[0].id); return; }
+  const mine = (H.mySchools || []).find(x => !x.legacy && normName(x.name) === n);
+  if (mine) { H.form = 'room'; H.dupName = null; H.note = `${mine.name}은(는) 이미 내 학교에 있어요. 이 학교에 교실을 만들어 주세요.`; selectSchool(mine.id); return; }
+  /* 지역을 받지 않으니, 같은 이름의 학교가 있으면 바로 합치지 않고 먼저 알려 준다 (다른 지역의 같은 이름 학교일 수 있다) */
+  if (schoolMatches(name).length && H.dupName !== n) {
+    H.dupName = n;
+    const w = document.getElementById('schoolDup');
+    if (w) w.textContent = '같은 이름의 학교가 이미 있어요. 우리 학교라면 위 목록에서 골라 주세요. 이름만 같은 다른 학교라면 한 번 더 눌러 새로 만들어요.';
+    const b = document.querySelector('#schoolForm button[type="submit"]');
+    if (b) b.textContent = '새 학교로 만들기';
+    return;
+  }
+  H.dupName = null;
   act(async () => {
     const uid = H.user.uid, id = H.db.ref('schools').push().key, skey = randomKey(28);
-    await H.db.ref('schools/' + id).set({ name, region, owner: uid, t: TS() });
+    await H.db.ref('schools/' + id).set({ name, owner: uid, t: TS() });
     await H.db.ref('skeys/' + skey).set({ school: id });
     await H.db.ref('schoolSecrets/' + id).set({ skey });
     H.form = 'room';
@@ -1145,7 +1157,7 @@ document.addEventListener('click', e => {
       H.armed = null; decide(d.uid, d.status); break;
     case 'tpick': H.note = ''; H.err = ''; H.form = null; selectRoom(d.id); break;
     case 'spick': H.note = ''; H.err = ''; H.form = null; H.armed = null; selectSchool(d.id); break;
-    case 'newSchool': H.form = 'school'; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#schoolForm input[name="name"]'); if (i) i.focus(); } break;
+    case 'newSchool': H.form = 'school'; H.dupName = null; H.err = ''; H.note = ''; render(); { const i = document.querySelector('#schoolForm input[name="name"]'); if (i) i.focus(); } break;
     case 'joinSchool': H.err = ''; joinSchool(d.id); break;
     case 'delSchool': deleteSchool(); break;
     case 'testAccount': testAccount(); break;
@@ -1178,6 +1190,11 @@ document.addEventListener('input', e => {
   if (!e.target.closest || !e.target.closest('#schoolForm')) return;
   const box = document.getElementById('schoolSuggest');
   if (box) box.innerHTML = schoolSuggestHTML();
+  if (H.dupName) {
+    H.dupName = null;
+    const w = document.getElementById('schoolDup'); if (w) w.textContent = '';
+    const b = document.querySelector('#schoolForm button[type="submit"]'); if (b) b.textContent = '학교 만들기';
+  }
 });
 window.addEventListener('storage', e => {
   if (e.key === 'mathgames.student') render();
@@ -1252,6 +1269,13 @@ function safeNext(v) {
   return GAMES.some(g => !g.href && s === encodeURI(g.id) + '/') ? s : '';
 }
 const roomsOf = id => (H.dir || []).filter(r => r.schoolId === id);
+/* 같은 이름의 학교를 알아볼 수 있게 그 학교 선생님 이름을 보여 준다 */
+function teachersOf(id) {
+  const names = [...new Set(roomsOf(id).map(r => r.teacher).filter(Boolean))];
+  if (!names.length) return '';
+  return names.slice(0, 2).join('·') + ' 선생님' + (names.length > 2 ? ` 외 ${names.length - 2}명` : '');
+}
+const schoolMeta = id => `교실 ${roomsOf(id).length}개${teachersOf(id) ? ' · ' + esc(teachersOf(id)) : ''}`;
 function schoolsListHTML() {
   if (H.sdir === null || H.dir === null) return '<p class="muted small">학교 목록을 불러오고 있어요.</p>';
   const q = normName(LOGIN.q);
@@ -1259,7 +1283,7 @@ function schoolsListHTML() {
   if (!open.length) return '<p class="muted small">아직 만들어진 교실이 없어요. 선생님께 여쭤보세요.</p>';
   const list = open.filter(x => !q || normName(x.name + (x.region || '')).indexOf(q) >= 0).slice(0, 40);
   if (!list.length) return '<p class="muted small">찾는 학교가 없어요. 학교 이름을 다시 확인해 주세요.</p>';
-  return `<ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="pickSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>교실 ${roomsOf(x.id).length}개</small></span></button></li>`).join('')}</ul>`;
+  return `<ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="pickSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>${schoolMeta(x.id)}</small></span></button></li>`).join('')}</ul>`;
 }
 function classListHTML(schoolId) {
   const list = roomsOf(schoolId);
@@ -1454,7 +1478,7 @@ function schoolSuggestHTML() {
   const mine = new Set((H.mySchools || []).map(x => x.id));
   const list = H.sdir.filter(x => !mine.has(x.id) && normName(x.name).indexOf(q) >= 0).slice(0, 6);
   if (!list.length) return '';
-  return `<p class="muted small">이미 있는 학교예요. 같은 학교라면 골라서 그 안에 교실을 만들어 주세요.</p><ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="joinSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>교실 ${roomsOf(x.id).length}개</small></span></button></li>`).join('')}</ul>`;
+  return `<p class="muted small">이미 있는 학교예요. 선생님 이름을 보고 우리 학교라면 골라서 그 안에 교실을 만들어 주세요.</p><ul class="room-list">${list.map(x => `<li><button type="button" class="room-opt" data-act="joinSchool" data-id="${esc(x.id)}">${SCHOOL}<span><b>${esc(x.name)}</b>${x.region ? `<small>${esc(x.region)}</small>` : ''}<small>${schoolMeta(x.id)}</small></span></button></li>`).join('')}</ul>`;
 }
 function schoolsHTML() {
   const list = H.mySchools;
@@ -1466,7 +1490,7 @@ function schoolsHTML() {
     <p class="muted small">학교 안에 교실을 만들어요. 같은 학교의 다른 선생님이 이미 학교를 만들었다면 그 학교를 골라 주세요. 같은 학교의 교실끼리 학교 랭킹을 함께 써요.</p>
     ${field('학교 이름', 'name', (!list.length && H.prof && H.prof.school) || '', ' maxlength="40" placeholder="예: 전주○○중학교"')}
     <div id="schoolSuggest">${schoolSuggestHTML()}</div>
-    ${field('지역 (시·도)', 'region', (!list.length && H.prof && H.prof.region) || '', ' maxlength="20" placeholder="예: 전북"')}
+    <p id="schoolDup" class="dup-warn" role="alert"></p>
     <div class="dlg-actions"><button type="submit" class="btn primary"${H.busy ? ' disabled' : ''}>학교 만들기</button>${list.length ? '<button type="button" class="btn" data-act="cancelForm">취소</button>' : ''}</div>
   </form>` : '';
   const x = curSchool();
