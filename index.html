@@ -290,7 +290,7 @@ const GAMES = [
   { id: 'prime-tower', name: '소인수 타워 디펜스', desc: '수를 나누는 수호대로 숫자 몬스터를 막아요.', art: 'tower', color: '#5b3a8c', mark: '2 3 5 7', tags: ['소인수분해', '전략'], ready: true },
   { id: 'zero-sum', name: '제로섬 스페이스 미션', desc: '합이 0이 되게 숫자 크리스탈을 묶어요.', art: 'space', color: '#1a2140', mark: '0', tags: ['정수', '덧셈'], ready: true },
   { id: 'fly-coords', name: '파리 잡기 좌표게임', desc: '좌표를 맞춰 칠판 위의 파리를 잡아요.', art: 'fly', color: '#1e332a', mark: '(x, y)', tags: ['좌표', '순서쌍'], ready: true },
-  { id: 'fold-meet', name: '접으면 만난다', desc: '전개도 위에 용사를 놓고 접어서 몬스터를 물리쳐요.', art: 'fold', color: '#2f5c49', mark: '전개도', tags: ['입체도형', '전개도'], ready: true },
+  { id: 'fold-meet', name: '전개도 용사단', desc: '전개도 위에 용사를 놓고 접어서 몬스터를 물리쳐요.', art: 'fold', color: '#2f5c49', mark: '전개도', tags: ['입체도형', '전개도'], ready: true },
   { id: 'coord-battle', name: '좌표 해전', desc: '그래프 무기로 숨은 함대를 찾아요.', art: 'sea', color: '#1c5585', mark: '(3, -2)', tags: ['그래프', '정비례', '반비례'], ready: false },
   { id: 'math-liar', name: '수학 라이어 게임', desc: '모둠 안에서 제시어를 모르는 라이어를 찾아요.', art: 'liar', color: '#a13d2d', mark: '?', tags: ['모둠', '추론'], ready: false },
   { id: 'data-coach', name: '데이터 감독 게임', desc: '기록의 분포를 보고 이어달리기 팀을 꾸려요.', art: 'coach', color: '#2e6b52', mark: '▂▅▇▃', tags: ['자료 정리', '분포'], ready: false },
@@ -535,7 +535,7 @@ ${num('찰싹!', 272, 58, 16, '#ffd23f')}`, '파리 잡기 좌표게임: 칠판 
   }
 
 
-  /* 접으면 만난다: 재단 매트 위 정육면체 전개도가 접혀서, 용사와 박쥐가 한 입체 위에서 만난다 */
+  /* 전개도 용사단: 재단 매트 위 정육면체 전개도가 접혀서, 용사와 박쥐가 한 입체 위에서 만난다 */
   function fold() {
     const hero = (x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})">
 <path d="M7 1 L21 -13" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/><path d="M7 1 L21 -13" stroke="#e4ebf5" stroke-width="2.8" stroke-linecap="round"/>
@@ -584,7 +584,7 @@ ${bat(X0 + S * 1.5, Y0 + S * 3.5, .72)}
 ${hero(C.x - 10, C.y - C.h - 4, .74)}
 ${bat(C.x + 22, C.y + C.h + 2, .66)}
 <path d="M${C.x + 14} ${C.y - 14} l3 -8 l3 8 l8 -3 l-5 7 l8 3 l-8 2 l2 8 l-6 -6 l-5 6 l1 -8 l-8 -2 l7 -3 l-5 -7 z" fill="#ffd23f" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
-${num('만났다!', 262, 30, 17, '#ffd23f')}`, '접으면 만난다: 재단 매트 위 정육면체 전개도가 접혀서 용사와 박쥐가 입체 위에서 만나는 장면');
+${num('만났다!', 262, 30, 17, '#ffd23f')}`, '전개도 용사단: 재단 매트 위 정육면체 전개도가 접혀서 용사와 박쥐가 입체 위에서 만나는 장면');
   }
 
   /* 그림이 없는 게임: 색과 글자로 만든 표지 */
