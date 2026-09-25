@@ -38,7 +38,7 @@
 #mgT .note { margin: .6rem 0 0; }
 </style>
 <script>
-/* ===== 선생님 화면 (제로섬 스페이스 미션, 파리 잡기 좌표게임, 접으면 만난다) =====
+/* ===== 선생님 화면 (제로섬 스페이스 미션, 파리 잡기 좌표게임, 전개도 용사단) =====
    주소 끝에 #teacher를 붙이면 게임 대신 이 화면이 보여요.
    게임 목록의 수업 관리에서 승인받은 선생님 Google 계정으로 로그인하면, 고른 교실 학생들의 기록을 보여 줘요. */
 (function () {
@@ -59,7 +59,7 @@
     'fly-coords': { title: '파리 잡기 좌표게임', unit: '잡은 파리', extra: [
       { k: 'accuracy', label: '평균 명중률', how: 'avg', pct: true }, { k: 'bestStreak', label: '최고 연속', how: 'max' }],
       extraPlay: [{ k: 'accuracy', label: '명중률', pct: true }, { k: 'bestStreak', label: '최고 연속' }] },
-    'fold-meet': { title: '접으면 만난다', progress: {
+    'fold-meet': { title: '전개도 용사단', progress: {
       cols: [{ k: 'lap', label: '회차', num: true, def: 1 }, { k: 'lap1', label: '1회차 깬 스테이지', num: true, max: 16, bar: true }, { k: 'clears', label: '모든 회차 깬 스테이지', num: true },
         { k: 'stars', label: '별', num: true }, { k: 'ach', label: '도전과제', num: true }, { k: 'cur', label: '지금 하는 곳' }],
       stats: [{ k: 'clears', label: '평균 깬 스테이지' }, { k: 'ach', label: '평균 도전과제' }],
